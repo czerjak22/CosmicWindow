@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -46,6 +48,26 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
+    //project
+
+    // Lifecycle
+    implementation(libs.lifecycle.viewmodel.compose)
+    // Compose icons
+    implementation(libs.material.icons.extended)
+    // Navigation
+    implementation(libs.navigation.compose)
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    // Room
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
+
+    // Hilt
+     implementation(libs.hilt.android)
+     ksp(libs.hilt.compiler)
+     implementation(libs.hilt.lifecycle.viewmodel.compose)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
