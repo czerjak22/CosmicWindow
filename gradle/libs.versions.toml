@@ -16,6 +16,7 @@ navigation = "2.10.2"
 retrofit = "3.0.0"
 room = "3.0.3"
 androidx-hilt = "1.4.0"
+splashScreen = "1.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +51,8 @@ room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room"
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 hilt-lifecycle-viewmodel-compose = { module = "androidx.hilt:hilt-lifecycle-viewmodel-compose", version.ref = "androidx-hilt" }
+# Splash screem
+splash-screen= {module = "androidx.core:core-splashscreen" ,version.ref = "splashScreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

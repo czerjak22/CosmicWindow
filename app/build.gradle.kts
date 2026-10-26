@@ -67,7 +67,8 @@ dependencies {
      implementation(libs.hilt.android)
      ksp(libs.hilt.compiler)
      implementation(libs.hilt.lifecycle.viewmodel.compose)
-
+    // splash
+    implementation(libs.splash.screen)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
