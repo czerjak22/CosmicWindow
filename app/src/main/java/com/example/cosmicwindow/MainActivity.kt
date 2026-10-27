@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.feature.Apod
+package com.example.cosmicwindow
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,8 +14,9 @@ import androidx.compose.ui.Modifier
 import com.example.cosmicwindow.ui.theme.CosmicWindowTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @AndroidEntryPoint
-class ApodScreen : ComponentActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,7 +38,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Hello $name!",
         modifier = modifier,
-        color= MaterialTheme.colorScheme.primary,
-        style = MaterialTheme.typography.headlineLarge ,
+        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.headlineLarge,
     )
 }
