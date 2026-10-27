@@ -1,9 +1,13 @@
 package com.example.cosmicwindow.feature.today
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,83 +15,305 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Android
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.materialIcon
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cosmicwindow.R
+import com.example.cosmicwindow.ui.components.CircleIconButton
+
 
 @Composable
-fun TodayScreen(modifier: Modifier = Modifier) {
+fun TodayScreen(
+    modifier: Modifier = Modifier,
+    viewModel: TodayViewModel = hiltViewModel()
+) {
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(modifier = modifier) {
         TodayHeader()
+        TodayInSpace(Modifier.padding(horizontal = 16.dp), "Oct 24, 2024")
+        //if (uiState.error != null) {
+        Spacer(Modifier.height(8.dp))
+        ErrorBox(Modifier.padding(horizontal = 16.dp))
+        //}
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Apod()
+            }
+        }
+
     }
 }
 
-@Preview
+@Composable
+fun Apod(
+    modifier: Modifier = Modifier,
+    onReadClick: () -> Unit = {},
+    onBookmarkClick: () -> Unit = {},
+    onShareClick: () -> Unit = {}
+) {
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+    ) {
+
+        Image(
+            painter = painterResource(R.drawable.orion_nebula),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize()
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black
+                        )
+                    )
+                )
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 180.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    "OCTOBER 24, 2024",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.W600,
+                )
+                Image(
+                    painterResource(R.drawable.camera_icon),
+                    contentDescription = null,
+                    modifier = Modifier.size(12.dp),
+                )
+                Text(
+                    "Hubble Telescope",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 12.sp
+                )
+            }
+
+            Text(
+                "The Great Nebula in Orion",
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.headlineLarge,
+            )
+
+            Text(
+                "Vast cosmic clouds of interstellar gas and stellarghkghgkghkghkkghkghkghkkj dust birth thousand tgdm tgd",
+                color = MaterialTheme.colorScheme.onSecondary,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = onReadClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    Text(
+                        "Read Cosmic Story",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Icon(
+                        painterResource(R.drawable.forward_icon),
+                        contentDescription = "Go to description",
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
+
+                CircleIconButton(R.drawable.bookmark_icon, "Bookmark", onBookmarkClick)
+                CircleIconButton(R.drawable.share_icon, "Share", onShareClick)
+            }
+        }
+    }
+}
+
+
+@Composable
+fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.onPrimaryContainer)
+        )
+        Text(
+            text = "Today in Space • $date",
+            color = MaterialTheme.colorScheme.onSecondary,
+            style = MaterialTheme.typography.bodyLarge
+        )
+    }
+}
+
 @Composable
 fun TodayHeader(modifier: Modifier = Modifier) {
 
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth(),
+
         horizontalArrangement = Arrangement.Absolute.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+        verticalAlignment = Alignment.CenterVertically,
+
+        ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painter = painterResource(R.drawable.header_image),
                 contentDescription = "Today Header's icon",
 
-                modifier = Modifier.padding(start = 16.dp, end = 8.dp).size(32.dp),
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 8.dp)
+                    .size(60.dp),
                 contentScale = ContentScale.Fit
             )
             Column(verticalArrangement = Arrangement.Center) {
                 Text(
                     "Cosmic Window",
-                    color = Color.Cyan,
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontSize = 20.sp,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.W500,
-                    modifier = Modifier.height(28.dp),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.headlineMedium,
                 )
                 Text(
                     "ASTRONOMY PICTURE OF THE DAY",
-                    color = Color.Cyan,
-                    style = MaterialTheme.typography.labelSmall,
-                    //textAlign = TextAlign.Center,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.W400,
-                    modifier = Modifier.height(26.dp),
-
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }
-        IconButton({}) {
+        IconButton({}, modifier = Modifier.padding(end = 16.dp)) {
             Icon(
-                imageVector = Icons.Default.CalendarMonth,
+                painterResource(R.drawable.calendar_icon),
                 contentDescription = "Day set icon",
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onSecondary,
             )
         }
 
+    }
+}
+
+@Composable
+fun ErrorBox(modifier: Modifier = Modifier) {
+
+    Box(
+        modifier = modifier
+            .border(
+                border = BorderStroke(
+                    1.dp,
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.3f),
+                ),
+                shape = RoundedCornerShape(16.dp)
+            )
+            .background(
+                MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(16.dp)
+            )
+    )
+    {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Image(
+                painterResource(R.drawable.no_internet),
+                contentDescription = "No internet icon",
+                modifier = Modifier.padding(top = 27.dp, bottom = 27.dp)
+            )
+            Text(
+                "Unable to reach NASA archive.",
+                color = MaterialTheme.colorScheme.onSecondary,
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.W400,
+                modifier = Modifier.weight(1f),
+            )
+
+
+            Button(
+                onClick = {},
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.25f),
+                    contentColor = MaterialTheme.colorScheme.onError
+                ),
+
+                ) {
+                Icon(
+                    painter = painterResource(R.drawable.reload_icon),
+                    contentDescription = null,
+                    modifier = Modifier.size(12.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    "Retry",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.W500
+                )
+
+            }
+        }
     }
 }
