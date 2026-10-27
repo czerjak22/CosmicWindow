@@ -10,19 +10,28 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,9 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -53,22 +60,52 @@ fun TodayScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Column(modifier = modifier) {
+    Column(modifier = modifier.padding(horizontal = 16.dp)) {
         TodayHeader()
-        TodayInSpace(Modifier.padding(horizontal = 16.dp), "Oct 24, 2024")
-        //if (uiState.error != null) {
-        Spacer(Modifier.height(8.dp))
-        ErrorBox(Modifier.padding(horizontal = 16.dp))
-        //}
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
+        TodayInSpace(date = "Oct 24, 2024")
+        if (uiState.error != null) {
+            Spacer(Modifier.height(8.dp))
+            ErrorBox()
+        }
+        Column(
+            modifier = Modifier.verticalScroll((rememberScrollState())),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item {
-                Apod()
+            Apod()
+            PastApodEntryText()
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(10)
+                {
+                    PreviousApodDay(onClick = { viewModel.updateError() })
+                }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
 
+
+@Composable
+fun PastApodEntryText(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            "Previous 7 days",
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.W600
+        )
+        Text(
+            "Past APOD Entries",
+            color = MaterialTheme.colorScheme.onSecondary,
+            style = MaterialTheme.typography.bodyMedium,
+            lineHeight = 26.sp
+        )
     }
 }
 
@@ -185,6 +222,68 @@ fun Apod(
 
 
 @Composable
+fun PreviousApodDay(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.width(160.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondary
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box {
+                Image(
+                    painter = painterResource(R.drawable.orion_nebula),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(138f / 96f)
+                        .clip(RoundedCornerShape(12.dp))
+                )
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
+                    modifier = Modifier
+                        .padding(6.dp)
+                ) {
+                    Text(
+                        text = "Oct 23",
+                        style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontWeight = FontWeight.W600,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                    )
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    "Yesterday",
+                    style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+                Text(
+                    "Pillars of Creation",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W500),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
 
     Row(
@@ -282,12 +381,14 @@ fun ErrorBox(modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(top = 27.dp, bottom = 27.dp)
             )
             Text(
-                "Unable to reach NASA archive.",
+                "Unable to reach NASA archivhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhe.",
                 color = MaterialTheme.colorScheme.onSecondary,
                 style = MaterialTheme.typography.labelSmall,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.W400,
                 modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
 
