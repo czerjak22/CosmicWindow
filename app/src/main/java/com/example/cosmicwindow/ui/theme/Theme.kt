@@ -9,43 +9,56 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = LightBlue,
-    secondary = Amber,
-    tertiary = Purple
+
+    primary = Color(0xFF38BDF8),
+    onPrimary = Color(0xFF004965),
+    primaryContainer = Color(0xFF080E1D),
+    onPrimaryContainer = Color(0xFF8ED5FF),
+
+    secondary = Color(0xFF151B2B),
+    onSecondary = Color(0xFFBDC8D1),
+    secondaryContainer = Color(0xFF242A3A),
+    //onSecondaryContainer = Color(0xFFE2E6F0),
+
+    //tertiary = Color(0xFFEE9800),
+    //onTertiary = Color(0xFFFFB95F),
+    tertiaryContainer = Color(0xFFEE9800),
+    onTertiaryContainer = Color(0xFFFFB95F),
+
+    error = Color(0xFF93000A),
+    onError = Color(0xFFFFB4AB),
+//    errorContainer = Color(0xFF93000A),
+//    onErrorContainer = Color(0xFFFFDAD6),
+
+    background = Color(0xFF0D1322),
+    onBackground = Color(0xFFDDE2F8),
+    surface = Color(0xFF151B2B),
+    onSurface = Color(0xFFBDC8D1),
+    surfaceVariant = Color(0xFF191F2F),
+    onSurfaceVariant = Color(0xFF87929A),
+
+    outline = Color(0xFF3E484F),
+    //outlineVariant = Color(0xFFFFFFFF),
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = LightBlue,
-    secondary = Amber,
-    tertiary = Purple
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = Color(0xFF38BDF8),
+    onPrimary = Color(0xFF004965),
+    primaryContainer = Color(0xFF080E1D),
+
 )
 
 @Composable
 fun CosmicWindowTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-//        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-//            val context = LocalContext.current
-//            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-//        }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
