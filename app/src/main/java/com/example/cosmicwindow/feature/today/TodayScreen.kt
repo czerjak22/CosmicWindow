@@ -3,33 +3,31 @@ package com.example.cosmicwindow.feature.today
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AssistChip
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -41,51 +39,188 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.cosmicwindow.R
+import com.example.cosmicwindow.utils.Spacing
 import com.example.cosmicwindow.ui.components.CircleIconButton
+import com.example.cosmicwindow.ui.components.ErrorBox
 
 
 @Composable
 fun TodayScreen(
-    modifier: Modifier = Modifier,
-    viewModel: TodayViewModel = hiltViewModel()
+    modifier: Modifier = Modifier, viewModel: TodayViewModel = hiltViewModel()
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Column(modifier = modifier.padding(horizontal = 16.dp)) {
-        TodayHeader()
+    Column(modifier = modifier.padding(start = Spacing.s16, end = Spacing.s16, top = Spacing.s4)) {
+
         TodayInSpace(date = "Oct 24, 2024")
         if (uiState.error != null) {
-            Spacer(Modifier.height(8.dp))
-            ErrorBox()
+
+            ErrorBox(
+                modifier = Modifier.padding(top = Spacing.s4,bottom = Spacing.s16),
+                text = "Unable to reach NASA archive. Check connection.",
+                onClick = {})
+        }
+        else {
+            Spacer(Modifier.height(Spacing.s8))
         }
         Column(
             modifier = Modifier.verticalScroll((rememberScrollState())),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(Spacing.s16)
         ) {
             Apod()
             PastApodEntryText()
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s16)
             ) {
-                items(10)
-                {
+                items(10) {
                     PreviousApodDay(onClick = { viewModel.updateError() })
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(Spacing.s24))
+            FeaturedApodEntryCard()
         }
     }
 }
 
+@Preview
+@Composable
+fun FeaturedApodEntryCard(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.background(
+            color = MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(16.dp)
+        ),
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Image(
+                        painterResource(R.drawable.video_icon),
+                        contentDescription = null,
+                    )
+
+                    Text(
+                        "Featured APOD Video", style = MaterialTheme.typography.headlineSmall
+                    )
+                }
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
+                    modifier = Modifier.padding(6.dp)
+
+                ) {
+                    Text(
+                        text = "External Media",
+                        style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontWeight = FontWeight.W500,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp)
+                    )
+                }
+            }
+            VideoThumbnailCard()
+        }
+    }
+}
+
+
+@Composable
+fun VideoThumbnailCard(
+    videoUrl: String = "", modifier: Modifier = Modifier
+) {
+    val uriHandler = LocalUriHandler.current
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { uriHandler.openUri(videoUrl) }) {
+
+        Image(
+            painterResource(R.drawable.orion_nebula),
+            contentDescription = "Video thumbnail",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize()
+        )
+
+        Box(
+            Modifier
+                .matchParentSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))
+                    )
+                )
+        )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(64.dp)
+                .background(Color(0xFF38BDF8), CircleShape), contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = "Play",
+                tint = Color(0xFF0F172A),
+                modifier = Modifier.size(36.dp)
+            )
+        }
+
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "03:42 • 4K Ultra HD",
+                color = Color.White,
+                style = MaterialTheme.typography.labelMedium
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    Icons.Default.OpenInNew,
+                    null,
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+                Text(
+                    "YouTube / APOD",
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun PastApodEntryText(modifier: Modifier = Modifier) {
@@ -135,8 +270,7 @@ fun Apod(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Transparent,
-                            Color.Black
+                            Color.Transparent, Color.Black
                         )
                     )
                 )
@@ -236,8 +370,7 @@ fun PreviousApodDay(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Box {
                 Image(
@@ -252,8 +385,7 @@ fun PreviousApodDay(
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
-                    modifier = Modifier
-                        .padding(6.dp)
+                    modifier = Modifier.padding(6.dp)
                 ) {
                     Text(
                         text = "Oct 23",
@@ -305,116 +437,4 @@ fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
     }
 }
 
-@Composable
-fun TodayHeader(modifier: Modifier = Modifier) {
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth(),
-
-        horizontalArrangement = Arrangement.Absolute.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-
-        ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(R.drawable.header_image),
-                contentDescription = "Today Header's icon",
-
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 8.dp)
-                    .size(60.dp),
-                contentScale = ContentScale.Fit
-            )
-            Column(verticalArrangement = Arrangement.Center) {
-                Text(
-                    "Cosmic Window",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                Text(
-                    "ASTRONOMY PICTURE OF THE DAY",
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-        }
-        IconButton({}, modifier = Modifier.padding(end = 16.dp)) {
-            Icon(
-                painterResource(R.drawable.calendar_icon),
-                contentDescription = "Day set icon",
-                tint = MaterialTheme.colorScheme.onSecondary,
-            )
-        }
-
-    }
-}
-
-@Composable
-fun ErrorBox(modifier: Modifier = Modifier) {
-
-    Box(
-        modifier = modifier
-            .border(
-                border = BorderStroke(
-                    1.dp,
-                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.3f),
-                ),
-                shape = RoundedCornerShape(16.dp)
-            )
-            .background(
-                MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(16.dp)
-            )
-    )
-    {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Image(
-                painterResource(R.drawable.no_internet),
-                contentDescription = "No internet icon",
-                modifier = Modifier.padding(top = 27.dp, bottom = 27.dp)
-            )
-            Text(
-                "Unable to reach NASA archivhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhe.",
-                color = MaterialTheme.colorScheme.onSecondary,
-                style = MaterialTheme.typography.labelSmall,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.W400,
-                modifier = Modifier.weight(1f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-
-            Button(
-                onClick = {},
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.25f),
-                    contentColor = MaterialTheme.colorScheme.onError
-                ),
-
-                ) {
-                Icon(
-                    painter = painterResource(R.drawable.reload_icon),
-                    contentDescription = null,
-                    modifier = Modifier.size(12.dp)
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    "Retry",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.W500
-                )
-
-            }
-        }
-    }
-}

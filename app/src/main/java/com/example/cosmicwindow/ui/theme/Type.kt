@@ -53,13 +53,13 @@ val Typography = Typography(
         fontSize = 16.sp,
         lineHeight = 26.sp
     ),
-    bodyMedium = TextStyle(               // "Today in Space • ...", video description, card titles
+    bodyMedium = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.W400,
         fontSize = 14.sp,
         lineHeight = 20.sp
     ),
-    bodySmall = TextStyle(                // "Yesterday", error text, "Image Credit...", footer pill
+    bodySmall = TextStyle(
         fontFamily = Inter,
         fontWeight = FontWeight.W400,
         fontSize = 12.sp,
