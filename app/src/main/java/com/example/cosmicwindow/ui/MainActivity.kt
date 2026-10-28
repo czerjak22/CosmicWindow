@@ -35,7 +35,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+
+        )
         setContent {
             CosmicWindowTheme {
                 var showDatePicker by remember { mutableStateOf(false) }

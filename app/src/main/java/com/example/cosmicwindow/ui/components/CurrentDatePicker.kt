@@ -17,7 +17,10 @@ fun CurrentDatePicker(
     onDismiss: () -> Unit
 ) {
     val state = rememberDatePickerState(
-        initialSelectedDateMillis = System.currentTimeMillis()
+        initialSelectedDateMillis = LocalDate.now()
+            .atStartOfDay(ZoneOffset.UTC)
+            .toInstant()
+            .toEpochMilli()
     )
 
     DatePickerDialog(
