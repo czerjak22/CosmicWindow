@@ -3,6 +3,7 @@ package com.example.cosmicwindow.feature.today
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,6 +45,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,7 +56,7 @@ import com.example.cosmicwindow.R
 import com.example.cosmicwindow.utils.Spacing
 import com.example.cosmicwindow.ui.components.CircleIconButton
 import com.example.cosmicwindow.ui.components.ErrorBox
-
+import com.example.cosmicwindow.utils.RadiusSize
 
 @Composable
 fun TodayScreen(
@@ -61,58 +65,155 @@ fun TodayScreen(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Column(modifier = modifier.padding(start = Spacing.s16, end = Spacing.s16, top = Spacing.s4)) {
+    Column(
+        modifier = modifier
+        // .padding(start = Spacing.s16, end = Spacing.s16, top = Spacing.s4)
+    ) {
 
-        TodayInSpace(date = "Oct 24, 2024")
+        TodayInSpace(Modifier.padding(horizontal = Spacing.s16), date = "Oct 24, 2024")
         if (uiState.error != null) {
 
             ErrorBox(
-                modifier = Modifier.padding(top = Spacing.s4,bottom = Spacing.s16),
-                text = "Unable to reach NASA archive. Check connection.",
-                onClick = {})
-        }
-        else {
+                modifier = Modifier.padding(
+                    top = Spacing.s4,
+                    bottom = Spacing.s16,
+                    start = Spacing.s16,
+                    end = Spacing.s16,
+                ), text = "Unable to reach NASA archive. Check connection.", onClick = {})
+        } else {
             Spacer(Modifier.height(Spacing.s8))
         }
         Column(
             modifier = Modifier.verticalScroll((rememberScrollState())),
-            verticalArrangement = Arrangement.spacedBy(Spacing.s16)
+            verticalArrangement = Arrangement.spacedBy(Spacing.s24)
         ) {
-            Apod()
-            PastApodEntryText()
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.s16)
-            ) {
-                items(10) {
-                    PreviousApodDay(onClick = { viewModel.updateError() })
-                }
-            }
-            Spacer(modifier = Modifier.height(Spacing.s24))
-            FeaturedApodEntryCard()
+            Apod(Modifier.padding(horizontal = Spacing.s16))
+            PreviousApodStripe(Modifier, viewModel)
+            FeaturedApodVideoCard(Modifier.padding(horizontal = Spacing.s16))
+            DataCard(Modifier.padding(horizontal = Spacing.s16))
         }
     }
 }
 
-@Preview
+
 @Composable
-fun FeaturedApodEntryCard(modifier: Modifier = Modifier) {
+fun DataCard(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.background(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(16.dp),
+
+            ),
+        border = BorderStroke(
+            Spacing.border,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+        ),
+        shape = RoundedCornerShape(RadiusSize.r16),
+    ) {
+        Column(
+            Modifier.padding(Spacing.s16),
+
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8)
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.original_icon),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(Spacing.s24)
+                        .padding(end = Spacing.s8)
+                )
+                Text(
+                    "Public NASA Data • APOD Archive",
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 26.sp),
+                    fontWeight = FontWeight.W500,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                )
+            }
+
+            Text(
+                text = "Image Credit: ESA / Hubble, NASA • Processed by Robert Gendler",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Box(
+                Modifier.background(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(RadiusSize.r9999)
+                )
+            ) {
+                Text(
+                    text = "Independent educational explorer • Not affiliated with NASA",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(
+                        start = Spacing.s24,
+                        end = Spacing.s24,
+                        top = Spacing.s6,
+                        bottom = Spacing.s6
+                    )
+                )
+            }
+
+        }
+    }
+}
+
+@Composable
+private fun PreviousApodStripe(modifier: Modifier = Modifier, viewModel: TodayViewModel) {
+    Column(modifier) {
+        PastApodEntryText(
+            Modifier.padding(
+                bottom = Spacing.s8,
+                start = Spacing.s16,
+                end = Spacing.s16,
+            )
+        )
+        LazyRow(
+            modifier = Modifier.padding(start = Spacing.s16, bottom = Spacing.s8),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
+        ) {
+            items(7) {
+                PreviousApodDay(onClick = { viewModel.updateError() })
+            }
+        }
+    }
+}
+
+
+@Composable
+fun FeaturedApodVideoCard(
+    modifier: Modifier = Modifier,
+    videoTitle: String = "Flight Through the Center of the Andromeda Galaxy",
+    videoDescription: String = "This NASA video visualization reconstructs a" + "three-dimensional fly-through of the million-" + "star core of M31 using supercomputer" + "simulation data."
+) {
     Surface(
         modifier = modifier.background(
             color = MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(16.dp)
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(RadiusSize.r16),
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.s16)
+        ) {
             Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp),
+                Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f),
                 ) {
                     Image(
                         painterResource(R.drawable.video_icon),
@@ -120,25 +221,71 @@ fun FeaturedApodEntryCard(modifier: Modifier = Modifier) {
                     )
 
                     Text(
-                        "Featured APOD Video", style = MaterialTheme.typography.headlineSmall
+                        "Featured APOD Video",
+                        style = MaterialTheme.typography.headlineSmall,
+                        maxLines = 1,
                     )
                 }
                 Surface(
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
-                    modifier = Modifier.padding(6.dp)
-
+                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f),
+                    modifier = Modifier.padding(Spacing.s10)
                 ) {
                     Text(
                         text = "External Media",
                         style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                         fontWeight = FontWeight.W500,
+                        maxLines = 1,
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp)
                     )
                 }
             }
-            VideoThumbnailCard()
+
+            VideoThumbnailCard(modifier = Modifier.padding(bottom = Spacing.s8))
+            Text(
+                videoTitle,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = Spacing.s8)
+            )
+            Text(
+                videoDescription,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = Spacing.s8)
+            )
+            Button(
+                {}, colors = ButtonDefaults.buttonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ), border = BorderStroke(
+                    Spacing.border,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                ), shape = RoundedCornerShape(RadiusSize.r12)
+
+            ) {
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        "Open video in browser",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(
+                            end = Spacing.s8, top = Spacing.s10, bottom = Spacing.s10
+                        )
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.open_elsewhere_icon),
+                        contentDescription = "Open in external player",
+                        Modifier.size(Spacing.s12)
+                    )
+
+                }
+            }
         }
     }
 }
@@ -146,7 +293,9 @@ fun FeaturedApodEntryCard(modifier: Modifier = Modifier) {
 
 @Composable
 fun VideoThumbnailCard(
-    videoUrl: String = "", modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    videoUrl: String = "youtube://igen.text",
+    videoDetails: String = "03:42 • 4K Ultra HD",
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -154,9 +303,9 @@ fun VideoThumbnailCard(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(16f / 9f)
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { uriHandler.openUri(videoUrl) }) {
-
+            .clip(RoundedCornerShape(RadiusSize.r12))
+        // .clickable { uriHandler.openUri(videoUrl)}
+    ) {
         Image(
             painterResource(R.drawable.orion_nebula),
             contentDescription = "Video thumbnail",
@@ -169,22 +318,28 @@ fun VideoThumbnailCard(
                 .matchParentSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                        )
                     )
                 )
         )
 
+
         Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(64.dp)
-                .background(Color(0xFF38BDF8), CircleShape), contentAlignment = Alignment.Center
+            modifier = Modifier.run {
+                align(Alignment.Center)
+                    .size(Spacing.s56)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary, shape = CircleShape
+                    )
+            }, contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
+            Image(
+                painter = painterResource(R.drawable.play_icon),
                 contentDescription = "Play",
-                tint = Color(0xFF0F172A),
-                modifier = Modifier.size(36.dp)
             )
         }
 
@@ -193,29 +348,30 @@ fun VideoThumbnailCard(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(
+                    start = Spacing.s12, end = Spacing.s12, bottom = Spacing.s10
+                ),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+            verticalAlignment = Alignment.CenterVertically,
+
+            ) {
             Text(
-                "03:42 • 4K Ultra HD",
-                color = Color.White,
-                style = MaterialTheme.typography.labelMedium
+                videoDetails,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.bodySmall
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(
-                    Icons.Default.OpenInNew,
+                Image(
+                    painter = painterResource(R.drawable.open_elsewhere_icon),
                     null,
-                    tint = Color.White,
-                    modifier = Modifier.size(14.dp)
                 )
                 Text(
                     "YouTube / APOD",
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelMedium
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }
@@ -227,14 +383,23 @@ fun PastApodEntryText(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
+        Image(
+
+            painter = painterResource(
+                R.drawable.table_icon
+            ),
+            contentDescription = null,
+        )
         Text(
             "Previous 7 days",
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.W600
+
         )
+        Spacer(Modifier.weight(1f))
         Text(
             "Past APOD Entries",
             color = MaterialTheme.colorScheme.onSecondary,

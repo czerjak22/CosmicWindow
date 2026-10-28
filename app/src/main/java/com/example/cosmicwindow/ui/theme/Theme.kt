@@ -24,10 +24,43 @@ private val DarkColorScheme = darkColorScheme(
     secondaryContainer = Color(0xFF242A3A),
     //onSecondaryContainer = Color(0xFFE2E6F0),
 
-    tertiary = Color(0xFFF5B342),
-    onTertiary = Color(0xFF3B2600),
-    tertiaryContainer = Color(0xFF4A3410),
-    onTertiaryContainer = Color(0xFFFFD58A),
+    //tertiary = Color(0xFFEE9800),
+    //onTertiary = Color(0xFFFFB95F),
+    tertiaryContainer = Color(0xFFEE9800),
+    onTertiaryContainer = Color(0xFFFFB95F),
+
+    error = Color(0xFF93000A),
+    onError = Color(0xFFFFB4AB),
+//    errorContainer = Color(0xFF93000A),
+//    onErrorContainer = Color(0xFFFFDAD6),
+
+    background = Color(0xFF0D1322),
+    onBackground = Color(0xFFDDE2F8),
+    surface = Color(0xFF151B2B),
+    onSurface = Color(0xFFBDC8D1),
+    surfaceVariant = Color(0xFF191F2F),
+    onSurfaceVariant = Color(0xFF87929A),
+
+    outline = Color(0xFF3E484F),
+    //outlineVariant = Color(0xFFFFFFFF),
+)
+
+private val LightColorScheme = lightColorScheme(
+
+    primary = Color(0xFF38BDF8),
+    onPrimary = Color(0xFF004965),
+    primaryContainer = Color(0xFF080E1D),
+    onPrimaryContainer = Color(0xFF8ED5FF),
+
+    secondary = Color(0xFF151B2B),
+    onSecondary = Color(0xFFBDC8D1),
+    secondaryContainer = Color(0xFF242A3A),
+    //onSecondaryContainer = Color(0xFFE2E6F0),
+
+    //tertiary = Color(0xFFEE9800),
+    //onTertiary = Color(0xFFFFB95F),
+    tertiaryContainer = Color(0xFFEE9800),
+    onTertiaryContainer = Color(0xFFFFB95F),
 
     error = Color(0xFF93000A),
     onError = Color(0xFFFFB4AB),
@@ -43,22 +76,6 @@ private val DarkColorScheme = darkColorScheme(
 
     outline = Color(0xFF3E484F),
     //outlineVariant = Color(0xFFFFFFFF),
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = LightBlue,
-    secondary = Amber,
-    tertiary = Purple
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
 )
 
 @Composable

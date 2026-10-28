@@ -18,6 +18,7 @@ room = "3.0.3"
 androidx-hilt = "1.4.0"
 splashScreen = "1.2.0"
 material3 = "1.4.0"
+foundation = "1.12.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,6 +56,7 @@ hilt-lifecycle-viewmodel-compose = { module = "androidx.hilt:hilt-lifecycle-view
 # Splash screem
 splash-screen= {module = "androidx.core:core-splashscreen" ,version.ref = "splashScreen" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
