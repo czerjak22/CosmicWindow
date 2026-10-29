@@ -31,29 +31,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             CosmicWindowTheme {
-                var showDatePicker by remember { mutableStateOf(false) }
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    topBar = {
-                        AppHeader(
-                            modifier = Modifier,
-                            leftIcon = R.drawable.header_image,
-                            rightButtonIcon = R.drawable.calendar_icon,
-                            onClick = { showDatePicker = true },
-                        )
-                    }
-                ) { innerPadding ->
-
-                    if (showDatePicker) {
-                        CurrentDatePicker(
-                            onDateSelected = { date -> Log.w("debug", "Date selected $date") },
-                            onDismiss = { showDatePicker = false }
-                        )
-                    }
-                    TodayScreen(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                TodayScreen()
             }
         }
     }
