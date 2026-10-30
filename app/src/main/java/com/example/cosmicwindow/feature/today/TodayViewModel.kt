@@ -26,50 +26,52 @@ class TodayViewModel @Inject constructor(
     }
 
     init {
-
         getCurrentApods()
     }
 
     fun getCurrentApods() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val apods = apodRepository.getApodWeek()
-            val videoApod = searchForFirstVideoApod(apods)
-            if(apods.isNotEmpty()) {
-                Log.w("debug", " got ${apods.size} First apod: ${apods.first()}")
-            }
-            else
-            {
-                Log.e("debug", " got ${apods.size}: Apods are empty")
-            }
-            _uiState.update {
-                it.copy(
-                    apods = apods,
-                    error = null,
-                    featuredVideoApod = videoApod,
-                    isLoading = false
-                )
-            }
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            val apods = apodRepository.getApodWeek(_uiState.value.selectedDate).fold(
+                onSuccess = { apods ->
+                    if (apods.isNotEmpty()) {
+                        Log.w("debug", " got ${apods.size} First apod: ${apods.first()}")
+                    } else {
+                        Log.e("debug", "Apods are empty!")
+                    }
+                    val videoApod = searchForFirstVideoApod(apods)
+                    _uiState.update {
+                        it.copy(
+                            apods = apods,
+                            error = null,
+                            featuredVideoApod = videoApod,
+                            isLoading = false
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(
+                            error = error.message,
+                            isLoading = false
+                        )
+                    }
+                }
+            )
         }
     }
+
 
     fun updateCurretDay(newDate: LocalDate) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val newApods = apodRepository.getApodWeek(newDate)
-            val videoApod = searchForFirstVideoApod(newApods)
-            _uiState.update {
-                it.copy(
-                    apods = newApods,
-                    selectedDate = newDate,
-                    featuredVideoApod = videoApod,
-                    isLoading = false
-                )
-            }
-            Log.w("debug", "Updated selected date to: $newDate")
+        _uiState.update {
+            it.copy(
+                selectedDate = newDate,
+            )
         }
-
+        Log.w("debug", "Updated selected date to: $newDate")
+        getCurrentApods()
     }
+
 
     private fun searchForFirstVideoApod(apods: List<Apod>): Apod? {
         return apods.stream().filter { it.mediaType == Mediatype.VIDEO }.findFirst().orElse(null);

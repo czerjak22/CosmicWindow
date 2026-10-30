@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +62,7 @@ import com.example.cosmicwindow.ui.components.CurrentDatePicker
 import com.example.cosmicwindow.ui.components.ErrorBox
 import com.example.cosmicwindow.ui.theme.RadiusSize
 import com.example.cosmicwindow.utils.getDayTextSince
+import com.example.cosmicwindow.utils.shareLink
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -70,7 +72,7 @@ fun TodayScreen(
 
     var showDatePicker by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
+    val context = LocalContext.current
     Scaffold(
         modifier = Modifier.fillMaxSize(), topBar = {
             AppHeader(
@@ -105,30 +107,21 @@ fun TodayScreen(
                         bottom = Spacing.s16,
                         start = Spacing.s16,
                         end = Spacing.s16,
-                    ), text = uiState.error!!, onClick = {})
+                    ),
+                    text = uiState.error!!,
+                    onClick = viewModel::getCurrentApods,
+                )
             } else {
                 Spacer(Modifier.height(Spacing.s8))
             }
             if (uiState.isLoading) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
-
-            if (!uiState.isLoading && uiState.apods.isEmpty()) {
-                ErrorBox(
-                    modifier = Modifier.padding(
-                        top = Spacing.s4,
-                        bottom = Spacing.s16,
-                        start = Spacing.s16,
-                        end = Spacing.s16,
-                    ),
-                    text = "Something went wrong with getteing data",
-                    //TODO az isloadingot majd resetaljam itt
-                    //TODO Error kezeles internet nelkul crashel
-                    onClick = viewModel::getCurrentApods
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Spacing.s8)
                 )
-
-                return@Scaffold
             }
+
 
             Column(
                 modifier = Modifier.verticalScroll((rememberScrollState())),
@@ -144,7 +137,10 @@ fun TodayScreen(
                     return@Scaffold
                 }
 
-                CurrentApod(Modifier.padding(horizontal = Spacing.s16), uiState.apods.first())
+                CurrentApod(
+                    modifier = Modifier.padding(horizontal = Spacing.s16),
+                    apod = uiState.apods.first(),
+                    onShareClick = { context.shareLink(uiState.apods.first().permalink) })
                 PreviousApodStripe(Modifier, apods = uiState.apods, onClick = {})
                 if (uiState.featuredVideoApod != null) {
                     FeaturedApodVideoCard(
@@ -154,7 +150,7 @@ fun TodayScreen(
                     )
                 }
                 //TODO megkerdezni hogy mit csinaljak
-                DataCard(Modifier.padding(horizontal = Spacing.s16))
+                DataCard(Modifier.padding(horizontal = Spacing.s16), apod = uiState.apods.first())
             }
         }
 
@@ -162,7 +158,10 @@ fun TodayScreen(
 }
 
 @Composable
-fun DataCard(modifier: Modifier = Modifier) {
+fun DataCard(
+    modifier: Modifier = Modifier,
+    apod: Apod,
+) {
     Surface(
         modifier = modifier.background(
             color = MaterialTheme.colorScheme.primaryContainer,
@@ -176,8 +175,8 @@ fun DataCard(modifier: Modifier = Modifier) {
     ) {
         Column(
             Modifier.padding(Spacing.s16),
-
-            verticalArrangement = Arrangement.spacedBy(Spacing.s8)
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
                 Modifier.fillMaxWidth(),
@@ -200,7 +199,7 @@ fun DataCard(modifier: Modifier = Modifier) {
             }
 
             Text(
-                text = "Image Credit: ESA / Hubble, NASA • Processed by Robert Gendler",
+                text = "Image Credit: ${apod.credit}",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -541,7 +540,7 @@ fun CurrentApod(
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    apod.credit,
+                    apod.copyright ?: apod.credit,
                     color = MaterialTheme.colorScheme.onSecondary,
                     style = MaterialTheme.typography.bodyMedium,
                 )
