@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.mappie)
 }
 
 android {
@@ -61,16 +63,26 @@ dependencies {
     // Retrofit
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.okhttp.logging)
     // Room
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
 
     // Hilt
-     implementation(libs.hilt.android)
-     ksp(libs.hilt.compiler)
-     implementation(libs.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
     // splash
     implementation(libs.splash.screen)
+    //mapper
+    implementation(libs.mappie.api)
+    //htmlParser
+    implementation(libs.jsoup)
+    //async image loader
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
