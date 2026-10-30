@@ -28,12 +28,23 @@ class ApodRepository @Inject constructor(
             Log.e("Repository", ex.toString())
             return Result.failure(ex);
         }
-
     }
 
-    suspend fun getApod(localDate: LocalDate = LocalDate.now()): Apod {
-        val startDate = localDate.format(DateTimeFormatter.ofPattern("yyMMdd"))
-        return ApodMapper.map(apodApi.getApodByDate(startDate))
+    suspend fun getApod(localDate: LocalDate = LocalDate.now()): Result<Apod> {
+        try {
+            val startDate = localDate.format(DateTimeFormatter.ofPattern("yyMMdd"))
+            return Result.success(
+                ApodMapper.map(
+                    apodApi.getApodByDate(startDate)
+                )
+            )
+        } catch (ex: UnknownHostException) {
+            Log.e("Repository", ex.toString())
+            return Result.failure(RepositoryException("No internet connection, please retry when online"));
+        } catch (ex: Exception) {
+            Log.e("Repository", ex.toString())
+            return Result.failure(ex);
+        }
     }
 
 }

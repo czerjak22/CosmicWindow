@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.cosmicwindow.feature.navigation.Navigation
 import com.example.cosmicwindow.feature.today.TodayScreen
 import com.example.cosmicwindow.ui.components.AppHeader
 import com.example.cosmicwindow.ui.components.CurrentDatePicker
@@ -31,7 +32,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             CosmicWindowTheme {
-                TodayScreen()
+                Navigation()
             }
         }
     }

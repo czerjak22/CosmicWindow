@@ -67,7 +67,8 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun TodayScreen(
-    modifier: Modifier = Modifier, viewModel: TodayViewModel = hiltViewModel()
+    modifier: Modifier = Modifier, viewModel: TodayViewModel = hiltViewModel(),
+    onApodClick: (Apod) -> Unit,
 ) {
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -140,8 +141,10 @@ fun TodayScreen(
                 CurrentApod(
                     modifier = Modifier.padding(horizontal = Spacing.s16),
                     apod = uiState.apods.first(),
-                    onShareClick = { context.shareLink(uiState.apods.first().permalink) })
-                PreviousApodStripe(Modifier, apods = uiState.apods, onClick = {})
+                    onShareClick = { context.shareLink(uiState.apods.first().permalink) },
+                    onReadClick = onApodClick,
+                )
+                PreviousApodStripe(Modifier, apods = uiState.apods, onClick = onApodClick)
                 if (uiState.featuredVideoApod != null) {
                     FeaturedApodVideoCard(
                         Modifier.padding(horizontal = Spacing.s16),
@@ -231,7 +234,7 @@ fun DataCard(
 
 @Composable
 private fun PreviousApodStripe(
-    modifier: Modifier = Modifier, apods: List<Apod>, onClick: () -> Unit
+    modifier: Modifier = Modifier, apods: List<Apod>, onClick: (Apod) -> Unit
 ) {
     Column(modifier) {
         PastApodEntryText(
@@ -246,7 +249,7 @@ private fun PreviousApodStripe(
             horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
         ) {
             items(apods.size - 1) {
-                PreviousApodDay(apod = apods[it + 1], onClick = onClick)
+                PreviousApodDay(apod = apods[it + 1], onClick = { onClick(apods[it + 1]) })
             }
         }
     }
@@ -482,7 +485,7 @@ fun PastApodEntryText(modifier: Modifier = Modifier) {
 fun CurrentApod(
     modifier: Modifier = Modifier,
     apod: Apod,
-    onReadClick: () -> Unit = {},
+    onReadClick: (Apod) -> Unit = {},
     onBookmarkClick: () -> Unit = {},
     onShareClick: () -> Unit = {}
 ) {
@@ -567,7 +570,7 @@ fun CurrentApod(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = onReadClick,
+                    onClick = { onReadClick(apod) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
