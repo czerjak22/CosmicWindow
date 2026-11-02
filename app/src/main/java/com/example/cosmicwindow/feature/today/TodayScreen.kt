@@ -45,7 +45,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -56,11 +58,13 @@ import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.ui.components.AppHeader
-import com.example.cosmicwindow.ui.theme.Spacing
 import com.example.cosmicwindow.ui.components.CircleIconButton
 import com.example.cosmicwindow.ui.components.CurrentDatePicker
 import com.example.cosmicwindow.ui.components.ErrorBox
+import com.example.cosmicwindow.ui.components.ExternalLinkOpenerButton
+import com.example.cosmicwindow.ui.components.VideoPlayer
 import com.example.cosmicwindow.ui.theme.RadiusSize
+import com.example.cosmicwindow.ui.theme.Spacing
 import com.example.cosmicwindow.utils.getDayTextSince
 import com.example.cosmicwindow.utils.shareLink
 import java.time.format.DateTimeFormatter
@@ -152,7 +156,6 @@ fun TodayScreen(
                         //onClick = {},
                     )
                 }
-                //TODO megkerdezni hogy mit csinaljak
                 DataCard(Modifier.padding(horizontal = Spacing.s16), apod = uiState.apods.first())
             }
         }
@@ -202,7 +205,7 @@ fun DataCard(
             }
 
             Text(
-                text = "Image Credit: ${apod.credit}",
+                text = AnnotatedString.fromHtml("Image Credit: ${apod.credit}"),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -245,11 +248,17 @@ private fun PreviousApodStripe(
             )
         )
         LazyRow(
-            modifier = Modifier.padding(start = Spacing.s16, bottom = Spacing.s8),
+            modifier = Modifier.padding(bottom = Spacing.s8),
             horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
         ) {
+            item {
+                Spacer(Modifier.width(Spacing.s16))
+            }
             items(apods.size - 1) {
                 PreviousApodDay(apod = apods[it + 1], onClick = { onClick(apods[it + 1]) })
+            }
+            item {
+                Spacer(Modifier.width(Spacing.s16))
             }
         }
     }
@@ -264,8 +273,10 @@ fun FeaturedApodVideoCard(
     val videoHandler = LocalUriHandler.current;
     Surface(
         modifier = modifier.background(
-            color = MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(16.dp)
+            color = MaterialTheme.colorScheme.secondary,
+            shape = RoundedCornerShape(16.dp),
         ),
+        border = BorderStroke(Spacing.border, MaterialTheme.colorScheme.outline),
         shape = RoundedCornerShape(RadiusSize.r16),
     ) {
         Column(
@@ -310,10 +321,19 @@ fun FeaturedApodVideoCard(
                 }
             }
 
-            VideoThumbnailCard(
-                modifier = Modifier.padding(bottom = Spacing.s8),
-                apod = apod,
-                onClick = { videoHandler.openUri(apod.videoUrl ?: apod.hdurl ?: apod.url) })
+//            VideoThumbnailCard(
+//                modifier = Modifier.padding(bottom = Spacing.s8),
+//                apod = apod,
+//                onClick = { videoHandler.openUri(apod.videoUrl ?: apod.hdurl ?: apod.url) })
+//           
+            VideoPlayer(
+                modifier = Modifier
+                    .padding(bottom = Spacing.s8)
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f)
+                    .clip(RoundedCornerShape(RadiusSize.r12)),
+                videoUri = apod.videoUrl!!,
+            )
             Text(
                 apod.title,
                 style = MaterialTheme.typography.headlineSmall,
@@ -321,45 +341,17 @@ fun FeaturedApodVideoCard(
                 modifier = Modifier.padding(bottom = Spacing.s8)
             )
             Text(
-                apod.alt,
+                AnnotatedString.fromHtml(apod.alt),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = Spacing.s8)
             )
 
-            Button(
-                onClick = {
-                    videoHandler.openUri(apod.permalink)
-                }, colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ), border = BorderStroke(
-                    Spacing.border,
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                ), shape = RoundedCornerShape(RadiusSize.r12)
-
-            ) {
-
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        "Open video in browser",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(
-                            end = Spacing.s8, top = Spacing.s10, bottom = Spacing.s10
-                        )
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.open_elsewhere_icon),
-                        contentDescription = "Open in external player",
-                        Modifier.size(Spacing.s12)
-                    )
-
-                }
-            }
+            ExternalLinkOpenerButton(
+                modifier = Modifier.fillMaxWidth(),
+                videoHandler = videoHandler,
+                url = apod.permalink,
+            )
         }
     }
 }
@@ -426,9 +418,8 @@ fun VideoThumbnailCard(
             verticalAlignment = Alignment.CenterVertically,
 
             ) {
-            //TODO mit csinaljak kerdezzem meg
             Text(
-                "honnan?",
+                "3:00 |4k/fullHd",
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -543,7 +534,7 @@ fun CurrentApod(
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    apod.copyright ?: apod.credit,
+                    AnnotatedString.fromHtml(apod.copyright ?: apod.credit),
                     color = MaterialTheme.colorScheme.onSecondary,
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -556,7 +547,7 @@ fun CurrentApod(
             )
 
             Text(
-                apod.alt,
+                AnnotatedString.fromHtml(apod.alt),
                 color = MaterialTheme.colorScheme.onSecondary,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
@@ -591,8 +582,16 @@ fun CurrentApod(
                     )
                 }
 
-                CircleIconButton(R.drawable.bookmark_icon, "Bookmark", onBookmarkClick)
-                CircleIconButton(R.drawable.share_icon, "Share", onShareClick)
+                CircleIconButton(
+                    icon = R.drawable.bookmark_icon,
+                    description = "Bookmark",
+                    onClick = onBookmarkClick
+                )
+                CircleIconButton(
+                    icon = R.drawable.share_icon,
+                    description = "Share",
+                    onClick = onShareClick
+                )
             }
         }
     }

@@ -11,9 +11,9 @@ import tech.mappie.api.ObjectMappie
 
 object ApodMapper : ObjectMappie<ApodDto, Apod>() {
     override fun map(from: ApodDto) = mapping {
-        to::credit fromProperty from::credit transform { it.stripHtml() }
-        to::copyright fromProperty from::copyright transform { it.stripHtml() }
-        to::explanation fromProperty from::explanation transform { it.stripHtml() }
+       //to::credit fromProperty from::credit transform { it.stripHtml() }
+        //to::copyright fromProperty from::copyright transform { it.stripHtml() }
+        //to::explanation fromProperty from::explanation transform { it.stripHtml() }
         to::mediaType fromProperty from::mediaType transform {
             when (it) {
                 "video" -> Mediatype.VIDEO

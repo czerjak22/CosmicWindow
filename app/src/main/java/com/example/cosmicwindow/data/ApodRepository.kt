@@ -15,12 +15,22 @@ import java.time.format.DateTimeFormatter
 class ApodRepository @Inject constructor(
     val apodApi: ApodApi,
 ) {
+
+    val explanationPrefix = Regex(
+        """^\s*(<[^>]+>\s*)*Explanation\s*:?\s*(</[^>]+>\s*)*:?\s*""",
+        RegexOption.IGNORE_CASE
+    )
+
     suspend fun getApodWeek(localDate: LocalDate = LocalDate.now()): Result<List<Apod>> {
         try {
             val startDate = localDate.format(DateTimeFormatter.ofPattern("yyMMdd"))
             val endDate = localDate.minusDays(7).format(DateTimeFormatter.ofPattern("yyMMdd"))
             return Result.success(
-                apodApi.getApodRange(startDate, endDate).map { ApodMapper.map(it) })
+                apodApi.getApodRange(startDate, endDate).map { ApodMapper.map(it) }.map {
+                    it.copy(
+                        explanation = it.explanation.replace(explanationPrefix, "").trim()
+                    )
+                })
         } catch (ex: UnknownHostException) {
             Log.e("Repository", ex.toString())
             return Result.failure(RepositoryException("No internet connection, please retry when online"));
@@ -33,10 +43,12 @@ class ApodRepository @Inject constructor(
     suspend fun getApod(localDate: LocalDate = LocalDate.now()): Result<Apod> {
         try {
             val startDate = localDate.format(DateTimeFormatter.ofPattern("yyMMdd"))
+            val apod = ApodMapper.map(
+                apodApi.getApodByDate(startDate)
+            )
+
             return Result.success(
-                ApodMapper.map(
-                    apodApi.getApodByDate(startDate)
-                )
+                apod.copy(explanation = apod.explanation.replace(explanationPrefix, "").trim())
             )
         } catch (ex: UnknownHostException) {
             Log.e("Repository", ex.toString())
@@ -46,5 +58,6 @@ class ApodRepository @Inject constructor(
             return Result.failure(ex);
         }
     }
+
 
 }

@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.media3.ui)
     testImplementation(libs.junit)
     //project
 
@@ -82,7 +83,9 @@ dependencies {
     //async image loader
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
-
+//exo player
+    implementation(libs.exoplayer)
+    implementation(libs.exo.ui.compose)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -24,6 +24,14 @@ val Inter = FontFamily(
 
 val Typography = Typography(
 
+    titleLarge = TextStyle(
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.W600,
+        fontSize = 30.sp,
+        lineHeight = 38.sp,
+        letterSpacing = (-0.75).sp
+    ),
+
     headlineLarge = TextStyle(
         fontFamily = SpaceGrotesk,
         fontWeight = FontWeight.W600,

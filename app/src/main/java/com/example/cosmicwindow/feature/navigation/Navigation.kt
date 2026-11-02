@@ -29,7 +29,9 @@ fun Navigation(modifier: Modifier = Modifier) {
             Routes.apodDetail,
             arguments = listOf(navArgument("date") { type = NavType.StringType })
         ) {
-            ApodDetailsScreen()
+            ApodDetailsScreen(
+                onClickBack = { navController.popBackStack() }
+            )
         }
 
     }
