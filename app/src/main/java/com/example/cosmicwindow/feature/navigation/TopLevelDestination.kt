@@ -9,6 +9,6 @@ enum class TopLevelDestination(
     @DrawableRes  val icon: Int,
 ) {
     TODAY(Routes.today, "Today", R.drawable.today_icon),
-    EARTH(Routes.earth, "Earth", R.drawable.external_player_icon ),
+    EARTH(Routes.earth, "Earth", R.drawable.earth_icon ),
     EXPLORE(Routes.explore, "Explore", R.drawable.explore_icon),
 }
