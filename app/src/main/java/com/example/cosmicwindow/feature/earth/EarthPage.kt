@@ -127,10 +127,12 @@ fun ControlCard(
                     )
                 }
                 Spacer(Modifier.weight(1f))
-                Surface(color = MaterialTheme.colorScheme.tertiary) {
+                Surface(color = MaterialTheme.colorScheme.tertiary,
+                    shape = RoundedCornerShape(RadiusSize.r9999)) {
                     Row(
                         Modifier.padding(horizontal = Spacing.s12, vertical = Spacing.s6),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.s4)
                     ) {
                         Image(
                             painterResource(R.drawable.accent_dot),
@@ -139,6 +141,7 @@ fun ControlCard(
                         Text(
                             "Frame $index of $totalSize",
                             style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.W200,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
@@ -146,8 +149,8 @@ fun ControlCard(
             }
 
             FrameSlider(
-                frameCount = 13,
-                currentIndex = 2,
+                frameCount = totalSize,
+                currentIndex = index,
                 onFrameSelected = {  }
             )
 
