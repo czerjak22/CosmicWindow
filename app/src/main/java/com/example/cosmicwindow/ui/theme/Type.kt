@@ -21,6 +21,11 @@ val Inter = FontFamily(
     Font(R.font.inter_medium, FontWeight.Medium),
     Font(R.font.inter_bold, FontWeight.Bold),
 )
+val liberationMono = FontFamily(
+    Font(R.font.liberationmono_regular, FontWeight.Normal),
+    Font(R.font.liberationmono_bold_italic, FontWeight.Medium),
+    Font(R.font.liberationmono_bold, FontWeight.Bold),
+)
 
 val Typography = Typography(
 
@@ -74,5 +79,26 @@ val Typography = Typography(
         fontSize = 12.sp,
         lineHeight = 16.sp
     ),
+
+//    labelLarge = TextStyle(
+//        fontFamily = liberationMono,
+//        fontWeight = FontWeight.W400,
+//        fontSize = 12.sp,
+//        lineHeight = 16.sp
+//    ),
+//    labelMedium = TextStyle(
+//        fontFamily = liberationMono,
+//        fontWeight = FontWeight.W400,
+//        fontSize = 12.sp,
+//        lineHeight = 16.sp
+//    ),
+
+    labelSmall = TextStyle(
+        fontFamily = liberationMono,
+        fontWeight = FontWeight.W500,
+        fontSize = 11.sp,
+        lineHeight = 16.sp
+    )
+
 
 )

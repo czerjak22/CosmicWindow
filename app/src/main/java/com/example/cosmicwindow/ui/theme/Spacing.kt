@@ -3,8 +3,8 @@ package com.example.cosmicwindow.ui.theme
 import androidx.compose.ui.unit.dp
 
 object Spacing {
-    val border= 1.dp
-    
+    val border = 1.dp
+
     val xs = 4.dp
     val sm = 8.dp
     val md = 16.dp
@@ -24,6 +24,8 @@ object Spacing {
     val s22 = 22.dp
     val s24 = 24.dp
     val s28 = 28.dp
+
+
     val s48 = 48.dp
     val s56 = 56.dp
 

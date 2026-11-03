@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -60,6 +61,7 @@ import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.ui.components.AppHeader
 import com.example.cosmicwindow.ui.components.CircleIconButton
 import com.example.cosmicwindow.ui.components.CurrentDatePicker
+import com.example.cosmicwindow.ui.components.CustomPlayButton
 import com.example.cosmicwindow.ui.components.ErrorBox
 import com.example.cosmicwindow.ui.components.ExternalLinkOpenerButton
 import com.example.cosmicwindow.ui.components.VideoPlayer
@@ -85,8 +87,16 @@ fun TodayScreen(
             AppHeader(
                 modifier = Modifier,
                 leftIcon = R.drawable.header_image,
-                rightButtonIcon = R.drawable.calendar_icon,
                 onClick = { showDatePicker = true },
+                leftIconComposable = {
+                    Icon(
+                        painterResource(R.drawable.calendar_icon),
+                        contentDescription = "Day set icon",
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                    )
+                },
+                mainTitle = "Cosmic Window",
+                secondaryTitle = "ASTRONOMY PICTURE OF THE DAY"
             )
         }) { innerPadding ->
 
@@ -392,23 +402,7 @@ fun VideoThumbnailCard(
                     )
                 )
         )
-
-        Box(
-            modifier = Modifier.run {
-                align(Alignment.Center)
-                    .size(Spacing.s56)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary, shape = CircleShape
-                    )
-            }, contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(R.drawable.play_icon),
-                contentDescription = "Play",
-            )
-        }
-
-
+        CustomPlayButton(modifier = Modifier.align(Alignment.Center))
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -442,6 +436,7 @@ fun VideoThumbnailCard(
         }
     }
 }
+
 
 @Composable
 fun PastApodEntryText(modifier: Modifier = Modifier) {

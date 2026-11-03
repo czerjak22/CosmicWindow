@@ -24,7 +24,7 @@ fun CircleIconButton(
     backgroundColor: Color = MaterialTheme.colorScheme.secondaryContainer,
     foregroundColor: Color = MaterialTheme.colorScheme.onSecondary,
     size: Dp = Spacing.s48,
-
+    iconSize:Dp= Spacing.s20
     ) {
     IconButton(
         onClick = onClick,
@@ -37,7 +37,7 @@ fun CircleIconButton(
         Icon(
             painterResource(icon),
             contentDescription = description,
-            modifier = Modifier.size(Spacing.s20)
+            modifier = Modifier.size(iconSize)
         )
     }
 }

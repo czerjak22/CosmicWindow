@@ -16,15 +16,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.cosmicwindow.ui.theme.Spacing
 
 
 @Composable
 fun AppHeader(
     modifier: Modifier = Modifier,
+    mainTitle: String,
+    secondaryTitle: String,
     leftIcon: Int,
-    rightButtonIcon: Int,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    leftIconModifier: Modifier = Modifier,
+    leftIconSize: Dp = Spacing.s48,
+    leftIconComposable: @Composable () -> Unit,
 ) {
     Row(
         modifier = modifier
@@ -36,36 +42,33 @@ fun AppHeader(
         ) {
         Row(
             Modifier
-                .weight(1f)
-                .padding(start = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = Spacing.s16)
+                .weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
         ) {
             Image(
                 painter = painterResource(leftIcon),
                 contentDescription = "Today Header's icon",
-                modifier = Modifier
-                    .size(48.dp),
+                modifier = leftIconModifier
+                    .size(leftIconSize),
                 // contentScale = ContentScale.Fit
             )
             Column(verticalArrangement = Arrangement.Center) {
                 Text(
-                    "Cosmic Window",
+                    mainTitle,
                     color = MaterialTheme.colorScheme.onBackground,
                     style = MaterialTheme.typography.headlineMedium,
                 )
                 Text(
-                    "ASTRONOMY PICTURE OF THE DAY",
+                    secondaryTitle,
                     color = MaterialTheme.colorScheme.onSecondary,
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
         }
-        IconButton(onClick = onClick, modifier = Modifier.padding(end = 16.dp)) {
-            Icon(
-                painterResource(rightButtonIcon),
-                contentDescription = "Day set icon",
-                tint = MaterialTheme.colorScheme.onSecondary,
-            )
+        IconButton(onClick = onClick) {
+            leftIconComposable()
         }
 
     }

@@ -16,6 +16,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.cosmicwindow.feature.apodDetail.ApodDetailsScreen
+import com.example.cosmicwindow.feature.earth.EarthPage
 import com.example.cosmicwindow.feature.today.TodayScreen
 
 @Composable
@@ -24,15 +25,15 @@ fun Navigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     val topLevelRoutes = remember { TopLevelDestination.entries.map { it.route } }
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute= backStackEntry?.destination?.route
+    val currentRoute = backStackEntry?.destination?.route
     val showBottomBar = currentRoute in topLevelRoutes
     Scaffold(
         bottomBar = {
-             if (showBottomBar) {
-            AppNavigationBar(
-                navController = navController,
-            )
-             }
+            if (showBottomBar) {
+                AppNavigationBar(
+                    navController = navController,
+                )
+            }
         }
     ) { innerPadding ->
         NavHost(
@@ -40,7 +41,7 @@ fun Navigation(modifier: Modifier = Modifier) {
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
             navController = navController,
-            startDestination = Routes.today
+            startDestination = Routes.earth
         ) {
             composable(Routes.today) {
                 TodayScreen(
@@ -56,7 +57,7 @@ fun Navigation(modifier: Modifier = Modifier) {
                 )
             }
             composable(Routes.earth) {
-                Text("EarthPage")
+                EarthPage()
             }
             composable(Routes.explore) {
                 Text("ExplorePage")
