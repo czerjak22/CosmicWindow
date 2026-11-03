@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.utils
+package com.example.cosmicwindow.ui.theme
 
 import androidx.compose.ui.unit.dp
 
