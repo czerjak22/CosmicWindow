@@ -29,7 +29,7 @@ class ApodDetailViewModel @Inject constructor(
 
     fun loadApod() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true,error=null) }
             Log.w("debug", "$date ez amit megkaptam!")
             repo.getApod(date).fold(
                 onSuccess = { newApod ->

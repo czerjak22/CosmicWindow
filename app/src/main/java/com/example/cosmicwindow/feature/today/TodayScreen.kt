@@ -67,6 +67,7 @@ import com.example.cosmicwindow.ui.theme.RadiusSize
 import com.example.cosmicwindow.ui.theme.Spacing
 import com.example.cosmicwindow.utils.getDayTextSince
 import com.example.cosmicwindow.utils.shareLink
+import kotlinx.coroutines.Job
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -78,6 +79,7 @@ fun TodayScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
     Scaffold(
         modifier = Modifier.fillMaxSize(), topBar = {
             AppHeader(

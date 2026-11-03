@@ -56,7 +56,7 @@ fun Navigation(modifier: Modifier = Modifier) {
                 )
             }
             composable(Routes.earth) {
-                Text("EartPage")
+                Text("EarthPage")
             }
             composable(Routes.explore) {
                 Text("ExplorePage")
