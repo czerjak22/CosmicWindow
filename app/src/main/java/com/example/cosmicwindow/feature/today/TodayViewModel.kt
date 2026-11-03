@@ -78,7 +78,7 @@ class TodayViewModel @Inject constructor(
     }
 
     private fun searchForFirstVideoApod(apods: List<Apod>): Apod? {
-        return apods.firstOrNull() { it.mediaType == Mediatype.VIDEO && it.videoUrl == null }
+        return apods.firstOrNull() { it.mediaType == Mediatype.VIDEO && it.videoUrl != null }
 
     }
 
