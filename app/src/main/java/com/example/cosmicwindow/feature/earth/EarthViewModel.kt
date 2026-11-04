@@ -5,6 +5,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 
 @HiltViewModel
-class EarthViewModel @Inject constructor(): ViewModel() {
-
-}
+class EarthViewModel
+    @Inject
+    constructor() : ViewModel()

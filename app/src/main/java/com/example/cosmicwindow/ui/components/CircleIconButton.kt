@@ -1,6 +1,5 @@
 package com.example.cosmicwindow.ui.components
 
-
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -14,7 +13,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import com.example.cosmicwindow.ui.theme.Spacing
 
-
 @Composable
 fun CircleIconButton(
     modifier: Modifier = Modifier,
@@ -24,20 +22,21 @@ fun CircleIconButton(
     backgroundColor: Color = MaterialTheme.colorScheme.secondaryContainer,
     foregroundColor: Color = MaterialTheme.colorScheme.onSecondary,
     size: Dp = Spacing.s48,
-    iconSize:Dp= Spacing.s20
-    ) {
+    iconSize: Dp = Spacing.s20,
+) {
     IconButton(
         onClick = onClick,
         modifier = modifier.size(size),
-        colors = IconButtonDefaults.iconButtonColors(
-            containerColor = backgroundColor,
-            contentColor = foregroundColor,
-        )
+        colors =
+            IconButtonDefaults.iconButtonColors(
+                containerColor = backgroundColor,
+                contentColor = foregroundColor,
+            ),
     ) {
         Icon(
             painterResource(icon),
             contentDescription = description,
-            modifier = Modifier.size(iconSize)
+            modifier = Modifier.size(iconSize),
         )
     }
 }

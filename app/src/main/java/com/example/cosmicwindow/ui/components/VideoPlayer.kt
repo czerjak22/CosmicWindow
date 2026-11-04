@@ -11,20 +11,17 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
 @Composable
-fun VideoPlayer(
-    modifier: Modifier = Modifier,
-    videoUri: String
-) {
+fun VideoPlayer(modifier: Modifier = Modifier, videoUri: String) {
     val context = LocalContext.current
 
-    val exoPlayer = remember(videoUri) {
-        ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(videoUri))
-            prepare()
-            playWhenReady = false
-
+    val exoPlayer =
+        remember(videoUri) {
+            ExoPlayer.Builder(context).build().apply {
+                setMediaItem(MediaItem.fromUri(videoUri))
+                prepare()
+                playWhenReady = false
+            }
         }
-    }
 
     DisposableEffect(exoPlayer) {
         onDispose {
@@ -39,6 +36,6 @@ fun VideoPlayer(
                 player = exoPlayer
                 useController = true
             }
-        }
+        },
     )
 }

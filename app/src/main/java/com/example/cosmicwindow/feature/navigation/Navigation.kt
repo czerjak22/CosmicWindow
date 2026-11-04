@@ -1,6 +1,5 @@
 package com.example.cosmicwindow.feature.navigation
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -21,7 +20,6 @@ import com.example.cosmicwindow.feature.today.TodayScreen
 
 @Composable
 fun Navigation(modifier: Modifier = Modifier) {
-
     val navController = rememberNavController()
     val topLevelRoutes = remember { TopLevelDestination.entries.map { it.route } }
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -34,26 +32,27 @@ fun Navigation(modifier: Modifier = Modifier) {
                     navController = navController,
                 )
             }
-        }
+        },
     ) { innerPadding ->
         NavHost(
-            modifier = modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding),
+            modifier =
+                modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding),
             navController = navController,
-            startDestination = Routes.earth
+            startDestination = Routes.earth,
         ) {
             composable(Routes.today) {
                 TodayScreen(
-                    onApodClick = { apod -> navController.navigate(Routes.apodDetailRoute(apod.date)) }
+                    onApodClick = { apod -> navController.navigate(Routes.apodDetailRoute(apod.date)) },
                 )
             }
             composable(
                 Routes.apodDetail,
-                arguments = listOf(navArgument("date") { type = NavType.StringType })
+                arguments = listOf(navArgument("date") { type = NavType.StringType }),
             ) {
                 ApodDetailsScreen(
-                    onClickBack = { navController.popBackStack() }
+                    onClickBack = { navController.popBackStack() },
                 )
             }
             composable(Routes.earth) {
@@ -65,5 +64,3 @@ fun Navigation(modifier: Modifier = Modifier) {
         }
     }
 }
-
-

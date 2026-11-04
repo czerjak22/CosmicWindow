@@ -26,6 +26,7 @@ jsoup = "1.23.2"
 coil = "3.6.3"
 exo = "1.11.1"
 media3Ui = "1.11.1"
+ktlint = "14.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -86,4 +87,5 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 # mapper
 mappie = { id = "tech.mappie.plugin", version.ref = "mappie" }
-
+# linter
+ktlint = {id ="org.jlleitschuh.gradle.ktlint",version.ref = "ktlint"}

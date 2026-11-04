@@ -14,19 +14,19 @@ import androidx.compose.ui.res.painterResource
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.ui.theme.Spacing
 
-
 @Composable
 fun CustomPlayButton(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     Box(
-        modifier = modifier
-            .size(Spacing.s56)
-            .background(
-                color = MaterialTheme.colorScheme.primary, shape = CircleShape
-            )
-            .clickable(
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .size(Spacing.s56)
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = CircleShape,
+                ).clickable(
+                    onClick = onClick,
+                ),
+        contentAlignment = Alignment.Center,
     ) {
         Image(
             painter = painterResource(R.drawable.play_icon),

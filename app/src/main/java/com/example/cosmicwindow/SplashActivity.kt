@@ -14,6 +14,7 @@ import androidx.compose.ui.res.painterResource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
+
 @AndroidEntryPoint
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +31,7 @@ class SplashActivity : ComponentActivity() {
 @Composable
 fun SplashScreen(onFinished: () -> Unit) {
     LaunchedEffect(Unit) {
-       delay(1.seconds)
+        delay(1.seconds)
         onFinished()
     }
 
@@ -38,6 +39,6 @@ fun SplashScreen(onFinished: () -> Unit) {
         painter = painterResource(id = R.drawable.splash_screen),
         contentDescription = null,
         modifier = Modifier.fillMaxSize(),
-        contentScale = ContentScale.Crop
+        contentScale = ContentScale.Crop,
     )
 }

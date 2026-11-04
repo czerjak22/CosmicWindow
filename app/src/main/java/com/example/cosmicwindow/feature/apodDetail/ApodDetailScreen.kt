@@ -1,15 +1,10 @@
 package com.example.cosmicwindow.feature.apodDetail
 
-
-import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -37,10 +31,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,19 +40,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.BrushPainter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -71,7 +58,6 @@ import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.model.Apod
-import com.example.cosmicwindow.ui.components.AppHeader
 import com.example.cosmicwindow.ui.components.CircleIconButton
 import com.example.cosmicwindow.ui.components.ErrorBox
 import com.example.cosmicwindow.ui.components.ExternalLinkOpenerButton
@@ -100,7 +86,6 @@ fun ApodDetailsScreen(
         }
     }
 
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -109,20 +94,20 @@ fun ApodDetailsScreen(
                 onClickBack = onClickBack,
                 onBookmark = {},
             )
-
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .verticalScroll((rememberScrollState())),
+            modifier =
+                Modifier
+                    .padding(innerPadding)
+                    .verticalScroll((rememberScrollState())),
         ) {
             if (uiState.isLoading) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
                 return@Scaffold
             }
             if (uiState.error != null) {
-                ErrorBox(text = uiState.error!!, onClick = {viewModel.loadApod()})
+                ErrorBox(text = uiState.error!!, onClick = { viewModel.loadApod() })
                 return@Scaffold
             }
             if (uiState.apod == null) {
@@ -135,11 +120,12 @@ fun ApodDetailsScreen(
             if (showFullscreen) {
                 FullscreenImageDialog(
                     imageUrl = uiState.apod!!.hdurl ?: uiState.apod!!.url,
-                    onDismiss = { showFullscreen = false })
+                    onDismiss = { showFullscreen = false },
+                )
             }
             Column(
                 Modifier.padding(horizontal = Spacing.s16),
-                verticalArrangement = Arrangement.spacedBy(Spacing.s16)
+                verticalArrangement = Arrangement.spacedBy(Spacing.s16),
             ) {
                 Text(
                     uiState.apod!!.title,
@@ -167,14 +153,16 @@ fun ApodDetailsScreen(
                         .fillMaxWidth()
                         .background(
                             color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
-                            shape = RoundedCornerShape(RadiusSize.r9999)
-                        )
+                            shape = RoundedCornerShape(RadiusSize.r9999),
+                        ),
                 ) {
                     Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Spacing.s10, vertical = Spacing.s8),
-                        onClick = { shareApod() }) {
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = Spacing.s10, vertical = Spacing.s8),
+                        onClick = { shareApod() },
+                    ) {
                         Text(
                             "Share Story",
                             style = MaterialTheme.typography.bodyMedium,
@@ -184,30 +172,29 @@ fun ApodDetailsScreen(
                     }
                 }
             }
-
         }
     }
 }
 
-
 @Composable
 fun VideoCard(modifier: Modifier = Modifier, url: String) {
     Surface(
-        modifier = modifier
-            .background(
-                color = MaterialTheme.colorScheme.secondary,
-                shape = RoundedCornerShape(RadiusSize.r12)
+        modifier =
+            modifier
+                .background(
+                    color = MaterialTheme.colorScheme.secondary,
+                    shape = RoundedCornerShape(RadiusSize.r12),
+                ),
+        border =
+            BorderStroke(
+                Spacing.border,
+                color = MaterialTheme.colorScheme.outline,
             ),
-        border = BorderStroke(
-            Spacing.border,
-            color = MaterialTheme.colorScheme.outline
-        )
     ) {
-
         Row(
             modifier = Modifier.padding(Spacing.s16),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
             CircleIconButton(
                 icon = R.drawable.external_player_icon,
@@ -220,12 +207,11 @@ fun VideoCard(modifier: Modifier = Modifier, url: String) {
                 "Video Version Available",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .weight(1f)
-                    .basicMarquee()
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .basicMarquee(),
             )
-
-
 
             ExternalLinkOpenerButton(
                 videoHandler = LocalUriHandler.current,
@@ -238,16 +224,16 @@ fun VideoCard(modifier: Modifier = Modifier, url: String) {
 
 @Composable
 fun DetailsCard(modifier: Modifier = Modifier, apod: Apod) {
-
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(RadiusSize.r16),
         color = MaterialTheme.colorScheme.secondary,
-        border = BorderStroke(
-            Spacing.border, MaterialTheme.colorScheme.outline
-        ),
+        border =
+            BorderStroke(
+                Spacing.border,
+                MaterialTheme.colorScheme.outline,
+            ),
     ) {
-
         Column(modifier = Modifier.padding(Spacing.s16)) {
             Text(
                 "ATTRIBUTION & SOURCE",
@@ -256,26 +242,24 @@ fun DetailsCard(modifier: Modifier = Modifier, apod: Apod) {
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
 
-
             InfoRow("Source", "NASA APOD API")
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             InfoRow(
                 "Credit",
-                AnnotatedString.fromHtml(apod.credit).text
+                AnnotatedString.fromHtml(apod.credit).text,
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             InfoRow(
                 "Copyright",
                 AnnotatedString.fromHtml(apod.copyright ?: apod.credit).text,
-                valueColor = MaterialTheme.colorScheme.onTertiaryContainer
+                valueColor = MaterialTheme.colorScheme.onTertiaryContainer,
             )
             ExternalLinkOpenerButton(
                 modifier = Modifier.fillMaxWidth(),
                 videoHandler = LocalUriHandler.current,
                 url = apod.permalink,
-                buttonText = "View original APOD entry"
+                buttonText = "View original APOD entry",
             )
-
         }
     }
 }
@@ -285,19 +269,20 @@ private fun InfoRow(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
-    valueColor: Color = MaterialTheme.colorScheme.onSurface
+    valueColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.Top,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.width(16.dp))
         Text(
@@ -305,42 +290,47 @@ private fun InfoRow(
             style = MaterialTheme.typography.bodyMedium,
             color = valueColor,
             textAlign = TextAlign.End,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
 }
 
 @Composable
-fun FullscreenImageDialog(
-    imageUrl: String, onDismiss: () -> Unit
-) {
+fun FullscreenImageDialog(imageUrl: String, onDismiss: () -> Unit) {
     Dialog(
-        onDismissRequest = onDismiss, properties = DialogProperties(
-            usePlatformDefaultWidth = false, decorFitsSystemWindows = false
-        )
+        onDismissRequest = onDismiss,
+        properties =
+            DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false,
+            ),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black),
+            contentAlignment = Alignment.Center,
         ) {
             AsyncImage(
                 model = imageUrl,
                 contentDescription = "Fullscreen image",
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
 
             IconButton(
                 onClick = onDismiss,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding()
-                    .padding(8.dp)
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .statusBarsPadding()
+                        .padding(8.dp),
             ) {
                 Icon(
-                    Icons.Default.Close, contentDescription = "Close", tint = Color.White
+                    Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color.White,
                 )
             }
         }
@@ -349,10 +339,12 @@ fun FullscreenImageDialog(
 
 @Composable
 fun ApodImage(
-    modifier: Modifier = Modifier, imageUri: String, onFullscreenClick: () -> Unit = {}
+    modifier: Modifier = Modifier,
+    imageUri: String,
+    onFullscreenClick: () -> Unit = {},
 ) {
     Box(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
         //  .height(535.dp)
     ) {
         AsyncImage(
@@ -367,18 +359,20 @@ fun ApodImage(
                 .matchParentSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
-                            MaterialTheme.colorScheme.background.copy(alpha = 0.9f),
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
+                        colors =
+                            listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.9f),
+                                MaterialTheme.colorScheme.background,
+                            ),
+                    ),
+                ),
         )
 
         Box(
-            modifier = Modifier.matchParentSize(), contentAlignment = Alignment.TopEnd
+            modifier = Modifier.matchParentSize(),
+            contentAlignment = Alignment.TopEnd,
         ) {
             CircleIconButton(
                 modifier = Modifier.padding(top = Spacing.s8, end = Spacing.s16),
@@ -391,7 +385,6 @@ fun ApodImage(
     }
 }
 
-
 @Composable
 fun StoryHeader(
     modifier: Modifier = Modifier,
@@ -400,14 +393,15 @@ fun StoryHeader(
     onShare: () -> Unit = {},
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .statusBarsPadding(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .statusBarsPadding(),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
-            onClick = onClickBack
+            onClick = onClickBack,
         ) {
             Image(
                 painter = painterResource(R.drawable.back_icon),
@@ -421,22 +415,20 @@ fun StoryHeader(
         )
         Spacer(Modifier.weight(1f))
         IconButton(
-            onClick = onBookmark
+            onClick = onBookmark,
         ) {
             Image(
                 painter = painterResource(R.drawable.bookmark_icon),
                 contentDescription = "bookmarkButton",
-
-                )
+            )
         }
         IconButton(
-            onClick = onShare
+            onClick = onShare,
         ) {
             Image(
                 painter = painterResource(R.drawable.share_icon),
                 contentDescription = "shareButton",
-
-                )
+            )
         }
     }
 }

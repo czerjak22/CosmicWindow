@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -17,9 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.example.cosmicwindow.ui.theme.Spacing
-
 
 @Composable
 fun AppHeader(
@@ -33,25 +30,26 @@ fun AppHeader(
     leftIconComposable: @Composable () -> Unit,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .statusBarsPadding(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .statusBarsPadding(),
         horizontalArrangement = Arrangement.Absolute.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-
-        ) {
+    ) {
         Row(
             Modifier
                 .padding(horizontal = Spacing.s16)
                 .weight(1f),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
             Image(
                 painter = painterResource(leftIcon),
                 contentDescription = "Today Header's icon",
-                modifier = leftIconModifier
-                    .size(leftIconSize),
+                modifier =
+                    leftIconModifier
+                        .size(leftIconSize),
                 // contentScale = ContentScale.Fit
             )
             Column(verticalArrangement = Arrangement.Center) {
@@ -70,7 +68,5 @@ fun AppHeader(
         IconButton(onClick = onClick) {
             leftIconComposable()
         }
-
     }
-
 }

@@ -2,7 +2,6 @@ package com.example.cosmicwindow.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,7 +19,6 @@ import com.example.cosmicwindow.R
 import com.example.cosmicwindow.ui.theme.RadiusSize
 import com.example.cosmicwindow.ui.theme.Spacing
 
-
 @Composable
 fun ExternalLinkOpenerButton(
     videoHandler: UriHandler,
@@ -33,25 +31,27 @@ fun ExternalLinkOpenerButton(
     Button(
         onClick = { videoHandler.openUri(url) },
         modifier = modifier,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        ),
-        border = BorderStroke(
-            Spacing.border,
-            MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-        ),
-        shape = RoundedCornerShape(RadiusSize.r12)
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ),
+        border =
+            BorderStroke(
+                Spacing.border,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+            ),
+        shape = RoundedCornerShape(RadiusSize.r12),
     ) {
         Text(
             text = buttonText,
             style = textStyle,
-            modifier = Modifier.padding(end = Spacing.s4)
+            modifier = Modifier.padding(end = Spacing.s4),
         )
         Icon(
             painter = painterResource(icon),
             contentDescription = null,
-            modifier = Modifier.size(Spacing.s12)
+            modifier = Modifier.size(Spacing.s12),
         )
     }
 }

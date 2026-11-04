@@ -1,29 +1,23 @@
 package com.example.cosmicwindow.feature.earth
 
-import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +28,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.ui.components.AppHeader
@@ -42,14 +35,12 @@ import com.example.cosmicwindow.ui.components.CircleIconButton
 import com.example.cosmicwindow.ui.components.CustomPlayButton
 import com.example.cosmicwindow.ui.theme.RadiusSize
 import com.example.cosmicwindow.ui.theme.Spacing
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
 @Composable
-fun EarthPage(modifier: Modifier = Modifier) {
+fun EarthPage() {
     Scaffold(
         topBar = {
             AppHeader(
@@ -63,56 +54,87 @@ fun EarthPage(modifier: Modifier = Modifier) {
                     )
                 },
                 mainTitle = "Earth in Motion",
-                secondaryTitle = "DSCOVR EPIC"
+                secondaryTitle = "DSCOVR EPIC",
             )
-        }
-
+        },
     ) { innerPadding ->
         Column(
-
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = Spacing.s16),
+            modifier =
+                Modifier
+                    .padding(innerPadding)
+                    .padding(horizontal = Spacing.s16)
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Spacing.s16)
+            verticalArrangement = Arrangement.spacedBy(Spacing.s16),
         ) {
             EpicChip(Modifier.align(Alignment.End))
             EarthImageDisplay()
             ControlCard(
                 modifier = Modifier.padding(top = Spacing.s8),
-                captureTime = LocalDateTime.now()
+                captureTime = LocalDateTime.now(),
+            )
+            InfoCard(
+                info =
+                    "Images captured by NASA's Earth Polychromatic Imaging Camera (EPIC)" +
+                        " aboard the NOAA DSCOVR spacecraft at" +
+                        " Lagrange point 1.",
             )
         }
     }
 }
 
+@Composable
+fun InfoCard(modifier: Modifier = Modifier, info: String) {
+    Box(
+        modifier =
+            modifier.background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                shape =
+                    RoundedCornerShape(
+                        RadiusSize.r12,
+                    ),
+            ),
+    ) {
+        Row(
+            modifier =
+                Modifier
+                    .padding(Spacing.s16),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+        ) {
+            Image(
+                painter = painterResource(R.drawable.info_card),
+                contentDescription = "Info card",
+            )
+            Text(
+                info,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondary,
+            )
+        }
+    }
+}
 
 @Composable
 fun ControlCard(
     modifier: Modifier = Modifier,
     captureTime: LocalDateTime,
     index: Int = 8,
-    totalSize: Int = 12
+    totalSize: Int = 12,
 ) {
     Box(
-        modifier = modifier
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(RadiusSize.r12)
-            )
-            .border(
-                Spacing.border, MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(RadiusSize.r12)
-            )
-
-    )
-    {
+        modifier =
+            modifier
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(RadiusSize.r12),
+                ),
+    ) {
         Column(
             Modifier.padding(Spacing.s16),
-            verticalArrangement = Arrangement.spacedBy(Spacing.s8)
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column() {
+                Column {
                     Text(
                         "CAPTURE TIME",
                         style = MaterialTheme.typography.bodySmall,
@@ -127,12 +149,14 @@ fun ControlCard(
                     )
                 }
                 Spacer(Modifier.weight(1f))
-                Surface(color = MaterialTheme.colorScheme.tertiary,
-                    shape = RoundedCornerShape(RadiusSize.r9999)) {
+                Surface(
+                    color = MaterialTheme.colorScheme.tertiary,
+                    shape = RoundedCornerShape(RadiusSize.r9999),
+                ) {
                     Row(
                         Modifier.padding(horizontal = Spacing.s12, vertical = Spacing.s6),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.s4)
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
                     ) {
                         Image(
                             painterResource(R.drawable.accent_dot),
@@ -151,30 +175,29 @@ fun ControlCard(
             FrameSlider(
                 frameCount = totalSize,
                 currentIndex = index,
-                onFrameSelected = {  }
+                onFrameSelected = { },
             )
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s24),
             ) {
                 Spacer(Modifier.weight(1f))
                 CircleIconButton(
                     icon = R.drawable.previous_frame_icon,
                     description = null,
                     onClick = {},
-                    iconSize = Spacing.s12
+                    iconSize = Spacing.s12,
                 )
                 CustomPlayButton(onClick = {})
                 CircleIconButton(
                     icon = R.drawable.next_frame_icon,
                     description = null,
                     onClick = {},
-                    iconSize = Spacing.s12
+                    iconSize = Spacing.s12,
                 )
                 Spacer(Modifier.weight(1f))
             }
-
         }
     }
 }
@@ -184,7 +207,7 @@ fun FrameSlider(
     frameCount: Int,
     currentIndex: Int,
     onFrameSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (frameCount < 2) return
 
@@ -193,15 +216,27 @@ fun FrameSlider(
             value = currentIndex.toFloat(),
             onValueChange = { onFrameSelected(it.roundToInt()) },
             valueRange = 0f..(frameCount - 1).toFloat(),
-            steps = frameCount - 2
+            steps = frameCount - 2,
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("Frame 1")
-            Text("Sequence: 24h")
-            Text("Frame $frameCount")
+            Text(
+                "Frame 1",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSecondary,
+            )
+            Text(
+                "Sequence: 24h",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.6f),
+            )
+            Text(
+                "Frame $frameCount",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSecondary,
+            )
         }
     }
 }
@@ -210,7 +245,7 @@ fun FrameSlider(
 fun EarthImageDisplay(
     modifier: Modifier = Modifier,
     imageUrl: String = "https://epic.gsfc.nasa.gov/archive/natural/2026/10/29/png/epic_1b_20261029000830.png",
-    scale: Float = 1.15f
+    scale: Float = 1.15f,
 ) {
     val glowColor = MaterialTheme.colorScheme.onPrimaryContainer
     Box(modifier = modifier.fillMaxWidth()) {
@@ -223,26 +258,25 @@ fun EarthImageDisplay(
                     val edge = r / haloRadius
 
                     drawCircle(
-                        brush = Brush.radialGradient(
-                            (edge - 0.05f) to glowColor.copy(
-                                alpha = 0.2f
+                        brush =
+                            Brush.radialGradient(
+                                (edge - 0.05f) to
+                                    glowColor.copy(
+                                        alpha = 0.2f,
+                                    ),
+                                1f to Color.Transparent,
+                                center = center,
+                                radius = haloRadius,
                             ),
-                            1f to Color.Transparent,
-                            center = center,
-                            radius = haloRadius
-                        ),
                         radius = haloRadius,
-                        center = center
+                        center = center,
                     )
-
-                }
-                .clip(CircleShape)
-
+                }.clip(CircleShape),
         ) {
             AsyncImage(
                 model = imageUrl,
                 contentDescription = "Earth Image",
-                Modifier.graphicsLayer(scaleX = scale, scaleY = scale)
+                Modifier.graphicsLayer(scaleX = scale, scaleY = scale),
             )
         }
     }
@@ -251,17 +285,17 @@ fun EarthImageDisplay(
 @Composable
 fun EpicChip(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier
-            .background(
-                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
-                shape = RoundedCornerShape(RadiusSize.r9999)
-            )
-
+        modifier =
+            modifier
+                .background(
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
+                    shape = RoundedCornerShape(RadiusSize.r9999),
+                ),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = Spacing.s12, vertical = Spacing.s4),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s6)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s6),
         ) {
             Image(
                 painter = painterResource(R.drawable.cloud_saved),
@@ -270,9 +304,8 @@ fun EpicChip(modifier: Modifier = Modifier) {
             Text(
                 "EPIC Feed",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSecondary
+                color = MaterialTheme.colorScheme.onSecondary,
             )
-
         }
     }
 }
