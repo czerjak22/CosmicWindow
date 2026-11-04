@@ -25,8 +25,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -56,7 +56,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
-import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
 import com.example.cosmicwindow.core.designsystem.components.CurrentDatePicker
@@ -68,6 +67,7 @@ import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.core.utils.getDayTextSince
 import com.example.cosmicwindow.core.utils.shareLink
+import com.example.cosmicwindow.model.Apod
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -104,11 +104,12 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
         }
 
         Column(
-            modifier = Modifier.padding(innerPadding),
-            // .padding(start = Spacing.s16, end = Spacing.s16, top = Spacing.s4)
+            modifier = Modifier
+                .padding(innerPadding)
+                .verticalScroll((rememberScrollState())),
         ) {
             TodayInSpace(
-                Modifier.padding(horizontal = Spacing.s16),
+                Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s8),
                 date =
                     uiState.selectedDate.format(
                         DateTimeFormatter.ofPattern("MMM dd, yyyy"),
@@ -126,20 +127,20 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     text = uiState.error!!,
                     onClick = viewModel::getCurrentApods,
                 )
-            } else {
-                Spacer(Modifier.height(Spacing.s8))
             }
             if (uiState.isLoading) {
-                LinearProgressIndicator(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(Spacing.s8),
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Spacing.s8),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+                return@Scaffold
             }
 
             Column(
-                modifier = Modifier.verticalScroll((rememberScrollState())),
                 verticalArrangement = Arrangement.spacedBy(Spacing.s24),
             ) {
                 if (uiState.apods.isEmpty()) {
@@ -158,15 +159,18 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     onShareClick = { context.shareLink(uiState.apods.first().permalink) },
                     onReadClick = onApodClick,
                 )
-                PreviousApodStripe(Modifier, apods = uiState.apods, onClick = onApodClick)
+                PreviousApodStripe(apods = uiState.apods, onClick = onApodClick)
                 if (uiState.featuredVideoApod != null) {
                     FeaturedApodVideoCard(
                         Modifier.padding(horizontal = Spacing.s16),
                         apod = uiState.featuredVideoApod!!,
 
-                    )
+                        )
                 }
-                DataCard(Modifier.padding(start = Spacing.s16,end = Spacing.s16,bottom = Spacing.s16), apod = uiState.apods.first())
+                DataCard(
+                    Modifier.padding(start = Spacing.s16, end = Spacing.s16, bottom = Spacing.s16),
+                    apod = uiState.apods.first()
+                )
             }
         }
     }
@@ -175,7 +179,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
 @Composable
 fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
     Surface(
-        modifier= modifier,
+        modifier = modifier,
         color = MaterialTheme.colorScheme.primaryContainer,
         border =
             BorderStroke(
@@ -225,7 +229,7 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
             ) {
                 Text(
                     text = "Independent educational explorer • Not affiliated with NASA",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier =
@@ -256,17 +260,17 @@ private fun PreviousApodStripe(
             ),
         )
         LazyRow(
-            modifier = Modifier.padding(bottom = Spacing.s8),
+            modifier = Modifier.padding(bottom = Spacing.s8 ),
             horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
             item {
-                Spacer(Modifier.width(Spacing.s16))
+                Spacer(Modifier.width(Spacing.s8))
             }
             items(apods.size - 1) {
                 PreviousApodDay(apod = apods[it + 1], onClick = { onClick(apods[it + 1]) })
             }
             item {
-                Spacer(Modifier.width(Spacing.s16))
+                Spacer(Modifier.width(Spacing.s8))
             }
         }
     }
@@ -281,7 +285,7 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
                 color = MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(16.dp),
             ),
-        border = BorderStroke(Spacing.border, MaterialTheme.colorScheme.outline),
+        border = BorderStroke(Spacing.border, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
         shape = RoundedCornerShape(RadiusSize.r16),
     ) {
         Column(
@@ -326,12 +330,6 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
                     )
                 }
             }
-
-//            VideoThumbnailCard(
-//                modifier = Modifier.padding(bottom = Spacing.s8),
-//                apod = apod,
-//                onClick = { videoHandler.openUri(apod.videoUrl ?: apod.hdurl ?: apod.url) })
-//
             VideoPlayer(
                 modifier =
                     Modifier
