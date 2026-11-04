@@ -3,7 +3,7 @@ package com.example.cosmicwindow.data.mapper
 import com.example.cosmicwindow.data.dto.ApodDto
 import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.model.Mediatype
-import com.example.cosmicwindow.utils.extractVideoLink
+import com.example.cosmicwindow.core.utils.extractVideoLink
 import tech.mappie.api.ObjectMappie
 
 object ApodMapper : ObjectMappie<ApodDto, Apod>() {

@@ -2,4 +2,10 @@
 <resources>
 
     <style name="Theme.CosmicWindow" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.CosmicWindow.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#0F1C30</item>
+        <item name="postSplashScreenTheme">@style/Theme.CosmicWindow</item>
+    </style>
+
 </resources>

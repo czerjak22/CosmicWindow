@@ -30,11 +30,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
-import com.example.cosmicwindow.ui.components.AppHeader
-import com.example.cosmicwindow.ui.components.CircleIconButton
-import com.example.cosmicwindow.ui.components.CustomPlayButton
-import com.example.cosmicwindow.ui.theme.RadiusSize
-import com.example.cosmicwindow.ui.theme.Spacing
+import com.example.cosmicwindow.core.designsystem.components.AppHeader
+import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
+import com.example.cosmicwindow.core.designsystem.components.CustomPlayButton
+import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
+import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt

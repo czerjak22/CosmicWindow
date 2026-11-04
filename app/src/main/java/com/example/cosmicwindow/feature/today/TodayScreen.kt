@@ -57,17 +57,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.model.Apod
-import com.example.cosmicwindow.ui.components.AppHeader
-import com.example.cosmicwindow.ui.components.CircleIconButton
-import com.example.cosmicwindow.ui.components.CurrentDatePicker
-import com.example.cosmicwindow.ui.components.CustomPlayButton
-import com.example.cosmicwindow.ui.components.ErrorBox
-import com.example.cosmicwindow.ui.components.ExternalLinkOpenerButton
-import com.example.cosmicwindow.ui.components.VideoPlayer
-import com.example.cosmicwindow.ui.theme.RadiusSize
-import com.example.cosmicwindow.ui.theme.Spacing
-import com.example.cosmicwindow.utils.getDayTextSince
-import com.example.cosmicwindow.utils.shareLink
+import com.example.cosmicwindow.core.designsystem.components.AppHeader
+import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
+import com.example.cosmicwindow.core.designsystem.components.CurrentDatePicker
+import com.example.cosmicwindow.core.designsystem.components.CustomPlayButton
+import com.example.cosmicwindow.core.designsystem.components.ErrorBox
+import com.example.cosmicwindow.core.designsystem.components.ExternalLinkOpenerButton
+import com.example.cosmicwindow.core.designsystem.components.VideoPlayer
+import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
+import com.example.cosmicwindow.core.designsystem.theme.Spacing
+import com.example.cosmicwindow.core.utils.getDayTextSince
+import com.example.cosmicwindow.core.utils.shareLink
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -163,10 +163,10 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     FeaturedApodVideoCard(
                         Modifier.padding(horizontal = Spacing.s16),
                         apod = uiState.featuredVideoApod!!,
-                        // onClick = {},
+
                     )
                 }
-                DataCard(Modifier.padding(horizontal = Spacing.s16), apod = uiState.apods.first())
+                DataCard(Modifier.padding(start = Spacing.s16,end = Spacing.s16,bottom = Spacing.s16), apod = uiState.apods.first())
             }
         }
     }
@@ -175,11 +175,8 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
 @Composable
 fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
     Surface(
-        modifier =
-            modifier.background(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = RoundedCornerShape(16.dp),
-            ),
+        modifier= modifier,
+        color = MaterialTheme.colorScheme.primaryContainer,
         border =
             BorderStroke(
                 Spacing.border,
