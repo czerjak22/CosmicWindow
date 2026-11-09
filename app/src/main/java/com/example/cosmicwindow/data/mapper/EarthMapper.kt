@@ -13,7 +13,7 @@ object EarthMapper : ObjectMappie<EarthDto, Earth>() {
                 val dayFormatter = DateTimeFormatter.ofPattern("dd")
                 "https://epic.gsfc.nasa.gov/archive/enhanced/${from.date.year}/${from.date.format(
                     monthFormatter,
-                )}/${from.date.format(dayFormatter)}/png/${from.imageName}.png"
+                )}/${from.date.format(dayFormatter)}/jpg/${from.imageName}.jpg"
             }
         }
 }

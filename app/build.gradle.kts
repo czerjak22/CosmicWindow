@@ -87,6 +87,8 @@ dependencies {
 // exo player
     implementation(libs.exoplayer)
     implementation(libs.exo.ui.compose)
+    // lottie player
+    implementation(libs.lottie.compose)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

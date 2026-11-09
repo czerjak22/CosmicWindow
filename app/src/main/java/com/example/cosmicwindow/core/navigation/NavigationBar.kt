@@ -1,6 +1,5 @@
 package com.example.cosmicwindow.core.navigation
 
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar

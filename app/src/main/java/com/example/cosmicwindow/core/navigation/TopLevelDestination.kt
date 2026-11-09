@@ -11,4 +11,5 @@ enum class TopLevelDestination(
     TODAY(Routes.today, "Today", R.drawable.today_icon),
     EARTH(Routes.earth, "Earth", R.drawable.earth_icon),
     EXPLORE(Routes.explore, "Explore", R.drawable.explore_icon),
+    SAVED(Routes.saved, "Saved", R.drawable.bookmark_icon),
 }

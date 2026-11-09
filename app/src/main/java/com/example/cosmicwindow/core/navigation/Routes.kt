@@ -10,4 +10,5 @@ object Routes {
 
     val earth = "Earth"
     val explore = "Explore"
+    val saved = "Saved"
 }

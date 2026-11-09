@@ -25,7 +25,7 @@ val liberationMono =
     FontFamily(
         Font(R.font.liberationmono_regular, FontWeight.Normal),
         Font(R.font.liberationmono_bold, FontWeight.Bold),
-        )
+    )
 
 val Typography =
     Typography(

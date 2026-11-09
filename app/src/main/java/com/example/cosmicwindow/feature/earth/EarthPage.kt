@@ -50,6 +50,7 @@ import com.example.cosmicwindow.core.designsystem.components.AppHeader
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
 import com.example.cosmicwindow.core.designsystem.components.CustomPlayButton
 import com.example.cosmicwindow.core.designsystem.components.ErrorBox
+import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import kotlinx.coroutines.delay
@@ -81,20 +82,20 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
     ) { innerPadding ->
 
         if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                LottieLoader()
             }
             return@Scaffold
         }
 
         if (uiState.error != null) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxWidth().padding(innerPadding), contentAlignment = Alignment.Center) {
                 ErrorBox(text = uiState.error!!, onClick = { viewModel.loadEarthImages() })
             }
             return@Scaffold
         }
         if (uiState.images.isEmpty()) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxWidth().padding(innerPadding), contentAlignment = Alignment.Center) {
                 ErrorBox(text = "No Images found!")
             }
             return@Scaffold
@@ -252,7 +253,7 @@ fun ControlCard(
                     iconSize = Spacing.s12,
                 )
                 CustomPlayButton(
-                    onClick = { isPlaying = !isPlaying }
+                    onClick = { isPlaying = !isPlaying },
                 )
                 CircleIconButton(
                     icon = R.drawable.next_frame_icon,

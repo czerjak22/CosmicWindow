@@ -3,6 +3,7 @@ package com.example.cosmicwindow.core.di
 import android.util.Log
 import com.example.cosmicwindow.data.network.ApodApi
 import com.example.cosmicwindow.data.network.EarthApi
+import com.example.cosmicwindow.data.network.ExploreApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,20 +51,9 @@ object NetworkModule {
             .build()
             .create(ApodApi::class.java)
 
-//    @Provides
-//    @Singleton
-//    fun provideEarthApiNatural(client: OkHttpClient): EarthApi =
-//        Retrofit
-//            .Builder()
-//            .baseUrl("https://epic.gsfc.nasa.gov/archive/natural/")
-//            .client(client)
-//            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-//            .build()
-//            .create(EarthApi::class.java)
-
     @Provides
     @Singleton
-    fun provideEarthApiNEnhanced(client: OkHttpClient): EarthApi =
+    fun provideEarthApiEnhanced(client: OkHttpClient): EarthApi =
         Retrofit
             .Builder()
             .baseUrl("https://epic.gsfc.nasa.gov/api/enhanced/")
@@ -71,4 +61,15 @@ object NetworkModule {
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(EarthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideExplorerApi(client: OkHttpClient): ExploreApi =
+        Retrofit
+            .Builder()
+            .baseUrl("https://images-api.nasa.gov/")
+            .client(client)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(ExploreApi::class.java)
 }

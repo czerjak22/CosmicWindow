@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.cosmicwindow.feature.apod.ApodDetailsScreen
 import com.example.cosmicwindow.feature.earth.EarthPage
+import com.example.cosmicwindow.feature.explore.ExplorePage
 import com.example.cosmicwindow.feature.today.TodayScreen
 
 @Composable
@@ -59,7 +60,10 @@ fun Navigation(modifier: Modifier = Modifier) {
                 EarthPage()
             }
             composable(Routes.explore) {
-                Text("ExplorePage")
+                ExplorePage()
+            }
+            composable(Routes.saved) {
+                Text("Saved page")
             }
         }
     }
