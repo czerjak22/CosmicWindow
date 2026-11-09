@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.mappie)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -53,7 +54,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.media3.ui)
     testImplementation(libs.junit)
-    //project
+    // project
 
     // Lifecycle
     implementation(libs.lifecycle.viewmodel.compose)
@@ -76,14 +77,14 @@ dependencies {
     implementation(libs.hilt.lifecycle.viewmodel.compose)
     // splash
     implementation(libs.splash.screen)
-    //mapper
+    // mapper
     implementation(libs.mappie.api)
-    //htmlParser
+    // htmlParser
     implementation(libs.jsoup)
-    //async image loader
+    // async image loader
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
-//exo player
+// exo player
     implementation(libs.exoplayer)
     implementation(libs.exo.ui.compose)
     androidTestImplementation(platform(libs.androidx.compose.bom))

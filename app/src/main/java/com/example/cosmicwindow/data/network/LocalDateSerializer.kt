@@ -9,7 +9,6 @@ import kotlinx.serialization.encoding.Encoder
 import java.time.LocalDate
 
 object LocalDateSerializer : KSerializer<LocalDate> {
-
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.STRING)
 
@@ -17,7 +16,5 @@ object LocalDateSerializer : KSerializer<LocalDate> {
         encoder.encodeString(value.toString())
     }
 
-    override fun deserialize(decoder: Decoder): LocalDate {
-        return LocalDate.parse(decoder.decodeString())
-    }
+    override fun deserialize(decoder: Decoder): LocalDate = LocalDate.parse(decoder.decodeString())
 }

@@ -1,8 +1,6 @@
 package com.example.cosmicwindow.model
 
-import kotlinx.serialization.SerialName
 import java.time.LocalDate
-
 
 data class Apod(
     val date: LocalDate,
@@ -17,7 +15,5 @@ data class Apod(
     val mediaType: Mediatype,
     val videoUrl: String?,
 ) {
-    override fun toString(): String {
-        return "Apod:$date, $title, $mediaType"
-    }
+    override fun toString(): String = "Apod:$date, $title, $mediaType"
 }

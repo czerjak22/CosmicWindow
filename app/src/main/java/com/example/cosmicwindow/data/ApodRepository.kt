@@ -5,21 +5,23 @@ import com.example.cosmicwindow.data.mapper.ApodMapper
 import com.example.cosmicwindow.data.network.ApodApi
 import com.example.cosmicwindow.model.Apod
 import java.net.UnknownHostException
-import java.time.DateTimeException
-import javax.inject.Inject
-import javax.inject.Singleton
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.coroutines.CancellationException
 
 @Singleton
-class ApodRepository @Inject constructor(
+class ApodRepository
+@Inject
+constructor(
     val apodApi: ApodApi,
 ) {
-
-    val explanationPrefix = Regex(
-        """^\s*(<[^>]+>\s*)*Explanation\s*:?\s*(</[^>]+>\s*)*:?\s*""",
-        RegexOption.IGNORE_CASE
-    )
+    val explanationPrefix =
+        Regex(
+            """^\s*(<[^>]+>\s*)*Explanation\s*:?\s*(</[^>]+>\s*)*:?\s*""",
+            RegexOption.IGNORE_CASE,
+        )
 
     suspend fun getApodWeek(localDate: LocalDate = LocalDate.now()): Result<List<Apod>> {
         try {
@@ -28,36 +30,42 @@ class ApodRepository @Inject constructor(
             return Result.success(
                 apodApi.getApodRange(startDate, endDate).map { ApodMapper.map(it) }.map {
                     it.copy(
-                        explanation = it.explanation.replace(explanationPrefix, "").trim()
+                        explanation = it.explanation.replace(explanationPrefix, "").trim(),
                     )
-                })
+                },
+            )
         } catch (ex: UnknownHostException) {
             Log.e("Repository", ex.toString())
-            return Result.failure(RepositoryException("No internet connection, please retry when online"));
+            return Result.failure(RepositoryException("No internet connection, please retry when online"))
+        } catch (ex: CancellationException) {
+            Log.e("Repository", ex.toString())
+            throw ex
         } catch (ex: Exception) {
             Log.e("Repository", ex.toString())
-            return Result.failure(ex);
+            return Result.failure(ex)
         }
     }
 
     suspend fun getApod(localDate: LocalDate = LocalDate.now()): Result<Apod> {
         try {
             val startDate = localDate.format(DateTimeFormatter.ofPattern("yyMMdd"))
-            val apod = ApodMapper.map(
-                apodApi.getApodByDate(startDate)
-            )
+            val apod =
+                ApodMapper.map(
+                    apodApi.getApodByDate(startDate),
+                )
 
             return Result.success(
-                apod.copy(explanation = apod.explanation.replace(explanationPrefix, "").trim())
+                apod.copy(explanation = apod.explanation.replace(explanationPrefix, "").trim()),
             )
         } catch (ex: UnknownHostException) {
             Log.e("Repository", ex.toString())
-            return Result.failure(RepositoryException("No internet connection, please retry when online"));
+            return Result.failure(RepositoryException("No internet connection, please retry when online"))
+        } catch (ex: CancellationException) {
+            Log.e("Repository", ex.toString())
+            throw ex
         } catch (ex: Exception) {
             Log.e("Repository", ex.toString())
-            return Result.failure(ex);
+            return Result.failure(ex)
         }
     }
-
-
 }
