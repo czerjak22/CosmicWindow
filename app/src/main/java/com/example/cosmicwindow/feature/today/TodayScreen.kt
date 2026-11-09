@@ -133,8 +133,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                 Box(
                     modifier =
                         Modifier
-                            .fillMaxWidth()
-                            .padding(Spacing.s8),
+                            .fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()

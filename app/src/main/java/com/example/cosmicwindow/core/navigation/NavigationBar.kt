@@ -41,7 +41,6 @@ fun AppNavigationBar(modifier: Modifier = Modifier, navController: NavController
                     size = Size(size.width, h),
                 )
             },
-        windowInsets = WindowInsets(bottom = 0),
         containerColor = MaterialTheme.colorScheme.primaryContainer,
     ) {
         TopLevelDestination.entries.forEach { dest ->

@@ -38,7 +38,7 @@ class ApodDetailViewModel
                         _uiState.update { it.copy(apod = newApod, isLoading = false) }
                     },
                     onFailure = { err ->
-                        _uiState.update { it.copy(error = err.message, isLoading = false) }
+                        _uiState.update { it.copy(error = err.message?: "error", isLoading = false) }
                     },
                 )
             }

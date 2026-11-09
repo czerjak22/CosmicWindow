@@ -11,7 +11,6 @@ fun String?.extractVideoLink(): String? {
     val video =
         doc.selectFirst("video source[src]")?.attr("src")
             ?: doc.selectFirst("video[src]")?.attr("src")
-            ?: doc.selectFirst("iframe[src]")?.attr("src") // YouTube / Vimeo days
 
     return video
 }

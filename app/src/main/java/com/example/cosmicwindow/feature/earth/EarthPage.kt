@@ -80,6 +80,26 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
         },
     ) { innerPadding ->
 
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+            return@Scaffold
+        }
+
+        if (uiState.error != null) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                ErrorBox(text = uiState.error!!, onClick = { viewModel.loadEarthImages() })
+            }
+            return@Scaffold
+        }
+        if (uiState.images.isEmpty()) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                ErrorBox(text = "No Images found!")
+            }
+            return@Scaffold
+        }
+
         Column(
             modifier =
                 Modifier
@@ -89,22 +109,6 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Spacing.s16),
         ) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator()
-                    return@Scaffold
-                }
-
-                if (uiState.error != null) {
-                    ErrorBox(text = uiState.error!!)
-                    return@Scaffold
-                }
-                if (uiState.images.isEmpty()) {
-                    ErrorBox(text = "No Images found!")
-                    return@Scaffold
-                }
-            }
-
             EpicChip(Modifier.align(Alignment.End))
             EarthImageDisplay(
                 modifier = Modifier.padding(horizontal = Spacing.s4),
@@ -248,8 +252,7 @@ fun ControlCard(
                     iconSize = Spacing.s12,
                 )
                 CustomPlayButton(
-                    onClick = { isPlaying = !isPlaying },
-                    icon = if (!isPlaying) R.drawable.play_icon else R.drawable.cloud_saved,
+                    onClick = { isPlaying = !isPlaying }
                 )
                 CircleIconButton(
                     icon = R.drawable.next_frame_icon,
