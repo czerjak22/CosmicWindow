@@ -53,13 +53,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
-import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
 import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.components.ExternalLinkOpenerButton
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.core.utils.shareLink
+import com.example.cosmicwindow.model.Apod
 
 @Composable
 fun ApodDetailsScreen(

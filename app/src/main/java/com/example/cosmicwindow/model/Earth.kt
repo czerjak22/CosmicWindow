@@ -1,9 +1,9 @@
 package com.example.cosmicwindow.model
 
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class Earth(
-    val imageName: String,
-    val date: LocalDate,
+    val imageUrl: String,
+    val date: LocalDateTime,
     val caption: String,
 )

@@ -23,6 +23,7 @@ object Spacing {
     val s20 = 20.dp
     val s22 = 22.dp
     val s24 = 24.dp
+    val s25 = 25.dp
     val s28 = 28.dp
 
     val s48 = 48.dp

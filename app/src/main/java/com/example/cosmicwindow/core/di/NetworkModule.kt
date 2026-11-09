@@ -50,26 +50,25 @@ object NetworkModule {
             .build()
             .create(ApodApi::class.java)
 
-    @Provides
-    @Singleton
-    fun provideEarthApiNatural(client: OkHttpClient): EarthApi =
-        Retrofit
-            .Builder()
-            .baseUrl("https://epic.gsfc.nasa.gov/archive/natural/")
-            .client(client)
-            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-            .build()
-            .create(EarthApi::class.java)
-
 //    @Provides
 //    @Singleton
-//    fun provideEarthApiNEnhanced(client: OkHttpClient): EarthApi =
+//    fun provideEarthApiNatural(client: OkHttpClient): EarthApi =
 //        Retrofit
 //            .Builder()
-//            .baseUrl("https://epic.gsfc.nasa.gov/archive/enhanced/")
+//            .baseUrl("https://epic.gsfc.nasa.gov/archive/natural/")
 //            .client(client)
 //            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
 //            .build()
 //            .create(EarthApi::class.java)
-//}
+
+    @Provides
+    @Singleton
+    fun provideEarthApiNEnhanced(client: OkHttpClient): EarthApi =
+        Retrofit
+            .Builder()
+            .baseUrl("https://epic.gsfc.nasa.gov/api/enhanced/")
+            .client(client)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(EarthApi::class.java)
 }

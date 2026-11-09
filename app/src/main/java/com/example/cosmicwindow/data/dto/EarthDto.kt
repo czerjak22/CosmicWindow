@@ -1,14 +1,14 @@
 package com.example.cosmicwindow.data.dto
 
-import com.example.cosmicwindow.data.network.LocalDateSerializer
+import com.example.cosmicwindow.data.network.LocaleDateTimeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Serializable
 data class EarthDto(
     @SerialName("image") val imageName: String,
-    @Serializable(with = LocalDateSerializer::class)
-    val date: LocalDate,
+    @Serializable(LocaleDateTimeSerializer::class)
+    val date: LocalDateTime,
     val caption: String,
 )

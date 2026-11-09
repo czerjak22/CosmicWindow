@@ -26,24 +26,24 @@ fun AppNavigationBar(modifier: Modifier = Modifier, navController: NavController
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
 
-
     NavigationBar(
-        modifier = modifier.drawBehind {
-            val h = Spacing.s16.toPx()
-            drawRect(
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f)),
-                    startY = -h,
-                    endY = 0f,
-                ),
-                topLeft = Offset(0f, -h),
-                size = Size(size.width, h),
-            )
-        },
+        modifier =
+            modifier.drawBehind {
+                val h = Spacing.s16.toPx()
+                drawRect(
+                    brush =
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f)),
+                            startY = -h,
+                            endY = 0f,
+                        ),
+                    topLeft = Offset(0f, -h),
+                    size = Size(size.width, h),
+                )
+            },
         windowInsets = WindowInsets(bottom = 0),
         containerColor = MaterialTheme.colorScheme.primaryContainer,
-
-        ) {
+    ) {
         TopLevelDestination.entries.forEach { dest ->
             val selected = currentDestination?.route == dest.route
 

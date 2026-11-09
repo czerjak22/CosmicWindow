@@ -8,11 +8,13 @@ data class EarthState(
     val error: String?,
     val isLoading: Boolean,
     val selectedDate: LocalDate,
+    val selectedIndex: Int?,
 ) {
     constructor() : this(
         emptyList<Earth>(),
         error = null,
         selectedDate = LocalDate.now(),
         isLoading = true,
+        selectedIndex = null,
     )
 }

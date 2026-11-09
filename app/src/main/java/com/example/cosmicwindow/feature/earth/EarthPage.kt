@@ -7,18 +7,30 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,21 +38,30 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import coil3.compose.AsyncImage
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.SubcomposeAsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
 import com.example.cosmicwindow.core.designsystem.components.CustomPlayButton
+import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
+import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun EarthPage() {
+fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = {
             AppHeader(
@@ -58,26 +79,48 @@ fun EarthPage() {
             )
         },
     ) { innerPadding ->
+
         Column(
             modifier =
                 Modifier
                     .padding(innerPadding)
-                    .padding(horizontal = Spacing.s16)
+                    .padding(horizontal = Spacing.s16, vertical = Spacing.s16)
                     .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Spacing.s16),
         ) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                if (uiState.isLoading) {
+                    CircularProgressIndicator()
+                    return@Scaffold
+                }
+
+                if (uiState.error != null) {
+                    ErrorBox(text = uiState.error!!)
+                    return@Scaffold
+                }
+                if (uiState.images.isEmpty()) {
+                    ErrorBox(text = "No Images found!")
+                    return@Scaffold
+                }
+            }
+
             EpicChip(Modifier.align(Alignment.End))
-            EarthImageDisplay()
+            EarthImageDisplay(
+                modifier = Modifier.padding(horizontal = Spacing.s4),
+                imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
+                scale = 1.2f,
+            )
             ControlCard(
                 modifier = Modifier.padding(top = Spacing.s8),
-                captureTime = LocalDateTime.now(),
+                captureTime = uiState.images[uiState.selectedIndex!!].date,
+                index = uiState.selectedIndex ?: 0,
+                totalSize = uiState.images.size,
+                indexUpdate = viewModel::updateSelected,
             )
             InfoCard(
                 info =
-                    "Images captured by NASA's Earth Polychromatic Imaging Camera (EPIC)" +
-                        " aboard the NOAA DSCOVR spacecraft at" +
-                        " Lagrange point 1.",
+                    uiState.images[uiState.selectedIndex!!].caption,
             )
         }
     }
@@ -120,7 +163,17 @@ fun ControlCard(
     captureTime: LocalDateTime,
     index: Int = 8,
     totalSize: Int = 12,
+    indexUpdate: (Int) -> Unit,
 ) {
+    var isPlaying by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(isPlaying, index, totalSize) {
+        if (isPlaying && totalSize > 1) {
+            delay(500.milliseconds)
+            indexUpdate((index + 1) % totalSize)
+        }
+    }
+
     Box(
         modifier =
             modifier
@@ -163,7 +216,7 @@ fun ControlCard(
                             contentDescription = null,
                         )
                         Text(
-                            "Frame $index of $totalSize",
+                            "Frame ${index + 1} of $totalSize",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.W200,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -175,7 +228,7 @@ fun ControlCard(
             FrameSlider(
                 frameCount = totalSize,
                 currentIndex = index,
-                onFrameSelected = { },
+                onFrameSelected = indexUpdate,
             )
 
             Row(
@@ -186,14 +239,27 @@ fun ControlCard(
                 CircleIconButton(
                     icon = R.drawable.previous_frame_icon,
                     description = null,
-                    onClick = {},
+                    onClick = {
+                        when (index) {
+                            0 -> indexUpdate(totalSize - 1)
+                            else -> indexUpdate(index - 1)
+                        }
+                    },
                     iconSize = Spacing.s12,
                 )
-                CustomPlayButton(onClick = {})
+                CustomPlayButton(
+                    onClick = { isPlaying = !isPlaying },
+                    icon = if (!isPlaying) R.drawable.play_icon else R.drawable.cloud_saved,
+                )
                 CircleIconButton(
                     icon = R.drawable.next_frame_icon,
                     description = null,
-                    onClick = {},
+                    onClick = {
+                        when (index) {
+                            totalSize - 1 -> indexUpdate(0)
+                            else -> indexUpdate(index + 1)
+                        }
+                    },
                     iconSize = Spacing.s12,
                 )
                 Spacer(Modifier.weight(1f))
@@ -202,6 +268,7 @@ fun ControlCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FrameSlider(
     frameCount: Int,
@@ -217,6 +284,30 @@ fun FrameSlider(
             onValueChange = { onFrameSelected(it.roundToInt()) },
             valueRange = 0f..(frameCount - 1).toFloat(),
             steps = frameCount - 2,
+            thumb = {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(Spacing.s16)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape,
+                            ),
+                )
+            },
+            track = { sliderState ->
+                SliderDefaults.Track(
+                    sliderState = sliderState,
+                    modifier = Modifier.height(Spacing.s8),
+                    colors =
+                        SliderDefaults.colors(
+                            activeTrackColor = MaterialTheme.colorScheme.tertiary,
+                        ),
+                    thumbTrackGapSize = 0.dp,
+                    drawTick = { _, _ -> },
+                    drawStopIndicator = null,
+                )
+            },
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -248,35 +339,84 @@ fun EarthImageDisplay(
     scale: Float = 1.15f,
 ) {
     val glowColor = MaterialTheme.colorScheme.onPrimaryContainer
-    Box(modifier = modifier.fillMaxWidth()) {
-        Box(
-            Modifier
-                .padding(horizontal = Spacing.s20)
-                .drawBehind {
-                    val r = size.minDimension / 2f
-                    val haloRadius = r * 1.15f
-                    val edge = r / haloRadius
 
-                    drawCircle(
-                        brush =
-                            Brush.radialGradient(
-                                (edge - 0.05f) to
-                                    glowColor.copy(
-                                        alpha = 0.2f,
-                                    ),
-                                1f to Color.Transparent,
-                                center = center,
-                                radius = haloRadius,
-                            ),
-                        radius = haloRadius,
-                        center = center,
-                    )
-                }.clip(CircleShape),
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .aspectRatio(1f),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(Spacing.s20)
+                    .drawBehind {
+                        val r = size.minDimension / 2f
+                        val haloRadius = r * 1.2f
+
+                        drawCircle(
+                            brush =
+                                Brush.radialGradient(
+                                    colors =
+                                        listOf(
+                                            glowColor.copy(alpha = 0.15f),
+                                            Color.Transparent,
+                                        ),
+                                    center = center,
+                                    radius = haloRadius,
+                                ),
+                            radius = haloRadius,
+                            center = center,
+                        )
+                    }.clip(CircleShape),
+            contentAlignment = Alignment.Center,
         ) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = imageUrl,
                 contentDescription = "Earth Image",
-                Modifier.graphicsLayer(scaleX = scale, scaleY = scale),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                        },
+                contentScale = ContentScale.Crop,
+                loading = {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    CircleShape,
+                                ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(Spacing.s20),
+                        )
+                    }
+                },
+                error = {
+                    Box(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    CircleShape,
+                                ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.no_internet),
+                            contentDescription = "Image unavailable",
+                        )
+                    }
+                },
             )
         }
     }

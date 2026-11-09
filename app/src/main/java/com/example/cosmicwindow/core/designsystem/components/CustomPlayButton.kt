@@ -1,5 +1,6 @@
 package com.example.cosmicwindow.core.designsystem.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +16,11 @@ import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 
 @Composable
-fun CustomPlayButton(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+fun CustomPlayButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+    @DrawableRes icon: Int = R.drawable.play_icon,
+) {
     Box(
         modifier =
             modifier
@@ -29,7 +34,7 @@ fun CustomPlayButton(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
         contentAlignment = Alignment.Center,
     ) {
         Image(
-            painter = painterResource(R.drawable.play_icon),
+            painter = painterResource(icon),
             contentDescription = "Play",
         )
     }

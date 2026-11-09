@@ -104,9 +104,10 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
         }
 
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .verticalScroll((rememberScrollState())),
+            modifier =
+                Modifier
+                    .padding(innerPadding)
+                    .verticalScroll((rememberScrollState())),
         ) {
             TodayInSpace(
                 Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s8),
@@ -130,10 +131,11 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
             }
             if (uiState.isLoading) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Spacing.s8),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(Spacing.s8),
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
@@ -164,12 +166,11 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     FeaturedApodVideoCard(
                         Modifier.padding(horizontal = Spacing.s16),
                         apod = uiState.featuredVideoApod!!,
-
-                        )
+                    )
                 }
                 DataCard(
                     Modifier.padding(start = Spacing.s16, end = Spacing.s16, bottom = Spacing.s16),
-                    apod = uiState.apods.first()
+                    apod = uiState.apods.first(),
                 )
             }
         }
@@ -260,7 +261,7 @@ private fun PreviousApodStripe(
             ),
         )
         LazyRow(
-            modifier = Modifier.padding(bottom = Spacing.s8 ),
+            modifier = Modifier.padding(bottom = Spacing.s8),
             horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
             item {
