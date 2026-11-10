@@ -83,7 +83,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
 
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                LottieLoader()
+                LottieLoader(Modifier.padding(Spacing.s16))
             }
             return@Scaffold
         }
@@ -399,9 +399,7 @@ fun EarthImageDisplay(
                                 ),
                         contentAlignment = Alignment.Center,
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(Spacing.s20),
-                        )
+                        LottieLoader(Modifier.padding(Spacing.s16))
                     }
                 },
                 error = {

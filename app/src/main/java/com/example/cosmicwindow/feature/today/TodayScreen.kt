@@ -62,6 +62,7 @@ import com.example.cosmicwindow.core.designsystem.components.CurrentDatePicker
 import com.example.cosmicwindow.core.designsystem.components.CustomPlayButton
 import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.components.ExternalLinkOpenerButton
+import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.components.VideoPlayer
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
@@ -103,6 +104,18 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
             )
         }
 
+        if (uiState.isLoading) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                LottieLoader(Modifier.padding(Spacing.s16))
+            }
+            return@Scaffold
+        }
+
         Column(
             modifier =
                 Modifier
@@ -129,17 +142,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     onClick = viewModel::getCurrentApods,
                 )
             }
-            if (uiState.isLoading) {
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
-                return@Scaffold
-            }
+
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(Spacing.s24),
