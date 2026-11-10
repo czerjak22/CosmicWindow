@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -44,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.SubcomposeAsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
@@ -53,11 +53,9 @@ import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
-import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
@@ -82,20 +80,32 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
     ) { innerPadding ->
 
         if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding), contentAlignment = Alignment.Center
+            ) {
                 LottieLoader(Modifier.padding(Spacing.s16))
             }
             return@Scaffold
         }
 
         if (uiState.error != null) {
-            Box(modifier = Modifier.fillMaxWidth().padding(innerPadding), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(innerPadding), contentAlignment = Alignment.Center
+            ) {
                 ErrorBox(text = uiState.error!!, onClick = { viewModel.loadEarthImages() })
             }
             return@Scaffold
         }
         if (uiState.images.isEmpty()) {
-            Box(modifier = Modifier.fillMaxWidth().padding(innerPadding), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(innerPadding), contentAlignment = Alignment.Center
+            ) {
                 ErrorBox(text = "No Images found!")
             }
             return@Scaffold
@@ -122,6 +132,8 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                 index = uiState.selectedIndex ?: 0,
                 totalSize = uiState.images.size,
                 indexUpdate = viewModel::updateSelected,
+                startPlayback = viewModel::startPlayback,
+                stopPlayback = viewModel::stopPlayback,
             )
             InfoCard(
                 info =
@@ -169,13 +181,16 @@ fun ControlCard(
     index: Int = 8,
     totalSize: Int = 12,
     indexUpdate: (Int) -> Unit,
+    startPlayback: () -> Unit,
+    stopPlayback: () -> Unit
 ) {
     var isPlaying by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(isPlaying, index, totalSize) {
-        if (isPlaying && totalSize > 1) {
-            delay(500.milliseconds)
-            indexUpdate((index + 1) % totalSize)
+    LaunchedEffect(isPlaying, totalSize) {
+        if (isPlaying) {
+            startPlayback()
+        } else {
+            stopPlayback()
         }
     }
 
@@ -233,7 +248,11 @@ fun ControlCard(
             FrameSlider(
                 frameCount = totalSize,
                 currentIndex = index,
-                onFrameSelected = indexUpdate,
+                onFrameSelected = { index ->
+                    stopPlayback()
+                    isPlaying = false
+                    indexUpdate(index)
+                },
             )
 
             Row(
@@ -245,6 +264,8 @@ fun ControlCard(
                     icon = R.drawable.previous_frame_icon,
                     description = null,
                     onClick = {
+                        stopPlayback()
+                        isPlaying = false
                         when (index) {
                             0 -> indexUpdate(totalSize - 1)
                             else -> indexUpdate(index - 1)
@@ -259,6 +280,8 @@ fun ControlCard(
                     icon = R.drawable.next_frame_icon,
                     description = null,
                     onClick = {
+                        stopPlayback()
+                        isPlaying = false
                         when (index) {
                             totalSize - 1 -> indexUpdate(0)
                             else -> indexUpdate(index + 1)
@@ -374,7 +397,8 @@ fun EarthImageDisplay(
                             radius = haloRadius,
                             center = center,
                         )
-                    }.clip(CircleShape),
+                    }
+                    .clip(CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             SubcomposeAsyncImage(

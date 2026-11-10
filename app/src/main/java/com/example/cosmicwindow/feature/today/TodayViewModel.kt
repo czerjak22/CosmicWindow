@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cosmicwindow.data.ApodRepository
 import com.example.cosmicwindow.model.Apod
-import com.example.cosmicwindow.model.Mediatype
+import com.example.cosmicwindow.model.MediaType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -84,6 +84,6 @@ class TodayViewModel
 
         private fun searchForFirstVideoApod(apods: List<Apod>): Apod? =
             apods.firstOrNull {
-                it.mediaType == Mediatype.VIDEO && it.videoUrl != null
+                it.mediaType == MediaType.VIDEO && it.videoUrl != null
             }
     }

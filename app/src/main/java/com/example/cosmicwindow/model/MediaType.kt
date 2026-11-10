@@ -1,6 +1,6 @@
 package com.example.cosmicwindow.model
 
-enum class Mediatype {
+enum class MediaType {
     PICTURE,
     VIDEO,
 }
