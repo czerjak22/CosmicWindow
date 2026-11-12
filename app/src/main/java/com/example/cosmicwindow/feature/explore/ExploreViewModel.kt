@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.isActive
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,8 +43,7 @@ class ExploreViewModel
     @OptIn(FlowPreview::class)
     fun watchQueryChanges(): Unit {
         viewModelScope.launch {
-            _uiState
-                .map { it.queryState.copy(page = 1) }
+            _uiState.map { it.queryState.copy(page = 1) }
                 .distinctUntilChanged()
                 .debounce(400.milliseconds)
                 .collectLatest { newSearch() }
@@ -57,7 +55,6 @@ class ExploreViewModel
     }
 
     fun newSearch(): Unit {
-
         val query = _uiState.value.queryState.copy(
             page = 1,
             query = _uiState.value.queryState.query.trim(),
@@ -68,23 +65,18 @@ class ExploreViewModel
 
         _uiState.update {
             it.copy(
-                isLoading = true,
-                searchItems = emptyList(),
-                endReached = false,
-                error = null
+                isLoading = true, searchItems = emptyList(), endReached = false, error = null
             )
         }
 
         loadMoreJob?.cancel()
         newSearchJob?.cancel()
         newSearchJob = viewModelScope.launch {
-            exploreRepository.getSearchByQuery(_uiState.value.queryState).fold(onSuccess = { result ->
+            exploreRepository.getSearchByQuery(query).fold(onSuccess = { result ->
                 Log.w("ViewModel", "returned Search: $result")
                 _uiState.update {
                     it.copy(
-                        isLoading = false,
-                        searchItems = result.searchItems,
-                        queryState = it.queryState.copy(page = 1)
+                        isLoading = false, searchItems = result.searchItems, queryState = query
                     )
                 }
             }, onFailure = { err ->
@@ -102,22 +94,42 @@ class ExploreViewModel
         _uiState.update { it.copy(queryState = it.queryState.copy(page = it.queryState.page + 1)) }
     }
 
+    fun onErrorRetry() {
+        _uiState.update { it.copy(queryState = QueryExplore(), isLoading = true, error = null) }
+        newSearch()
+    }
+
 
     fun loadMore() {
+        if (_uiState.value.isLoading || _uiState.value.endReached) {
+            return
+        }
 
-        val s = _uiState.value
-        if (s.isLoading) return
         _uiState.update {
             it.copy(isLoading = true)
         }
-
         increasePageNumber()
+        val stateVal = _uiState.value
+        val query = stateVal.queryState
         loadMoreJob = viewModelScope.launch {
-            exploreRepository.getSearchByQuery(_uiState.value.queryState).fold(onSuccess = { extendedItems ->
-                val newList: List<SearchResultItem> = _uiState.value.searchItems + extendedItems.searchItems
-
+            exploreRepository.getSearchByQuery(query).fold(onSuccess = { newItems ->
+                val existingIds = stateVal.searchItems.mapTo(HashSet()) { it.nasaId }
+                val fresh = newItems.searchItems.filter { it.nasaId !in existingIds }
+                val newList: List<SearchResultItem> = stateVal.searchItems + fresh
+                if (
+                    newItems.searchItems.size < query.pageSize || fresh.isEmpty()
+                ) {
+                    Log.w(
+                        "Repository",
+                        "End reached true ${newItems.searchItems.size}< ${query.pageSize} || fresh.isEmpty: ${fresh.isEmpty()}"
+                    )
+                }
                 _uiState.update {
-                    it.copy(isLoading = false, searchItems = newList)
+                    it.copy(
+                        isLoading = false,
+                        searchItems = newList,
+                        endReached = newItems.searchItems.size < query.pageSize || fresh.isEmpty()
+                    )
                 }
             }, onFailure = { err ->
                 if (err is CancellationException) throw err

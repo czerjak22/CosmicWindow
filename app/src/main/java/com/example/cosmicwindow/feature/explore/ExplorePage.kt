@@ -1,5 +1,7 @@
 package com.example.cosmicwindow.feature.explore
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -43,13 +45,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -57,7 +62,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.palette.graphics.Palette
 import coil3.compose.AsyncImage
+import coil3.toBitmap
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
 import com.example.cosmicwindow.core.designsystem.components.ErrorBox
@@ -88,10 +95,9 @@ fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel()) {
         },
     ) { innerPadding ->
 
-        // todo refresh hook impl
         if (uiState.error != null) {
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                ErrorBox(text = uiState.error!!, onClick = { })
+                ErrorBox(text = uiState.error!!, onClick = viewModel::onErrorRetry)
             }
             return@Scaffold
         }
@@ -131,8 +137,18 @@ fun CardElement(
     onClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(RadiusSize.r16)
+    var isLoaded by remember(searchItem.nasaId) { mutableStateOf(false) }
+    var accentColor by remember(searchItem.nasaId) { mutableStateOf<Color?>(null) }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (isLoaded) 1f else 0f,
+        animationSpec = tween(300),
+        label = "cardAlpha",
+    )
+
     Surface(
         modifier = modifier
+            .graphicsLayer { this.alpha = alpha }
             .clip(shape)
             .clickable(onClick = onClick),
         shape = shape,
@@ -146,7 +162,17 @@ fun CardElement(
                     modifier = Modifier.fillMaxWidth(),
                     contentScale = ContentScale.FillWidth,
 
-                    )
+                    onSuccess = { state ->
+                        isLoaded = true
+                        val bitmap = state.result.image.toBitmap()
+                        Palette.from(bitmap).generate { palette ->
+                            val swatch = palette?.vibrantSwatch
+                                ?: palette?.mutedSwatch
+                                ?: palette?.dominantSwatch
+                            accentColor = swatch?.let { Color(it.rgb) }
+                        }
+                    },
+                )
 
                 Box(
                     Modifier

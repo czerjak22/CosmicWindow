@@ -15,21 +15,22 @@ import kotlin.coroutines.cancellation.CancellationException
 class ExploreRepository
 @Inject
 constructor(
-   private val exploreApi: ExploreApi,
+    private val exploreApi: ExploreApi,
 ) {
     suspend fun getSearchByQuery(query: QueryExplore): Result<SearchResult> {
         try {
             val queryRequest = QueryMapper.map(query)
-            Log.d("Repository","newSearch with params: $query")
+            Log.d("Repository", "newSearch with params: $query")
+
+            val response = exploreApi.search(
+                queryRequest.query,
+                page = queryRequest.page,
+                pageSize = queryRequest.pageSize,
+                keywords = queryRequest.filters,
+            )
+
             return Result.success(
-                ResponseMapper.map(
-                    exploreApi.search(
-                        queryRequest.query,
-                        page = queryRequest.page,
-                        pageSize = queryRequest.pageSize,
-                        keywords = queryRequest.filters,
-                    )
-                )
+                ResponseMapper.map(response)
             )
 
         } catch (ex: UnknownHostException) {

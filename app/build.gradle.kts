@@ -89,6 +89,9 @@ dependencies {
     implementation(libs.exo.ui.compose)
     // lottie player
     implementation(libs.lottie.compose)
+    // palette
+    implementation(libs.palette)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

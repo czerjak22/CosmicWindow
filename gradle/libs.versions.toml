@@ -22,12 +22,13 @@ foundation = "1.12.1"
 kotlinxSerializationJson = "1.12.0"
 mappie = "2.4.21-2.4.5"
 okhttp = "5.5.1"
-jsoup = "1.23.2"
+jsoup = "1.24.1"
 coil = "3.6.3"
 exo = "1.11.1"
 media3Ui = "1.11.1"
 ktlint = "14.2.0"
-lottie="6.6.7"
+lottie="6.7.1"
+palette="1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -81,6 +82,9 @@ exo-ui-compose = {module="androidx.media3:media3-ui-compose", version.ref = "exo
 androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3Ui" }
 #lottie player
 lottie-compose = {module='com.airbnb.android:lottie-compose',version.ref="lottie"}
+#imagebitmap
+palette={module='androidx.palette:palette-ktx',version.ref="palette"}
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
