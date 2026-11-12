@@ -35,6 +35,8 @@ class ExploreViewModel
     private var loadMoreJob: Job? = null;
     private var lastSearched: QueryExplore? = null;
 
+    val prefetchVariable = 4;
+
     init {
         watchQueryChanges()
     }

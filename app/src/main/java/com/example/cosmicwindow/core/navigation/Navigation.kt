@@ -14,9 +14,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.cosmicwindow.feature.apod.ApodDetailsScreen
+import com.example.cosmicwindow.feature.today.apod.ApodDetailsScreen
 import com.example.cosmicwindow.feature.earth.EarthPage
 import com.example.cosmicwindow.feature.explore.ExplorePage
+import com.example.cosmicwindow.feature.explore.detail.ExploreDetailScreen
 import com.example.cosmicwindow.feature.today.TodayScreen
 
 @Composable
@@ -60,7 +61,17 @@ fun Navigation(modifier: Modifier = Modifier) {
                 EarthPage()
             }
             composable(Routes.explore) {
-                ExplorePage()
+                ExplorePage(
+                    onItemClick = { nasaId -> navController.navigate(Routes.exploreDetailRoute(nasaId)) }
+                )
+            }
+            composable(
+                Routes.exploreDetail,
+                arguments = listOf(navArgument("nasaId") { type = NavType.StringType }),
+            ) {
+                ExploreDetailScreen(
+                    onClickBack = { navController.popBackStack() },
+                )
             }
             composable(Routes.saved) {
                 Text("Saved page")

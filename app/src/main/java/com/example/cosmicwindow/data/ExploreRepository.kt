@@ -1,11 +1,13 @@
 package com.example.cosmicwindow.data
 
 import android.util.Log
+import android.util.LruCache
 import com.example.cosmicwindow.data.mapper.QueryMapper
 import com.example.cosmicwindow.data.mapper.ResponseMapper
 import com.example.cosmicwindow.data.network.ExploreApi
 import com.example.cosmicwindow.model.QueryExplore
 import com.example.cosmicwindow.model.SearchResult
+import com.example.cosmicwindow.model.SearchResultItem
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.net.UnknownHostException
@@ -17,6 +19,8 @@ class ExploreRepository
 constructor(
     private val exploreApi: ExploreApi,
 ) {
+
+    private val cache = LruCache<String, SearchResultItem>(200)
     suspend fun getSearchByQuery(query: QueryExplore): Result<SearchResult> {
         try {
             val queryRequest = QueryMapper.map(query)
@@ -28,10 +32,40 @@ constructor(
                 pageSize = queryRequest.pageSize,
                 keywords = queryRequest.filters,
             )
+            val resultSearch = ResponseMapper.map(response)
+            resultSearch.searchItems.forEach { cache.put(it.nasaId, it) }
+            return Result.success(resultSearch)
 
-            return Result.success(
-                ResponseMapper.map(response)
+        } catch (ex: UnknownHostException) {
+            Log.e("Repository", ex.toString())
+            return Result.failure(RepositoryException("No internet connection, please retry when online"))
+        } catch (ex: CancellationException) {
+            Log.e("Repository", ex.toString())
+            throw ex
+        } catch (ex: Exception) {
+            Log.e("Repository", ex.toString())
+            return Result.failure(RepositoryException("Something Bad Happened"))
+        }
+    }
+
+    suspend fun getItemDetailsById(id: String): Result<SearchResultItem> {
+        try {
+
+            val find = cache.get(id)
+            if (find != null) {
+                Log.d("Repository", "Got element nasaId:$id from cache")
+                return Result.success(find)
+            }
+
+            val response = exploreApi.searchById(
+                nasaId = id
             )
+            val resultSearch = ResponseMapper.map(response)
+            resultSearch.searchItems.forEach { cache.put(it.nasaId, it) }
+            if (resultSearch.totalFinds > 1) {
+                return Result.failure(RepositoryException("The given nasaId has multiple items!"))
+            }
+            return Result.success(resultSearch.searchItems.first())
 
         } catch (ex: UnknownHostException) {
             Log.e("Repository", ex.toString())

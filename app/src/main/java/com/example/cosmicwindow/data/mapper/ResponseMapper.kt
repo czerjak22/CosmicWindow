@@ -14,7 +14,12 @@ object ResponseMapper {
         val items = from.items.filter { item -> item.data.isNotEmpty() }.map { item ->
             val data = item.data.first();
             val thumbnailLink = item.links.firstOrNull { item -> item.rel == "preview" }
-            val originalLink = item.links.firstOrNull { item -> item.rel == "canonical" }
+            var originalLink = item.links.firstOrNull { item -> item.rel == "canonical" }
+
+            if (originalLink == null || originalLink.href.contains(regex = Regex("\\.tif$"))) {
+                originalLink =
+                    item.links.firstOrNull { item -> item.rel == "alternate" && item.href.contains("~large") }
+            }
             SearchResultItem(
                 nasaId = data.nasaId,
                 title = data.title,

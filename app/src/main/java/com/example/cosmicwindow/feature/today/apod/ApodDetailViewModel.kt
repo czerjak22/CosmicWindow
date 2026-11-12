@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.feature.apod
+package com.example.cosmicwindow.feature.today.apod
 
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle

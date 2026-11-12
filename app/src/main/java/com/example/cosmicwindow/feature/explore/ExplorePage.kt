@@ -82,7 +82,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel()) {
+fun ExplorePage(
+    viewModel: ExploreViewModel = hiltViewModel(),
+    onItemClick: (String) -> Unit
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
@@ -130,7 +133,9 @@ fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel()) {
                 Modifier.fillMaxSize(),
                 uiState.searchItems,
                 isLoadingMore = uiState.isLoading,
-                onLoadMore = viewModel::loadMore
+                onLoadMore = viewModel::loadMore,
+                onItemClick = onItemClick,
+                prefetchVariable = viewModel.prefetchVariable
             )
         }
     }
@@ -139,9 +144,7 @@ fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel()) {
 
 @Composable
 fun CardElement(
-    modifier: Modifier = Modifier,
-    searchItem: SearchResultItem,
-    onClick: () -> Unit
+    modifier: Modifier = Modifier, searchItem: SearchResultItem, onClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(RadiusSize.r16)
     var isLoaded by remember(searchItem.nasaId) { mutableStateOf(false) }
@@ -159,15 +162,12 @@ fun CardElement(
             .clip(shape)
             .clickable(onClick = onClick),
         shape = shape,
-        color = MaterialTheme.colorScheme.surfaceVariant
-    ) {
+        color = MaterialTheme.colorScheme.surfaceVariant) {
         Column {
             Box {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(searchItem.thumbnailUrl)
-                        .allowHardware(false)
-                        .build(),
+                    model = ImageRequest.Builder(LocalContext.current).data(searchItem.thumbnailUrl)
+                        .allowHardware(false).build(),
                     contentDescription = searchItem.title,
                     modifier = Modifier.fillMaxWidth(),
                     contentScale = ContentScale.FillWidth,
@@ -177,14 +177,10 @@ fun CardElement(
                         val bitmap = state.result.image.toBitmap()
                         scope.launch {
                             accentColor = withContext(Dispatchers.Default) {
-                                val palette = Palette.from(bitmap)
-                                    .clearFilters()
-                                    .generate()
-                                val swatch = palette.lightVibrantSwatch
-                                    ?: palette.vibrantSwatch
-                                    ?: palette.lightMutedSwatch
-                                    ?: palette.mutedSwatch
-                                    ?: palette.dominantSwatch
+                                val palette = Palette.from(bitmap).clearFilters().generate()
+                                val swatch =
+                                    palette.lightVibrantSwatch ?: palette.vibrantSwatch ?: palette.lightMutedSwatch
+                                    ?: palette.mutedSwatch ?: palette.dominantSwatch
                                 swatch?.let { Color(it.rgb) }
                             }
                         }
@@ -197,8 +193,7 @@ fun CardElement(
                         .background(
                             Brush.verticalGradient(
                                 listOf(
-                                    Color.Transparent,
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                                    Color.Transparent, MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
                                 )
                             )
                         )
@@ -262,8 +257,7 @@ fun LoadingRow(modifier: Modifier = Modifier) {
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(
-            Spacing.s8,
-            alignment = Alignment.CenterHorizontally
+            Spacing.s8, alignment = Alignment.CenterHorizontally
         )
     ) {
         CircularProgressIndicator()
@@ -278,12 +272,15 @@ fun LoadingRow(modifier: Modifier = Modifier) {
     }
 }
 
+
 @Composable
 fun ImageGrid(
     modifier: Modifier = Modifier,
     searchResults: List<SearchResultItem>,
     isLoadingMore: Boolean,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
+    onItemClick: (String) -> Unit,
+    prefetchVariable: Int,
 ) {
     val gridState = rememberLazyStaggeredGridState()
 
@@ -291,7 +288,7 @@ fun ImageGrid(
         derivedStateOf {
             val info = gridState.layoutInfo
             val lastVisible = info.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
-            lastVisible >= info.totalItemsCount - 4   // prefetch 4 items before the end
+            lastVisible >= info.totalItemsCount - prefetchVariable
         }
     }
 
@@ -310,20 +307,23 @@ fun ImageGrid(
 
         if (!isLoadingMore && searchResults.isEmpty()) {
             item(span = StaggeredGridItemSpan.FullLine) {
-                Box(Modifier.fillMaxWidth().padding(Spacing.s16), contentAlignment = Alignment.Center) {
-                    Text("Nothing Found",
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(Spacing.s16), contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Nothing Found",
                         style = MaterialTheme.typography.headlineLarge,
-                        color = MaterialTheme.colorScheme.onSurface,)
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             }
             return@LazyVerticalStaggeredGrid
         }
         items(
-            items = searchResults,
-            key = { it.nasaId }
-        )
-        { searchItem ->
-            CardElement(onClick = {}, searchItem = searchItem)
+            items = searchResults, key = { it.nasaId }) { searchItem ->
+            CardElement(onClick = { onItemClick(searchItem.nasaId) }, searchItem = searchItem)
         }
 
         if (isLoadingMore) {
@@ -346,18 +346,14 @@ fun ImageGrid(
 fun FilterButton(filter: Filter, onClick: () -> Unit) {
 
     Button(
-        onClick = onClick,
-        shape = RoundedCornerShape(RadiusSize.r9999),
-        colors = ButtonDefaults.buttonColors(
+        onClick = onClick, shape = RoundedCornerShape(RadiusSize.r9999), colors = ButtonDefaults.buttonColors(
             containerColor = if (filter.isActive) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.secondary,
             contentColor = if (filter.isActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondary
         )
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
-        )
-        {
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
+        ) {
             Icon(
                 painter = painterResource(filter.icon),
                 contentDescription = "filterButton",
@@ -375,18 +371,14 @@ fun FilterButton(filter: Filter, onClick: () -> Unit) {
 @Composable
 fun FilterBar(modifier: Modifier = Modifier, filters: List<Filter>, onFilterClick: (Int) -> Unit) {
     LazyRow(
-        modifier = modifier
-            .verticalScroll(
-                rememberScrollState(),
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
+        modifier = modifier.verticalScroll(
+            rememberScrollState(),
+        ), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
     ) {
         item {
             Spacer(Modifier.width(Spacing.s8))
         }
-        items(filters.size)
-        { index ->
+        items(filters.size) { index ->
             FilterButton(filter = filters[index], onClick = { onFilterClick(index) })
         }
         item {
@@ -456,8 +448,7 @@ fun SearchBar(
                 lineLimits = TextFieldLineLimits.SingleLine,
                 decorator = TextFieldDecorator { innerTextField ->
                     Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterStart
+                        modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart
                     ) {
                         if (textFieldState.text.isEmpty()) {
                             Text(
@@ -470,14 +461,10 @@ fun SearchBar(
                         }
                         innerTextField()
                     }
-                }
-            )
+                })
             IconButton(
-                modifier = Modifier
-                    .padding(vertical = Spacing.s4),
-                onClick = onVoiceInputClicked
-            )
-            {
+                modifier = Modifier.padding(vertical = Spacing.s4), onClick = onVoiceInputClicked
+            ) {
                 Image(
                     painter = painterResource(R.drawable.voice_icon),
                     contentDescription = "voice input button",

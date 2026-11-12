@@ -14,5 +14,9 @@ interface ExploreApi {
         @Query("keywords") keywords: String?,
     ): SearchResponseDto
 
+    @GET("search")
+    suspend fun searchById(
+        @Query("nasa_id") nasaId: String,
+    ): SearchResponseDto
 
 }
