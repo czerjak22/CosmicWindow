@@ -47,6 +47,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,6 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -64,6 +66,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.palette.graphics.Palette
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
 import coil3.toBitmap
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
@@ -73,6 +77,9 @@ import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.model.Filter
 import com.example.cosmicwindow.model.SearchResultItem
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel()) {
@@ -139,7 +146,7 @@ fun CardElement(
     val shape = RoundedCornerShape(RadiusSize.r16)
     var isLoaded by remember(searchItem.nasaId) { mutableStateOf(false) }
     var accentColor by remember(searchItem.nasaId) { mutableStateOf<Color?>(null) }
-
+    val scope = rememberCoroutineScope()
     val alpha by animateFloatAsState(
         targetValue = if (isLoaded) 1f else 0f,
         animationSpec = tween(300),
@@ -157,7 +164,10 @@ fun CardElement(
         Column {
             Box {
                 AsyncImage(
-                    model = searchItem.thumbnailUrl,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(searchItem.thumbnailUrl)
+                        .allowHardware(false)
+                        .build(),
                     contentDescription = searchItem.title,
                     modifier = Modifier.fillMaxWidth(),
                     contentScale = ContentScale.FillWidth,
@@ -165,11 +175,18 @@ fun CardElement(
                     onSuccess = { state ->
                         isLoaded = true
                         val bitmap = state.result.image.toBitmap()
-                        Palette.from(bitmap).generate { palette ->
-                            val swatch = palette?.vibrantSwatch
-                                ?: palette?.mutedSwatch
-                                ?: palette?.dominantSwatch
-                            accentColor = swatch?.let { Color(it.rgb) }
+                        scope.launch {
+                            accentColor = withContext(Dispatchers.Default) {
+                                val palette = Palette.from(bitmap)
+                                    .clearFilters()
+                                    .generate()
+                                val swatch = palette.lightVibrantSwatch
+                                    ?: palette.vibrantSwatch
+                                    ?: palette.lightMutedSwatch
+                                    ?: palette.mutedSwatch
+                                    ?: palette.dominantSwatch
+                                swatch?.let { Color(it.rgb) }
+                            }
                         }
                     },
                 )
@@ -195,8 +212,10 @@ fun CardElement(
                     Text(
                         text = searchItem.nasaId,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = Spacing.s8, vertical = Spacing.s4)
+                        color = accentColor ?: MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = Spacing.s8, vertical = Spacing.s4),
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip
                     )
                 }
             }
@@ -227,7 +246,7 @@ fun CardElement(
                         Text(
                             text = searchItem.center,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = accentColor ?: MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -288,6 +307,17 @@ fun ImageGrid(
         verticalItemSpacing = Spacing.s8,
         horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
+
+        if (!isLoadingMore && searchResults.isEmpty()) {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                Box(Modifier.fillMaxWidth().padding(Spacing.s16), contentAlignment = Alignment.Center) {
+                    Text("Nothing Found",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onSurface,)
+                }
+            }
+            return@LazyVerticalStaggeredGrid
+        }
         items(
             items = searchResults,
             key = { it.nasaId }
