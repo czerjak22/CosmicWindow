@@ -126,7 +126,7 @@ fun Details(modifier: Modifier = Modifier, searchResult: SearchResultItem) {
 
                 ColumnElement(
                     title = "Observation Date",
-                    content = searchResult.dateCreated.format(DateTimeFormatter.ofPattern("MM dd, yyy"))
+                    content = searchResult.dateCreated.format(DateTimeFormatter.ofPattern("MMM dd, yyy"))
                 )
                 if (searchResult.center != null) {
                     ColumnElement(
@@ -158,7 +158,9 @@ fun ColumnElement(modifier: Modifier = Modifier, title: String, content: String)
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            content, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground
+            AnnotatedString.fromHtml(content),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }

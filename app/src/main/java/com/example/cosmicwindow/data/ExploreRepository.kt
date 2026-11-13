@@ -37,13 +37,13 @@ constructor(
             return Result.success(resultSearch)
 
         } catch (ex: UnknownHostException) {
-            Log.e("Repository", ex.toString())
+            Log.e("Repository", "getSearchByQuery: $ex")
             return Result.failure(RepositoryException("No internet connection, please retry when online"))
         } catch (ex: CancellationException) {
-            Log.e("Repository", ex.toString())
+            Log.e("Repository", "getSearchByQuery: $ex")
             throw ex
         } catch (ex: Exception) {
-            Log.e("Repository", ex.toString())
+            Log.e("Repository", "getSearchByQuery: $ex")
             return Result.failure(RepositoryException("Something Bad Happened"))
         }
     }
@@ -68,13 +68,13 @@ constructor(
             return Result.success(resultSearch.searchItems.first())
 
         } catch (ex: UnknownHostException) {
-            Log.e("Repository", ex.toString())
+            Log.e("Repository", "getItemDetailsById: $ex")
             return Result.failure(RepositoryException("No internet connection, please retry when online"))
         } catch (ex: CancellationException) {
-            Log.e("Repository", ex.toString())
+            Log.e("Repository", "getItemDetailsById: $ex")
             throw ex
         } catch (ex: Exception) {
-            Log.e("Repository", ex.toString())
+            Log.e("Repository", "getItemDetailsById: $ex")
             return Result.failure(RepositoryException("Something Bad Happened"))
         }
     }

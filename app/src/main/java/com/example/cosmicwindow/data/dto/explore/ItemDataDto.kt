@@ -7,7 +7,13 @@ import kotlinx.serialization.Serializable
 data class ItemDataDto(
     @SerialName("nasa_id") val nasaId: String,
     val title: String,
-    @SerialName("date_created") val dateCreated: String,
-    val description: String,
+
+    @SerialName("date_created")
+    val dateCreated: String,
+
+    val description: String?=null,
+
+    @SerialName("description_508")
+    val description508: String="",
     val center: String? = null,
 )

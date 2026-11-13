@@ -20,13 +20,14 @@ object ResponseMapper {
                 originalLink =
                     item.links.firstOrNull { item -> item.rel == "alternate" && item.href.contains("~large") }
             }
+
             SearchResultItem(
                 nasaId = data.nasaId,
                 title = data.title,
                 dateCreated = Instant.parse(data.dateCreated).atZone(ZoneOffset.UTC).toLocalDate(),
                 thumbnailUrl = thumbnailLink?.href,
                 originalUrl = originalLink?.href,
-                description = data.description,
+                description = data.description ?: data.description508 ,
                 center = data.center,
             )
         }

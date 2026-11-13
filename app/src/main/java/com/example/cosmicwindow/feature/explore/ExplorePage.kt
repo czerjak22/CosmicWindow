@@ -1,5 +1,14 @@
 package com.example.cosmicwindow.feature.explore
 
+import android.app.Activity
+import android.app.Activity.RESULT_OK
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.speech.RecognizerIntent
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -31,6 +40,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldDecorator
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -77,6 +87,7 @@ import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.model.Filter
 import com.example.cosmicwindow.model.SearchResultItem
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -123,7 +134,7 @@ fun ExplorePage(
                 modifier = Modifier.padding(horizontal = Spacing.s16),
                 onQueryChanged = { text -> viewModel.onQueryChanged(text) },
                 onSearch = { viewModel.newSearch() },
-                onVoiceInputClicked = {})
+            )
 
             FilterBar(
                 onFilterClick = viewModel::toggleFilter,
@@ -393,15 +404,48 @@ fun SearchBar(
     modifier: Modifier = Modifier,
     onQueryChanged: (String) -> Unit,
     onSearch: () -> Unit,
-    onVoiceInputClicked: () -> Unit
 ) {
     val textFieldState = rememberTextFieldState()
     val keyboardController = LocalSoftwareKeyboardController.current
     val interactionSource = remember { MutableInteractionSource() }
+    val context = LocalContext.current
 
     LaunchedEffect(textFieldState.text.toString()) {
         onQueryChanged(textFieldState.text.toString())
     }
+
+    val speechLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val spoken = result.data
+                ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                ?.firstOrNull()
+            if (!spoken.isNullOrBlank()) {
+                textFieldState.setTextAndPlaceCursorAtEnd(spoken)
+                onQueryChanged(spoken)
+                onSearch()
+            }
+        }
+    }
+
+    val startVoiceInput = {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+            )
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Search NASA images")
+        }
+        try {
+            speechLauncher.launch(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(context, "Speech recognition not available", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(RadiusSize.r9999),
@@ -463,7 +507,8 @@ fun SearchBar(
                     }
                 })
             IconButton(
-                modifier = Modifier.padding(vertical = Spacing.s4), onClick = onVoiceInputClicked
+                modifier = Modifier.padding(vertical = Spacing.s4),
+                onClick = startVoiceInput
             ) {
                 Image(
                     painter = painterResource(R.drawable.voice_icon),

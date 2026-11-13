@@ -82,6 +82,7 @@ class ExploreViewModel
                     )
                 }
             }, onFailure = { err ->
+                Log.e("ViewModel", "Error: " + (err.message ?: " "))
                 _uiState.update {
                     if (err is CancellationException) throw err
                     it.copy(isLoading = false, error = err.message)
@@ -97,7 +98,7 @@ class ExploreViewModel
     }
 
     fun onErrorRetry() {
-        _uiState.update { it.copy(queryState = QueryExplore(), isLoading = true, error = null) }
+        _uiState.update { it.copy(queryState = it.queryState.copy(query = ""), isLoading = true, error = null) }
         newSearch()
     }
 
@@ -134,6 +135,7 @@ class ExploreViewModel
                     )
                 }
             }, onFailure = { err ->
+                Log.e("ViewModel", "Error: " + (err.message ?: " "))
                 if (err is CancellationException) throw err
                 _uiState.update {
                     it.copy(isLoading = false, error = err.message)
