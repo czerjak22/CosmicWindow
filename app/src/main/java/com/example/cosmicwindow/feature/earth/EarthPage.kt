@@ -38,13 +38,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.SubcomposeAsyncImage
+import coil3.imageLoader
+import coil3.request.ImageRequest
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
@@ -53,15 +55,18 @@ import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
+import com.example.cosmicwindow.model.Earth
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
+
         topBar = {
             AppHeader(
                 leftIcon = R.drawable.earth_header_icon,
@@ -85,7 +90,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                     .fillMaxSize()
                     .padding(innerPadding), contentAlignment = Alignment.Center
             ) {
-                LottieLoader(Modifier.padding(Spacing.s16))
+                LottieLoader(Modifier.size(Spacing.s48))
             }
             return@Scaffold
         }
@@ -111,16 +116,21 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
             return@Scaffold
         }
 
+
+
         Column(
             modifier =
                 Modifier
                     .padding(innerPadding)
-                    .padding(horizontal = Spacing.s16, vertical = Spacing.s16)
+                    .padding(horizontal = Spacing.s16)
                     .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Spacing.s16),
         ) {
             EpicChip(Modifier.align(Alignment.End))
+            PreloadImages(
+                images = uiState.images
+            )
             EarthImageDisplay(
                 modifier = Modifier.padding(horizontal = Spacing.s4),
                 imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
@@ -354,6 +364,22 @@ fun FrameSlider(
                 "Frame $frameCount",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSecondary,
+            )
+        }
+    }
+}
+
+@Composable
+fun PreloadImages(images: List<Earth>) {
+    val context = LocalContext.current
+
+    LaunchedEffect(images) {
+        val loader = context.imageLoader
+        images.forEach { url ->
+            loader.enqueue(
+                ImageRequest.Builder(context)
+                    .data(url.imageUrl)
+                    .build()
             )
         }
     }

@@ -26,11 +26,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -58,6 +61,7 @@ import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
+import com.example.cosmicwindow.core.designsystem.components.CollapsingColumn
 import com.example.cosmicwindow.core.designsystem.components.CurrentDatePicker
 import com.example.cosmicwindow.core.designsystem.components.CustomPlayButton
 import com.example.cosmicwindow.core.designsystem.components.ErrorBox
@@ -71,30 +75,17 @@ import com.example.cosmicwindow.core.utils.shareLink
 import com.example.cosmicwindow.model.Apod
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod) -> Unit) {
     var showDatePicker by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            AppHeader(
-                modifier = Modifier,
-                leftIcon = R.drawable.header_image,
-                onClick = { showDatePicker = true },
-                leftIconComposable = {
-                    Icon(
-                        painterResource(R.drawable.calendar_icon),
-                        contentDescription = "Day set icon",
-                        tint = MaterialTheme.colorScheme.onSecondary,
-                    )
-                },
-                mainTitle = "Cosmic Window",
-                secondaryTitle = "ASTRONOMY PICTURE OF THE DAY",
-            )
-        },
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { innerPadding ->
 
         if (showDatePicker) {
@@ -111,10 +102,11 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                         .fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                LottieLoader(Modifier.size(Spacing.s16))
+                LottieLoader(Modifier.size(Spacing.s48))
             }
             return@Scaffold
         }
+
 
         Column(
             modifier =
@@ -122,6 +114,22 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     .padding(innerPadding)
                     .verticalScroll((rememberScrollState())),
         ) {
+            CollapsingColumn(scrollBehavior = scrollBehavior) {
+                AppHeader(
+                    modifier = Modifier,
+                    leftIcon = R.drawable.header_image,
+                    onClick = { showDatePicker = true },
+                    leftIconComposable = {
+                        Icon(
+                            painterResource(R.drawable.calendar_icon),
+                            contentDescription = "Day set icon",
+                            tint = MaterialTheme.colorScheme.onSecondary,
+                        )
+                    },
+                    mainTitle = "Cosmic Window",
+                    secondaryTitle = "ASTRONOMY PICTURE OF THE DAY",
+                )
+            }
             TodayInSpace(
                 Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s8),
                 date =

@@ -55,7 +55,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,17 +62,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -87,6 +84,7 @@ import coil3.request.allowHardware
 import coil3.toBitmap
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
+import com.example.cosmicwindow.core.designsystem.components.CollapsingColumn
 import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
@@ -94,7 +92,6 @@ import com.example.cosmicwindow.model.Filter
 import com.example.cosmicwindow.model.SearchResultItem
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -107,11 +104,6 @@ fun ExplorePage(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    var headerHeightPx by remember { mutableIntStateOf(0) }
-
-    LaunchedEffect(headerHeightPx) {
-        scrollBehaviour.state.heightOffsetLimit = -headerHeightPx.toFloat()
-    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection),
@@ -134,26 +126,7 @@ fun ExplorePage(
             modifier = Modifier.padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clipToBounds()
-                    .layout { measurable, constraints ->
-                        val placeable = measurable.measure(constraints.copy(minHeight = 0))
-                        headerHeightPx = placeable.height
-
-                        val offset = scrollBehaviour.state.heightOffset
-                        val visibleHeight = (placeable.height + offset)
-                            .roundToInt()
-                            .coerceIn(0, placeable.height)
-
-                        layout(placeable.width, visibleHeight) {
-                            placeable.placeRelative(0, offset.roundToInt())
-                        }
-                    },
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Spacing.s8)
-            ) {
+            CollapsingColumn(scrollBehavior = scrollBehaviour) {
                 AppHeader(
                     leftIcon = R.drawable.earth_header_icon,
                     onClick = {},
@@ -334,8 +307,7 @@ fun ImageGrid(
     prefetchVariable: Int,
 ) {
     val gridState = rememberLazyStaggeredGridState()
-    val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
+    val screenWidthDp = LocalWindowInfo.current.containerDpSize.width
 
 
     val shouldLoadMore by remember {
@@ -354,7 +326,7 @@ fun ImageGrid(
     LazyVerticalStaggeredGrid(
         state = gridState,
         modifier = modifier,
-        columns = if (screenWidthDp < 600) StaggeredGridCells.Fixed(2) else StaggeredGridCells.Adaptive(200.dp),
+        columns = if (screenWidthDp < 600.dp) StaggeredGridCells.Fixed(2) else StaggeredGridCells.Adaptive(200.dp),
         verticalItemSpacing = Spacing.s8,
         horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
