@@ -111,7 +111,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                         .fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                LottieLoader(Modifier.padding(Spacing.s16))
+                LottieLoader(Modifier.size(Spacing.s16))
             }
             return@Scaffold
         }

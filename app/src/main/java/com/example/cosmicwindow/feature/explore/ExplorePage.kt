@@ -1,11 +1,9 @@
 package com.example.cosmicwindow.feature.explore
 
-import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.speech.RecognizerIntent
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,9 +17,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -45,16 +43,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -62,16 +63,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.palette.graphics.Palette
@@ -88,60 +94,95 @@ import com.example.cosmicwindow.model.Filter
 import com.example.cosmicwindow.model.SearchResultItem
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExplorePage(
     viewModel: ExploreViewModel = hiltViewModel(),
     onItemClick: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    var headerHeightPx by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(headerHeightPx) {
+        scrollBehaviour.state.heightOffsetLimit = -headerHeightPx.toFloat()
+    }
+
     Scaffold(
-        topBar = {
-            AppHeader(
-                leftIcon = R.drawable.earth_header_icon,
-                onClick = {},
-                leftIconSize = Spacing.s20,
-                leftIconComposable = {
-                    Image(
-                        painterResource(R.drawable.profile_image),
-                        contentDescription = null,
-                    )
-                },
-                mainTitle = "Explore NASA",
-                secondaryTitle = "IMAGE LIBRARY",
-            )
-        },
+        modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection),
     ) { innerPadding ->
 
         if (uiState.error != null) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(Spacing.s16)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 ErrorBox(text = uiState.error!!, onClick = viewModel::onErrorRetry)
             }
             return@Scaffold
         }
 
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(top = Spacing.s16),
+            modifier = Modifier.padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
-            SearchBar(
-                modifier = Modifier.padding(horizontal = Spacing.s16),
-                onQueryChanged = { text -> viewModel.onQueryChanged(text) },
-                onSearch = { viewModel.newSearch() },
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clipToBounds()
+                    .layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints.copy(minHeight = 0))
+                        headerHeightPx = placeable.height
 
-            FilterBar(
-                onFilterClick = viewModel::toggleFilter,
-                filters = uiState.queryState.filters,
-            )
+                        val offset = scrollBehaviour.state.heightOffset
+                        val visibleHeight = (placeable.height + offset)
+                            .roundToInt()
+                            .coerceIn(0, placeable.height)
+
+                        layout(placeable.width, visibleHeight) {
+                            placeable.placeRelative(0, offset.roundToInt())
+                        }
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Spacing.s8)
+            ) {
+                AppHeader(
+                    leftIcon = R.drawable.earth_header_icon,
+                    onClick = {},
+                    leftIconSize = Spacing.s20,
+                    leftIconComposable = {
+                        Image(
+                            painterResource(R.drawable.profile_image),
+                            contentDescription = null,
+                        )
+                    },
+                    mainTitle = "Explore NASA",
+                    secondaryTitle = "IMAGE LIBRARY",
+                )
+                SearchBar(
+                    modifier = Modifier.padding(horizontal = Spacing.s16),
+                    onQueryChanged = { viewModel.onQueryChanged(it) },
+                    onSearch = { viewModel.newSearch() },
+                )
+                FilterBar(
+                    onFilterClick = viewModel::toggleFilter,
+                    filters = uiState.queryState.filters,
+                )
+            }
+
             ImageGrid(
-                Modifier.fillMaxSize(),
+                Modifier
+                    .padding(horizontal = Spacing.s16)
+                    .weight(1f)
+                    .fillMaxWidth(),
                 uiState.searchItems,
                 isLoadingMore = uiState.isLoading,
                 onLoadMore = viewModel::loadMore,
@@ -151,7 +192,6 @@ fun ExplorePage(
         }
     }
 }
-
 
 @Composable
 fun CardElement(
@@ -271,7 +311,7 @@ fun LoadingRow(modifier: Modifier = Modifier) {
             Spacing.s8, alignment = Alignment.CenterHorizontally
         )
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(Modifier.size(Spacing.s16))
         Text(
             "Loading more NASA archive images...",
             style = MaterialTheme.typography.bodySmall,
@@ -294,6 +334,9 @@ fun ImageGrid(
     prefetchVariable: Int,
 ) {
     val gridState = rememberLazyStaggeredGridState()
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+
 
     val shouldLoadMore by remember {
         derivedStateOf {
@@ -311,10 +354,14 @@ fun ImageGrid(
     LazyVerticalStaggeredGrid(
         state = gridState,
         modifier = modifier,
-        columns = StaggeredGridCells.Fixed(2),
+        columns = if (screenWidthDp < 600) StaggeredGridCells.Fixed(2) else StaggeredGridCells.Adaptive(200.dp),
         verticalItemSpacing = Spacing.s8,
         horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
+
+        item(span = StaggeredGridItemSpan.FullLine) {
+            Spacer(Modifier.height(Spacing.s8))
+        }
 
         if (!isLoadingMore && searchResults.isEmpty()) {
             item(span = StaggeredGridItemSpan.FullLine) {
@@ -354,16 +401,22 @@ fun ImageGrid(
 }
 
 @Composable
-fun FilterButton(filter: Filter, onClick: () -> Unit) {
+fun FilterButton(modifier: Modifier = Modifier, filter: Filter, onClick: () -> Unit) {
 
     Button(
-        onClick = onClick, shape = RoundedCornerShape(RadiusSize.r9999), colors = ButtonDefaults.buttonColors(
+        modifier = modifier,
+        onClick = onClick,
+        shape = RoundedCornerShape(RadiusSize.r9999),
+        colors = ButtonDefaults.buttonColors(
             containerColor = if (filter.isActive) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.secondary,
             contentColor = if (filter.isActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondary
-        )
+        ),
+        contentPadding = PaddingValues(Spacing.s16)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
+
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s6)
         ) {
             Icon(
                 painter = painterResource(filter.icon),
@@ -382,15 +435,22 @@ fun FilterButton(filter: Filter, onClick: () -> Unit) {
 @Composable
 fun FilterBar(modifier: Modifier = Modifier, filters: List<Filter>, onFilterClick: (Int) -> Unit) {
     LazyRow(
-        modifier = modifier.verticalScroll(
-            rememberScrollState(),
-        ), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
-    ) {
+        modifier = modifier
+            .verticalScroll(
+                rememberScrollState(),
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+        contentPadding = PaddingValues(vertical = Spacing.s4),
+
+        ) {
         item {
             Spacer(Modifier.width(Spacing.s8))
         }
         items(filters.size) { index ->
-            FilterButton(filter = filters[index], onClick = { onFilterClick(index) })
+            FilterButton(
+                filter = filters[index],
+                onClick = { onFilterClick(index) })
         }
         item {
             Spacer(Modifier.width(Spacing.s8))
@@ -431,10 +491,7 @@ fun SearchBar(
 
     val startVoiceInput = {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
             putExtra(RecognizerIntent.EXTRA_PROMPT, "Search NASA images")
         }
