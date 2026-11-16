@@ -130,7 +130,7 @@ fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel(), onItemClick: (Str
                     leftIcon = R.drawable.earth_header_icon,
                     onClick = {},
                     leftIconSize = Spacing.s20,
-                    leftIconComposable = {
+                    rightIconComposable = {
                         Image(
                             painterResource(R.drawable.profile_image),
                             contentDescription = null,

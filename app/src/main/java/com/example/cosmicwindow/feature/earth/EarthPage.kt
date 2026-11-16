@@ -72,7 +72,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                 leftIcon = R.drawable.earth_header_icon,
                 onClick = {},
                 leftIconSize = Spacing.s20,
-                leftIconComposable = {
+                rightIconComposable = {
                     Image(
                         painterResource(R.drawable.profile_image),
                         contentDescription = null,

@@ -17,6 +17,7 @@ import androidx.navigation.navArgument
 import com.example.cosmicwindow.feature.earth.EarthPage
 import com.example.cosmicwindow.feature.explore.ExplorePage
 import com.example.cosmicwindow.feature.explore.detail.ExploreDetailScreen
+import com.example.cosmicwindow.feature.saved.SavedPage
 import com.example.cosmicwindow.feature.today.TodayScreen
 import com.example.cosmicwindow.feature.today.apod.ApodDetailsScreen
 
@@ -74,7 +75,7 @@ fun Navigation(modifier: Modifier = Modifier) {
                 )
             }
             composable(Routes.saved) {
-                Text("Saved page")
+                SavedPage()
             }
         }
     }

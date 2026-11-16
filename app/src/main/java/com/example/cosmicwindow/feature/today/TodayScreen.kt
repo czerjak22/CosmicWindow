@@ -113,7 +113,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     modifier = Modifier,
                     leftIcon = R.drawable.header_image,
                     onClick = { showDatePicker = true },
-                    leftIconComposable = {
+                    rightIconComposable = {
                         Icon(
                             painterResource(R.drawable.calendar_icon),
                             contentDescription = "Day set icon",
