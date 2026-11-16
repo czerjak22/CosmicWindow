@@ -14,48 +14,53 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExploreDetailViewModel
-    @Inject
-    constructor(
-        val savedStateHandle: SavedStateHandle,
-        val exploreRepository: ExploreRepository,
-    ) : ViewModel() {
-        val id = savedStateHandle.get<String>("nasaId")
-        private val _uiState =
-            MutableStateFlow(
-                ExploreDetailState(),
+@Inject
+constructor(
+    val savedStateHandle: SavedStateHandle,
+    val exploreRepository: ExploreRepository,
+) : ViewModel() {
+    val id = savedStateHandle.get<String>("nasaId")
+    private val _uiState =
+        MutableStateFlow(
+            ExploreDetailState(),
+        )
+    val uiState = _uiState.asStateFlow()
+
+    init {
+        loadSearchItem()
+    }
+
+    fun loadSearchItem() {
+        if (id == null) {
+            _uiState.update { it.copy(isLoading = false, error = "Something went wrong") }
+        }
+        _uiState.update { it.copy(isLoading = true, error = null) }
+
+        viewModelScope.launch {
+            exploreRepository.getItemDetailsById(id!!).fold(
+                onSuccess = { result ->
+                    _uiState.update { it.copy(searchItem = result, isLoading = false, error = null) }
+                },
+                onFailure = { err ->
+                    if (err is CancellationException) {
+                        throw err
+                    }
+                    _uiState.update { it.copy(isLoading = false, error = err.message) }
+                },
             )
-        val uiState = _uiState.asStateFlow()
-
-        init {
-            loadSearchItem()
-        }
-
-        fun loadSearchItem() {
-            if (id == null) {
-                _uiState.update { it.copy(isLoading = false, error = "Something went wrong") }
-            }
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
-            viewModelScope.launch {
-                exploreRepository.getItemDetailsById(id!!).fold(
-                    onSuccess = { result ->
-                        _uiState.update { it.copy(searchItem = result, isLoading = false, error = null) }
-                    },
-                    onFailure = { err ->
-                        if (err is CancellationException) {
-                            throw err
-                        }
-                        _uiState.update { it.copy(isLoading = false, error = err.message) }
-                    },
-                )
-            }
-        }
-
-        fun pictureLoaded() {
-            _uiState.update { it.copy(pictureLoaded = true) }
-        }
-
-        fun onErrorRetry() {
-            loadSearchItem()
         }
     }
+
+    fun pictureLoaded() {
+        _uiState.update { it.copy(pictureLoaded = true) }
+    }
+
+    fun onErrorRetry() {
+        loadSearchItem()
+    }
+
+    fun imageLoadError(message: String) {
+        _uiState.update { it.copy(isLoading = false, error = message) }
+    }
+
+}

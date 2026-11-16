@@ -4,6 +4,7 @@ import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.speech.RecognizerIntent
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -172,7 +173,8 @@ fun CardElement(
 ) {
     val shape = RoundedCornerShape(RadiusSize.r16)
     var isLoaded by remember(searchItem.nasaId) { mutableStateOf(false) }
-    var accentColor by remember(searchItem.nasaId) { mutableStateOf<Color?>(null) }
+    val defaultColor = MaterialTheme.colorScheme.tertiary
+    var accentColor by remember(searchItem.nasaId) { mutableStateOf<Color?>(defaultColor) }
     val scope = rememberCoroutineScope()
     val alpha by animateFloatAsState(
         targetValue = if (isLoaded) 1f else 0f,
@@ -210,11 +212,15 @@ fun CardElement(
                                     val palette = Palette.from(bitmap).clearFilters().generate()
                                     val swatch =
                                         palette.lightVibrantSwatch ?: palette.vibrantSwatch ?: palette.lightMutedSwatch
-                                            ?: palette.mutedSwatch ?: palette.dominantSwatch
+                                        ?: palette.mutedSwatch ?: palette.dominantSwatch
                                     swatch?.let { Color(it.rgb) }
                                 }
                         }
                     },
+                    onError = { err ->
+                        Log.w("UI", "ExplorerCardImage failed to load error:$err")
+                        isLoaded = true
+                    }
                 )
 
                 Box(
@@ -518,9 +524,11 @@ fun SearchBar(
                         .border(
                             width = Spacing.border,
                             color = MaterialTheme.colorScheme.outlineVariant,
-                        ).background(
+                        )
+                        .background(
                             color = MaterialTheme.colorScheme.secondary,
-                        ).padding(horizontal = Spacing.s10, vertical = Spacing.s10),
+                        )
+                        .padding(horizontal = Spacing.s10, vertical = Spacing.s10),
                 interactionSource = interactionSource,
                 textStyle =
                     MaterialTheme.typography.bodyMedium.copy(

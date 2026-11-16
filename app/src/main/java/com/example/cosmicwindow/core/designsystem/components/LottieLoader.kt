@@ -1,6 +1,7 @@
 package com.example.cosmicwindow.core.designsystem.components
 
 import androidx.annotation.RawRes
+import androidx.compose.foundation.progressSemantics
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -24,6 +25,6 @@ fun LottieLoader(
     LottieAnimation(
         composition = composition,
         progress = { progress },
-        modifier = modifier,
+        modifier = modifier.progressSemantics(),
     )
 }

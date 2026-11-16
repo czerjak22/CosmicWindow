@@ -82,10 +82,9 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { innerPadding ->
 
         if (showDatePicker) {
@@ -97,9 +96,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
 
         if (uiState.isLoading) {
             Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
                 LottieLoader(Modifier.size(Spacing.s48))
@@ -108,10 +105,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
         }
 
         Column(
-            modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .verticalScroll((rememberScrollState())),
+            modifier = Modifier.padding(innerPadding)
         ) {
             CollapsingColumn(scrollBehavior = scrollBehavior) {
                 AppHeader(
@@ -129,59 +123,65 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     secondaryTitle = "ASTRONOMY PICTURE OF THE DAY",
                 )
             }
-            TodayInSpace(
-                Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s8),
-                date =
-                    uiState.selectedDate.format(
+
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .verticalScroll((rememberScrollState())),
+            ) {
+
+                TodayInSpace(
+                    Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s8),
+                    date = uiState.selectedDate.format(
                         DateTimeFormatter.ofPattern("MMM dd, yyyy"),
                     ),
-            )
-            if (uiState.error != null) {
-                ErrorBox(
-                    modifier =
-                        Modifier.padding(
+                )
+                if (uiState.error != null) {
+                    ErrorBox(
+                        modifier = Modifier.padding(
                             top = Spacing.s4,
                             bottom = Spacing.s16,
                             start = Spacing.s16,
                             end = Spacing.s16,
                         ),
-                    text = uiState.error!!,
-                    onClick = viewModel::getCurrentApods,
-                )
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(Spacing.s24),
-            ) {
-                if (uiState.apods.isEmpty()) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        Text(
-                            "No apods to show!",
-                            style = MaterialTheme.typography.headlineLarge,
-                        )
-                    }
-                    return@Scaffold
-                }
-
-                CurrentApod(
-                    modifier = Modifier.padding(horizontal = Spacing.s16),
-                    apod = uiState.apods.first(),
-                    onShareClick = { context.shareLink(uiState.apods.first().permalink) },
-                    onReadClick = onApodClick,
-                )
-                PreviousApodStripe(apods = uiState.apods, onClick = onApodClick)
-                if (uiState.featuredVideoApod != null) {
-                    FeaturedApodVideoCard(
-                        Modifier.padding(horizontal = Spacing.s16),
-                        apod = uiState.featuredVideoApod!!,
+                        text = uiState.error!!,
+                        onClick = viewModel::getCurrentApods,
                     )
                 }
-                DataCard(
-                    Modifier.padding(start = Spacing.s16, end = Spacing.s16, bottom = Spacing.s16),
-                    apod = uiState.apods.first(),
-                )
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s24),
+                ) {
+                    if (uiState.apods.isEmpty()) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                            Text(
+                                "No apods to show!",
+                                style = MaterialTheme.typography.headlineLarge,
+                            )
+                        }
+                        return@Scaffold
+                    }
+                    CurrentApod(
+                        modifier = Modifier.padding(horizontal = Spacing.s16),
+                        apod = uiState.apods.first(),
+                        onShareClick = { context.shareLink(uiState.apods.first().permalink) },
+                        onReadClick = onApodClick,
+                    )
+                    PreviousApodStripe(apods = uiState.apods, onClick = onApodClick)
+                    if (uiState.featuredVideoApod != null) {
+                        FeaturedApodVideoCard(
+                            Modifier.padding(horizontal = Spacing.s16),
+                            apod = uiState.featuredVideoApod!!,
+                        )
+                    }
+                    DataCard(
+                        Modifier.padding(start = Spacing.s16, end = Spacing.s16, bottom = Spacing.s16),
+                        apod = uiState.apods.first(),
+                    )
+                }
             }
         }
+
     }
 }
 
@@ -190,11 +190,10 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
     Surface(
         modifier = modifier,
         color = MaterialTheme.colorScheme.primaryContainer,
-        border =
-            BorderStroke(
-                Spacing.border,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-            ),
+        border = BorderStroke(
+            Spacing.border,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+        ),
         shape = RoundedCornerShape(RadiusSize.r16),
     ) {
         Column(
@@ -210,10 +209,9 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
                 Image(
                     painter = painterResource(R.drawable.original_icon),
                     contentDescription = null,
-                    modifier =
-                        Modifier
-                            .size(Spacing.s24)
-                            .padding(end = Spacing.s8),
+                    modifier = Modifier
+                        .size(Spacing.s24)
+                        .padding(end = Spacing.s8),
                 )
                 Text(
                     "Public NASA Data • APOD Archive",
@@ -241,13 +239,12 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier =
-                        Modifier.padding(
-                            start = Spacing.s24,
-                            end = Spacing.s24,
-                            top = Spacing.s6,
-                            bottom = Spacing.s6,
-                        ),
+                    modifier = Modifier.padding(
+                        start = Spacing.s24,
+                        end = Spacing.s24,
+                        top = Spacing.s6,
+                        bottom = Spacing.s6,
+                    ),
                 )
             }
         }
@@ -289,19 +286,17 @@ private fun PreviousApodStripe(
 fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
     val videoHandler = LocalUriHandler.current
     Surface(
-        modifier =
-            modifier.background(
-                color = MaterialTheme.colorScheme.secondary,
-                shape = RoundedCornerShape(16.dp),
-            ),
+        modifier = modifier.background(
+            color = MaterialTheme.colorScheme.secondary,
+            shape = RoundedCornerShape(16.dp),
+        ),
         border = BorderStroke(Spacing.border, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
         shape = RoundedCornerShape(RadiusSize.r16),
     ) {
         Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(Spacing.s16),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.s16),
         ) {
             Row(
                 Modifier.fillMaxWidth(),
@@ -340,12 +335,11 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
                 }
             }
             VideoPlayer(
-                modifier =
-                    Modifier
-                        .padding(bottom = Spacing.s8)
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                        .clip(RoundedCornerShape(RadiusSize.r12)),
+                modifier = Modifier
+                    .padding(bottom = Spacing.s8)
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f)
+                    .clip(RoundedCornerShape(RadiusSize.r12)),
                 videoUri = apod.videoUrl!!,
             )
             Text(
@@ -377,12 +371,11 @@ fun VideoThumbnailCard(
     onClick: () -> Unit,
 ) {
     Box(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .aspectRatio(16f / 9f)
-                .clip(RoundedCornerShape(RadiusSize.r12))
-                .clickable { onClick() },
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f)
+            .clip(RoundedCornerShape(RadiusSize.r12))
+            .clickable { onClick() },
     ) {
         AsyncImage(
             apod.hdurl ?: apod.url,
@@ -396,26 +389,24 @@ fun VideoThumbnailCard(
                 .matchParentSize()
                 .background(
                     Brush.verticalGradient(
-                        colors =
-                            listOf(
-                                Color.Transparent,
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
-                            ),
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                        ),
                     ),
                 ),
         )
         CustomPlayButton(modifier = Modifier.align(Alignment.Center))
         Row(
-            modifier =
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(
-                        start = Spacing.s12,
-                        end = Spacing.s12,
-                        bottom = Spacing.s10,
-                    ),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(
+                    start = Spacing.s12,
+                    end = Spacing.s12,
+                    bottom = Spacing.s10,
+                ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -450,10 +441,9 @@ fun PastApodEntryText(modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
         Image(
-            painter =
-                painterResource(
-                    R.drawable.table_icon,
-                ),
+            painter = painterResource(
+                R.drawable.table_icon,
+            ),
             contentDescription = null,
         )
         Text(
@@ -481,10 +471,9 @@ fun CurrentApod(
     onShareClick: () -> Unit = {},
 ) {
     Box(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp)),
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp)),
     ) {
         AsyncImage(
             model = apod.hdurl ?: apod.url,
@@ -493,30 +482,27 @@ fun CurrentApod(
             modifier = Modifier.matchParentSize(),
         )
         Box(
-            modifier =
-                Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors =
-                                listOf(
-                                    Color.Transparent,
-                                    Color.Black,
-                                ),
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black,
                         ),
                     ),
+                ),
         )
 
         Column(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        top = 180.dp,
-                        start = Spacing.s16,
-                        end = Spacing.s16,
-                        bottom = Spacing.s16,
-                    ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    top = 180.dp,
+                    start = Spacing.s16,
+                    end = Spacing.s16,
+                    bottom = Spacing.s16,
+                ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -569,15 +555,13 @@ fun CurrentApod(
             ) {
                 Button(
                     onClick = { onReadClick(apod) },
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .height(48.dp),
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
                 ) {
                     Text(
                         "Read Cosmic Story",
@@ -616,10 +600,9 @@ fun PreviousApodDay(
         onClick = onClick,
         modifier = modifier.width(160.dp),
         shape = RoundedCornerShape(RadiusSize.r16),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondary,
-            ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondary,
+        ),
         border = BorderStroke(Spacing.border, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
     ) {
         Column(
@@ -631,11 +614,10 @@ fun PreviousApodDay(
                     model = apod.hdurl ?: apod.url,
                     contentDescription = apod.alt,
                     contentScale = ContentScale.Crop,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(138f / 96f)
-                            .clip(RoundedCornerShape(RadiusSize.r12)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(138f / 96f)
+                        .clip(RoundedCornerShape(RadiusSize.r12)),
                 )
                 Surface(
                     shape = CircleShape,
@@ -678,11 +660,10 @@ fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(
-            modifier =
-                Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.onPrimaryContainer),
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.onPrimaryContainer),
         )
         Text(
             text = "Today in Space • $date",

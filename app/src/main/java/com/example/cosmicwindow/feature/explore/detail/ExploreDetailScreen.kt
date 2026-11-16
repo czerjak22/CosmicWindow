@@ -14,7 +14,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -41,30 +40,23 @@ fun ExploreDetailScreen(viewModel: ExploreDetailViewModel = hiltViewModel(), onC
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold { innerPadding ->
 
-        if (uiState.error != null) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                ErrorBox(text = uiState.error!!, onClick = viewModel::onErrorRetry)
+        when {
+            uiState.error != null -> {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    ErrorBox(text = uiState.error!!, onClick = viewModel::onErrorRetry)
+                }
+                return@Scaffold
             }
-            return@Scaffold
-        }
 
-        if (uiState.isLoading) {
-            Box(
-                Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                LottieLoader()
+            uiState.isLoading -> {
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LottieLoader()
+                }
+                return@Scaffold
             }
-            return@Scaffold
-        }
-        if (uiState.error != null) {
-            Box(
-                Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                ErrorBox(text = uiState.error!!)
-            }
-            return@Scaffold
         }
 
         ImagePage(
@@ -72,6 +64,7 @@ fun ExploreDetailScreen(viewModel: ExploreDetailViewModel = hiltViewModel(), onC
             onBackPressed = onClickBack,
             searchResult = uiState.searchItem!!,
             onPictureLoaded = { viewModel.pictureLoaded() },
+            onErrorAction =  viewModel::imageLoadError,
         )
 
         if (!uiState.pictureLoaded) {
@@ -171,6 +164,7 @@ fun ImagePage(
     onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
     onPictureLoaded: () -> Unit,
+    onErrorAction: (errorMessage: String) -> Unit,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         AsyncImage(
@@ -181,6 +175,10 @@ fun ImagePage(
             onSuccess = {
                 onPictureLoaded()
             },
+            onError = { err ->
+                onErrorAction(err.toString())
+            }
+
         )
 
         Box(

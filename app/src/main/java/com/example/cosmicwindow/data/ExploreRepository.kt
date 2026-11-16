@@ -24,7 +24,7 @@ class ExploreRepository
         suspend fun getSearchByQuery(query: QueryExplore): Result<SearchResult> {
             try {
                 val queryRequest = QueryMapper.map(query)
-                Log.d("Repository", "newSearch with params: $query")
+                Log.d("Repository", "newSearch with params: $queryRequest")
 
                 val response =
                     exploreApi.search(

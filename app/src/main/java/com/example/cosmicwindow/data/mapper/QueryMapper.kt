@@ -9,10 +9,12 @@ object QueryMapper : ObjectMappie<QueryExplore, QueryRequestDto>() {
         mapping {
             to::filters fromProperty from::filters transform { filterList ->
                 val combinedFilter = StringBuilder(10)
-                filterList.forEach { filter -> if (filter.isActive) combinedFilter.append(filter.value) }
-
-                combinedFilter.toString().ifEmpty {
+                filterList.forEach { filter -> if (filter.isActive) combinedFilter.append(filter.value + ",") }
+                val filters = combinedFilter.removeSuffix(",")
+                if (filters.trim().isEmpty()) {
                     null
+                } else {
+                    filters.toString()
                 }
             }
         }
