@@ -64,7 +64,7 @@ fun ExploreDetailScreen(viewModel: ExploreDetailViewModel = hiltViewModel(), onC
             onBackPressed = onClickBack,
             searchResult = uiState.searchItem!!,
             onPictureLoaded = { viewModel.pictureLoaded() },
-            onErrorAction =  viewModel::imageLoadError,
+            onErrorAction = viewModel::imageLoadError,
         )
 
         if (!uiState.pictureLoaded) {
@@ -177,8 +177,7 @@ fun ImagePage(
             },
             onError = { err ->
                 onErrorAction(err.toString())
-            }
-
+            },
         )
 
         Box(

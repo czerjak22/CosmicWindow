@@ -212,7 +212,7 @@ fun CardElement(
                                     val palette = Palette.from(bitmap).clearFilters().generate()
                                     val swatch =
                                         palette.lightVibrantSwatch ?: palette.vibrantSwatch ?: palette.lightMutedSwatch
-                                        ?: palette.mutedSwatch ?: palette.dominantSwatch
+                                            ?: palette.mutedSwatch ?: palette.dominantSwatch
                                     swatch?.let { Color(it.rgb) }
                                 }
                         }
@@ -220,7 +220,7 @@ fun CardElement(
                     onError = { err ->
                         Log.w("UI", "ExplorerCardImage failed to load error:$err")
                         isLoaded = true
-                    }
+                    },
                 )
 
                 Box(
@@ -524,11 +524,9 @@ fun SearchBar(
                         .border(
                             width = Spacing.border,
                             color = MaterialTheme.colorScheme.outlineVariant,
-                        )
-                        .background(
+                        ).background(
                             color = MaterialTheme.colorScheme.secondary,
-                        )
-                        .padding(horizontal = Spacing.s10, vertical = Spacing.s10),
+                        ).padding(horizontal = Spacing.s10, vertical = Spacing.s10),
                 interactionSource = interactionSource,
                 textStyle =
                     MaterialTheme.typography.bodyMedium.copy(
