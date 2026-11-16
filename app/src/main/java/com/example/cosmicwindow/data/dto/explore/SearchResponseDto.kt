@@ -1,7 +1,7 @@
 package com.example.cosmicwindow.data.dto.explore
 
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class SearchResponseDto(
@@ -9,7 +9,6 @@ data class SearchResponseDto(
 ) {
     val items: List<ItemDto> get() = collection.items
     val totalHits: Long get() = collection.metadata?.totalHits ?: 0
-
 
     @Serializable
     class CollectionDto(
@@ -21,6 +20,4 @@ data class SearchResponseDto(
     class MetadataDto(
         @SerialName("total_hits") val totalHits: Long,
     )
-
 }
-

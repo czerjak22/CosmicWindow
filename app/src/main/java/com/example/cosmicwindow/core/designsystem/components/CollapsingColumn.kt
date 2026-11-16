@@ -1,6 +1,5 @@
 package com.example.cosmicwindow.core.designsystem.components
 
-import android.text.Layout
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -36,22 +35,24 @@ fun CollapsingColumn(
     }
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clipToBounds()
-            .layout { measurable, constraints ->
-                val placeable = measurable.measure(constraints.copy(minHeight = 0))
-                headerHeightPx = placeable.height
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clipToBounds()
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints.copy(minHeight = 0))
+                    headerHeightPx = placeable.height
 
-                val offset = scrollBehavior.state.heightOffset
-                val visibleHeight = (placeable.height + offset)
-                    .roundToInt()
-                    .coerceIn(0, placeable.height)
+                    val offset = scrollBehavior.state.heightOffset
+                    val visibleHeight =
+                        (placeable.height + offset)
+                            .roundToInt()
+                            .coerceIn(0, placeable.height)
 
-                layout(placeable.width, visibleHeight) {
-                    placeable.placeRelative(0, offset.roundToInt())
-                }
-            },
+                    layout(placeable.width, visibleHeight) {
+                        placeable.placeRelative(0, offset.roundToInt())
+                    }
+                },
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
         content = content,

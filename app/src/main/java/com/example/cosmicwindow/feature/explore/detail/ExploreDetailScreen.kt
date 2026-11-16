@@ -14,8 +14,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,9 +37,7 @@ import com.example.cosmicwindow.model.SearchResultItem
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun ExploreDetailScreen(
-    viewModel: ExploreDetailViewModel = hiltViewModel(), onClickBack: () -> Unit
-) {
+fun ExploreDetailScreen(viewModel: ExploreDetailViewModel = hiltViewModel(), onClickBack: () -> Unit) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Scaffold { innerPadding ->
 
@@ -54,7 +50,8 @@ fun ExploreDetailScreen(
 
         if (uiState.isLoading) {
             Box(
-                Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
             ) {
                 LottieLoader()
             }
@@ -62,7 +59,8 @@ fun ExploreDetailScreen(
         }
         if (uiState.error != null) {
             Box(
-                Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
             ) {
                 ErrorBox(text = uiState.error!!)
             }
@@ -73,7 +71,8 @@ fun ExploreDetailScreen(
             modifier = Modifier.padding(innerPadding),
             onBackPressed = onClickBack,
             searchResult = uiState.searchItem!!,
-            onPictureLoaded = { viewModel.pictureLoaded() })
+            onPictureLoaded = { viewModel.pictureLoaded() },
+        )
 
         if (!uiState.pictureLoaded) {
             Box(
@@ -88,45 +87,43 @@ fun ExploreDetailScreen(
 
 @Composable
 fun Details(modifier: Modifier = Modifier, searchResult: SearchResultItem) {
-
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
-
         Text(
             searchResult.title,
             style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onBackground
+            color = MaterialTheme.colorScheme.onBackground,
         )
         Text(
             AnnotatedString.fromHtml(searchResult.description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 8,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
 
         Box(
             Modifier.background(
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(RadiusSize.r12)
-            )
+                shape = RoundedCornerShape(RadiusSize.r12),
+            ),
         ) {
             Row(
                 Modifier
                     .padding(Spacing.s16)
                     .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(
-                    Spacing.s8, alignment = Alignment.CenterHorizontally
-                ),
+                horizontalArrangement =
+                    Arrangement.spacedBy(
+                        Spacing.s8,
+                        alignment = Alignment.CenterHorizontally,
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
-
-                ) {
-
+            ) {
                 ColumnElement(
                     title = "Observation Date",
-                    content = searchResult.dateCreated.format(DateTimeFormatter.ofPattern("MMM dd, yyy"))
+                    content = searchResult.dateCreated.format(DateTimeFormatter.ofPattern("MMM dd, yyy")),
                 )
                 if (searchResult.center != null) {
                     ColumnElement(
@@ -144,23 +141,26 @@ fun Details(modifier: Modifier = Modifier, searchResult: SearchResultItem) {
 }
 
 @Composable
-fun ColumnElement(modifier: Modifier = Modifier, title: String, content: String) {
+fun ColumnElement(
+    modifier: Modifier = Modifier,
+    title: String,
+    content: String,
+) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
-
         Text(
             title,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.W500,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
             AnnotatedString.fromHtml(content),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onBackground
+            color = MaterialTheme.colorScheme.onBackground,
         )
     }
 }
@@ -172,10 +172,7 @@ fun ImagePage(
     modifier: Modifier = Modifier,
     onPictureLoaded: () -> Unit,
 ) {
-
     Box(modifier = modifier.fillMaxSize()) {
-
-
         AsyncImage(
             model = searchResult.originalUrl ?: searchResult.thumbnailUrl,
             contentDescription = searchResult.title,
@@ -183,8 +180,7 @@ fun ImagePage(
             modifier = Modifier.fillMaxSize(),
             onSuccess = {
                 onPictureLoaded()
-            }
-
+            },
         )
 
         Box(
@@ -194,29 +190,30 @@ fun ImagePage(
                     Brush.verticalGradient(
                         0.6f to Color.Transparent,
                         0.8f to MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f),
-                        1f to MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                )
+                        1f to MaterialTheme.colorScheme.onSecondaryContainer,
+                    ),
+                ),
         )
-
 
         CircleIconButton(
             icon = R.drawable.exit_icon,
             description = "Back button",
             onClick = onBackPressed,
             backgroundColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(Spacing.s16),
-            iconSize = Spacing.s14
+            modifier =
+                Modifier
+                    .align(Alignment.TopStart)
+                    .padding(Spacing.s16),
+            iconSize = Spacing.s14,
         )
 
         Details(
             searchResult = searchResult,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .fillMaxWidth()
-                .padding(Spacing.s16),
+            modifier =
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(Spacing.s16),
         )
     }
 }

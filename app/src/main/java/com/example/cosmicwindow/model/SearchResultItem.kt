@@ -9,5 +9,5 @@ data class SearchResultItem(
     val thumbnailUrl: String?,
     val originalUrl: String?,
     val description: String,
-    val center:String?,
+    val center: String?,
 )

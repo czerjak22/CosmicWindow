@@ -18,5 +18,4 @@ interface ExploreApi {
     suspend fun searchById(
         @Query("nasa_id") nasaId: String,
     ): SearchResponseDto
-
 }

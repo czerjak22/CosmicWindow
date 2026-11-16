@@ -66,7 +66,6 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-
         topBar = {
             AppHeader(
                 leftIcon = R.drawable.earth_header_icon,
@@ -86,9 +85,11 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
 
         if (uiState.isLoading) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding), contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                contentAlignment = Alignment.Center,
             ) {
                 LottieLoader(Modifier.size(Spacing.s48))
             }
@@ -97,9 +98,11 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
 
         if (uiState.error != null) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(innerPadding), contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(innerPadding),
+                contentAlignment = Alignment.Center,
             ) {
                 ErrorBox(text = uiState.error!!, onClick = { viewModel.loadEarthImages() })
             }
@@ -107,16 +110,16 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
         }
         if (uiState.images.isEmpty()) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(innerPadding), contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(innerPadding),
+                contentAlignment = Alignment.Center,
             ) {
                 ErrorBox(text = "No Images found!")
             }
             return@Scaffold
         }
-
-
 
         Column(
             modifier =
@@ -129,7 +132,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
         ) {
             EpicChip(Modifier.align(Alignment.End))
             PreloadImages(
-                images = uiState.images
+                images = uiState.images,
             )
             EarthImageDisplay(
                 modifier = Modifier.padding(horizontal = Spacing.s4),
@@ -192,7 +195,7 @@ fun ControlCard(
     totalSize: Int = 12,
     indexUpdate: (Int) -> Unit,
     startPlayback: () -> Unit,
-    stopPlayback: () -> Unit
+    stopPlayback: () -> Unit,
 ) {
     var isPlaying by rememberSaveable { mutableStateOf(false) }
 
@@ -377,9 +380,10 @@ fun PreloadImages(images: List<Earth>) {
         val loader = context.imageLoader
         images.forEach { url ->
             loader.enqueue(
-                ImageRequest.Builder(context)
+                ImageRequest
+                    .Builder(context)
                     .data(url.imageUrl)
-                    .build()
+                    .build(),
             )
         }
     }
@@ -423,8 +427,7 @@ fun EarthImageDisplay(
                             radius = haloRadius,
                             center = center,
                         )
-                    }
-                    .clip(CircleShape),
+                    }.clip(CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             SubcomposeAsyncImage(

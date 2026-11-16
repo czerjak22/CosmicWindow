@@ -1,6 +1,5 @@
 package com.example.cosmicwindow.feature.explore.detail
 
-import com.example.cosmicwindow.model.QueryExplore
 import com.example.cosmicwindow.model.SearchResultItem
 
 data class ExploreDetailState(

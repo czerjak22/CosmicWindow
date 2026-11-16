@@ -7,10 +7,8 @@ data class QueryExplore(
     val page: Int = 1,
     val mediaType: String = "image",
 ) {
-    override fun toString(): String {
-        return "query:$query, page:$page,filters:${
+    override fun toString(): String =
+        "query:$query, page:$page,filters:${
             filters.filter { it.isActive }.joinToString(" ") { it.value }
         }"
-    }
 }
-

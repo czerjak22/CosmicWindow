@@ -90,18 +90,15 @@ import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.model.Filter
 import com.example.cosmicwindow.model.SearchResultItem
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExplorePage(
-    viewModel: ExploreViewModel = hiltViewModel(),
-    onItemClick: (String) -> Unit
-) {
+fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel(), onItemClick: (String) -> Unit) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -111,11 +108,12 @@ fun ExplorePage(
 
         if (uiState.error != null) {
             Box(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(Spacing.s16)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .padding(innerPadding)
+                        .padding(Spacing.s16)
+                        .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
             ) {
                 ErrorBox(text = uiState.error!!, onClick = viewModel::onErrorRetry)
             }
@@ -160,7 +158,7 @@ fun ExplorePage(
                 isLoadingMore = uiState.isLoading,
                 onLoadMore = viewModel::loadMore,
                 onItemClick = onItemClick,
-                prefetchVariable = viewModel.prefetchVariable
+                prefetchVariable = viewModel.prefetchVariable,
             )
         }
     }
@@ -168,7 +166,9 @@ fun ExplorePage(
 
 @Composable
 fun CardElement(
-    modifier: Modifier = Modifier, searchItem: SearchResultItem, onClick: () -> Unit
+    modifier: Modifier = Modifier,
+    searchItem: SearchResultItem,
+    onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(RadiusSize.r16)
     var isLoaded by remember(searchItem.nasaId) { mutableStateOf(false) }
@@ -181,32 +181,38 @@ fun CardElement(
     )
 
     Surface(
-        modifier = modifier
-            .graphicsLayer { this.alpha = alpha }
-            .clip(shape)
-            .clickable(onClick = onClick),
+        modifier =
+            modifier
+                .graphicsLayer { this.alpha = alpha }
+                .clip(shape)
+                .clickable(onClick = onClick),
         shape = shape,
-        color = MaterialTheme.colorScheme.surfaceVariant) {
+        color = MaterialTheme.colorScheme.surfaceVariant,
+    ) {
         Column {
             Box {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current).data(searchItem.thumbnailUrl)
-                        .allowHardware(false).build(),
+                    model =
+                        ImageRequest
+                            .Builder(LocalContext.current)
+                            .data(searchItem.thumbnailUrl)
+                            .allowHardware(false)
+                            .build(),
                     contentDescription = searchItem.title,
                     modifier = Modifier.fillMaxWidth(),
                     contentScale = ContentScale.FillWidth,
-
                     onSuccess = { state ->
                         isLoaded = true
                         val bitmap = state.result.image.toBitmap()
                         scope.launch {
-                            accentColor = withContext(Dispatchers.Default) {
-                                val palette = Palette.from(bitmap).clearFilters().generate()
-                                val swatch =
-                                    palette.lightVibrantSwatch ?: palette.vibrantSwatch ?: palette.lightMutedSwatch
-                                    ?: palette.mutedSwatch ?: palette.dominantSwatch
-                                swatch?.let { Color(it.rgb) }
-                            }
+                            accentColor =
+                                withContext(Dispatchers.Default) {
+                                    val palette = Palette.from(bitmap).clearFilters().generate()
+                                    val swatch =
+                                        palette.lightVibrantSwatch ?: palette.vibrantSwatch ?: palette.lightMutedSwatch
+                                            ?: palette.mutedSwatch ?: palette.dominantSwatch
+                                    swatch?.let { Color(it.rgb) }
+                                }
                         }
                     },
                 )
@@ -217,16 +223,17 @@ fun CardElement(
                         .background(
                             Brush.verticalGradient(
                                 listOf(
-                                    Color.Transparent, MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                                )
-                            )
-                        )
+                                    Color.Transparent,
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                ),
+                            ),
+                        ),
                 )
 
                 Surface(
                     modifier = Modifier.padding(Spacing.s8),
                     shape = RoundedCornerShape(RadiusSize.r9999),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
                 ) {
                     Text(
                         text = searchItem.nasaId,
@@ -234,38 +241,37 @@ fun CardElement(
                         color = accentColor ?: MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(horizontal = Spacing.s8, vertical = Spacing.s4),
                         maxLines = 1,
-                        overflow = TextOverflow.Clip
+                        overflow = TextOverflow.Clip,
                     )
                 }
             }
 
-
             Column(
                 Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s12),
-                verticalArrangement = Arrangement.spacedBy(Spacing.s8)
+                verticalArrangement = Arrangement.spacedBy(Spacing.s8),
             ) {
                 Text(
                     text = searchItem.title,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
                         text = searchItem.dateCreated.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     if (searchItem.center != null) {
                         Text(
                             text = searchItem.center,
                             style = MaterialTheme.typography.bodySmall,
-                            color = accentColor ?: MaterialTheme.colorScheme.onSurface
+                            color = accentColor ?: MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
@@ -274,15 +280,16 @@ fun CardElement(
     }
 }
 
-
 @Composable
 fun LoadingRow(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(
-            Spacing.s8, alignment = Alignment.CenterHorizontally
-        )
+        horizontalArrangement =
+            Arrangement.spacedBy(
+                Spacing.s8,
+                alignment = Alignment.CenterHorizontally,
+            ),
     ) {
         CircularProgressIndicator(Modifier.size(Spacing.s16))
         Text(
@@ -290,12 +297,10 @@ fun LoadingRow(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
         )
-
     }
 }
-
 
 @Composable
 fun ImageGrid(
@@ -309,7 +314,6 @@ fun ImageGrid(
     val gridState = rememberLazyStaggeredGridState()
     val screenWidthDp = LocalWindowInfo.current.containerDpSize.width
 
-
     val shouldLoadMore by remember {
         derivedStateOf {
             val info = gridState.layoutInfo
@@ -322,7 +326,6 @@ fun ImageGrid(
         if (shouldLoadMore) onLoadMore()
     }
 
-
     LazyVerticalStaggeredGrid(
         state = gridState,
         modifier = modifier,
@@ -330,7 +333,6 @@ fun ImageGrid(
         verticalItemSpacing = Spacing.s8,
         horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
-
         item(span = StaggeredGridItemSpan.FullLine) {
             Spacer(Modifier.height(Spacing.s8))
         }
@@ -340,7 +342,8 @@ fun ImageGrid(
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .padding(Spacing.s16), contentAlignment = Alignment.Center
+                        .padding(Spacing.s16),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         "Nothing Found",
@@ -352,43 +355,55 @@ fun ImageGrid(
             return@LazyVerticalStaggeredGrid
         }
         items(
-            items = searchResults, key = { it.nasaId }) { searchItem ->
+            items = searchResults,
+            key = { it.nasaId },
+        ) { searchItem ->
             CardElement(onClick = { onItemClick(searchItem.nasaId) }, searchItem = searchItem)
         }
 
         if (isLoadingMore) {
             item(span = StaggeredGridItemSpan.FullLine) {
                 LoadingRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Spacing.s16)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = Spacing.s16),
                 )
             }
         }
         item(span = StaggeredGridItemSpan.FullLine) {
             Spacer(Modifier.height(Spacing.s16))
         }
-
     }
 }
 
 @Composable
-fun FilterButton(modifier: Modifier = Modifier, filter: Filter, onClick: () -> Unit) {
-
+fun FilterButton(
+    modifier: Modifier = Modifier,
+    filter: Filter,
+    onClick: () -> Unit,
+) {
     Button(
         modifier = modifier,
         onClick = onClick,
         shape = RoundedCornerShape(RadiusSize.r9999),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (filter.isActive) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.secondary,
-            contentColor = if (filter.isActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondary
-        ),
-        contentPadding = PaddingValues(Spacing.s16)
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor =
+                    if (filter.isActive) {
+                        MaterialTheme.colorScheme.primary.copy(
+                            alpha = 0.3f,
+                        )
+                    } else {
+                        MaterialTheme.colorScheme.secondary
+                    },
+                contentColor = if (filter.isActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondary,
+            ),
+        contentPadding = PaddingValues(Spacing.s16),
     ) {
         Row(
-
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s6)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s6),
         ) {
             Icon(
                 painter = painterResource(filter.icon),
@@ -403,33 +418,36 @@ fun FilterButton(modifier: Modifier = Modifier, filter: Filter, onClick: () -> U
     }
 }
 
-
 @Composable
-fun FilterBar(modifier: Modifier = Modifier, filters: List<Filter>, onFilterClick: (Int) -> Unit) {
+fun FilterBar(
+    modifier: Modifier = Modifier,
+    filters: List<Filter>,
+    onFilterClick: (Int) -> Unit,
+) {
     LazyRow(
-        modifier = modifier
-            .verticalScroll(
-                rememberScrollState(),
-            ),
+        modifier =
+            modifier
+                .verticalScroll(
+                    rememberScrollState(),
+                ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
         contentPadding = PaddingValues(vertical = Spacing.s4),
-
-        ) {
+    ) {
         item {
             Spacer(Modifier.width(Spacing.s8))
         }
         items(filters.size) { index ->
             FilterButton(
                 filter = filters[index],
-                onClick = { onFilterClick(index) })
+                onClick = { onFilterClick(index) },
+            )
         }
         item {
             Spacer(Modifier.width(Spacing.s8))
         }
     }
 }
-
 
 @Composable
 fun SearchBar(
@@ -446,34 +464,36 @@ fun SearchBar(
         onQueryChanged(textFieldState.text.toString())
     }
 
-    val speechLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val spoken = result.data
-                ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                ?.firstOrNull()
-            if (!spoken.isNullOrBlank()) {
-                textFieldState.setTextAndPlaceCursorAtEnd(spoken)
-                onQueryChanged(spoken)
-                onSearch()
+    val speechLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val spoken =
+                    result.data
+                        ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                        ?.firstOrNull()
+                if (!spoken.isNullOrBlank()) {
+                    textFieldState.setTextAndPlaceCursorAtEnd(spoken)
+                    onQueryChanged(spoken)
+                    onSearch()
+                }
             }
         }
-    }
 
     val startVoiceInput = {
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Search NASA images")
-        }
+        val intent =
+            Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+                putExtra(RecognizerIntent.EXTRA_PROMPT, "Search NASA images")
+            }
         try {
             speechLauncher.launch(intent)
         } catch (e: ActivityNotFoundException) {
             Toast.makeText(context, "Speech recognition not available", Toast.LENGTH_SHORT).show()
         }
     }
-
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -483,9 +503,8 @@ fun SearchBar(
         Row(
             modifier = Modifier.padding(horizontal = Spacing.s16),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s8)
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
-
             Image(
                 painter = painterResource(R.drawable.search_icon),
                 contentDescription = null,
@@ -493,58 +512,59 @@ fun SearchBar(
 
             BasicTextField(
                 state = textFieldState,
-                modifier = Modifier
-                    .weight(1f)
-                    .border(
-                        width = Spacing.border,
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                    )
-                    .background(
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                    .padding(horizontal = Spacing.s10, vertical = Spacing.s10),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .border(
+                            width = Spacing.border,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        ).background(
+                            color = MaterialTheme.colorScheme.secondary,
+                        ).padding(horizontal = Spacing.s10, vertical = Spacing.s10),
                 interactionSource = interactionSource,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-
+                textStyle =
+                    MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                    ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant),
-
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Search
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        imeAction = ImeAction.Search,
+                    ),
                 onKeyboardAction = {
                     onQueryChanged(textFieldState.text.toString())
                     onSearch()
                     keyboardController?.hide()
                 },
                 lineLimits = TextFieldLineLimits.SingleLine,
-                decorator = TextFieldDecorator { innerTextField ->
-                    Box(
-                        modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart
-                    ) {
-                        if (textFieldState.text.isEmpty()) {
-                            Text(
-                                text = "Search NASA images (e.g. Mars, Nebula)",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
+                decorator =
+                    TextFieldDecorator { innerTextField ->
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            if (textFieldState.text.isEmpty()) {
+                                Text(
+                                    text = "Search NASA images (e.g. Mars, Nebula)",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            innerTextField()
                         }
-                        innerTextField()
-                    }
-                })
+                    },
+            )
             IconButton(
                 modifier = Modifier.padding(vertical = Spacing.s4),
-                onClick = startVoiceInput
+                onClick = startVoiceInput,
             ) {
                 Image(
                     painter = painterResource(R.drawable.voice_icon),
                     contentDescription = "voice input button",
                 )
             }
-
         }
     }
 }

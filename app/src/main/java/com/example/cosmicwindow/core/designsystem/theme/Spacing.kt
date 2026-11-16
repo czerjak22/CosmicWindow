@@ -1,6 +1,5 @@
 package com.example.cosmicwindow.core.designsystem.theme
 
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 object Spacing {

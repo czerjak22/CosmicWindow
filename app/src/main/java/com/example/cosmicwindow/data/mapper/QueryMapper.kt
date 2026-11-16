@@ -17,6 +17,3 @@ object QueryMapper : ObjectMappie<QueryExplore, QueryRequestDto>() {
             }
         }
 }
-
-
-
