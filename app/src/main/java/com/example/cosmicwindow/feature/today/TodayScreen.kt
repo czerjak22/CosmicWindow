@@ -25,12 +25,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -58,10 +60,12 @@ import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
+import com.example.cosmicwindow.core.designsystem.components.CollapsingColumn
 import com.example.cosmicwindow.core.designsystem.components.CurrentDatePicker
 import com.example.cosmicwindow.core.designsystem.components.CustomPlayButton
 import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.components.ExternalLinkOpenerButton
+import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.components.VideoPlayer
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
@@ -70,30 +74,18 @@ import com.example.cosmicwindow.core.utils.shareLink
 import com.example.cosmicwindow.model.Apod
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod) -> Unit) {
     var showDatePicker by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            AppHeader(
-                modifier = Modifier,
-                leftIcon = R.drawable.header_image,
-                onClick = { showDatePicker = true },
-                leftIconComposable = {
-                    Icon(
-                        painterResource(R.drawable.calendar_icon),
-                        contentDescription = "Day set icon",
-                        tint = MaterialTheme.colorScheme.onSecondary,
-                    )
-                },
-                mainTitle = "Cosmic Window",
-                secondaryTitle = "ASTRONOMY PICTURE OF THE DAY",
-            )
-        },
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { innerPadding ->
 
         if (showDatePicker) {
@@ -103,74 +95,93 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
             )
         }
 
-        Column(
-            modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .verticalScroll((rememberScrollState())),
-        ) {
-            TodayInSpace(
-                Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s8),
-                date =
-                    uiState.selectedDate.format(
-                        DateTimeFormatter.ofPattern("MMM dd, yyyy"),
-                    ),
-            )
-            if (uiState.error != null) {
-                ErrorBox(
-                    modifier =
-                        Modifier.padding(
-                            top = Spacing.s4,
-                            bottom = Spacing.s16,
-                            start = Spacing.s16,
-                            end = Spacing.s16,
-                        ),
-                    text = uiState.error!!,
-                    onClick = viewModel::getCurrentApods,
-                )
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                LottieLoader(Modifier.size(Spacing.s48))
             }
-            if (uiState.isLoading) {
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
-                return@Scaffold
+            return@Scaffold
+        }
+
+        Column(
+            modifier = Modifier.padding(innerPadding),
+        ) {
+            CollapsingColumn(scrollBehavior = scrollBehavior) {
+                AppHeader(
+                    modifier = Modifier,
+                    leftIcon = R.drawable.header_image,
+                    onClick = { showDatePicker = true },
+                    leftIconComposable = {
+                        Icon(
+                            painterResource(R.drawable.calendar_icon),
+                            contentDescription = "Day set icon",
+                            tint = MaterialTheme.colorScheme.onSecondary,
+                        )
+                    },
+                    mainTitle = "Cosmic Window",
+                    secondaryTitle = "ASTRONOMY PICTURE OF THE DAY",
+                )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(Spacing.s24),
+                modifier =
+                    Modifier
+                        .padding(innerPadding)
+                        .verticalScroll((rememberScrollState())),
             ) {
-                if (uiState.apods.isEmpty()) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        Text(
-                            "No apods to show!",
-                            style = MaterialTheme.typography.headlineLarge,
-                        )
-                    }
-                    return@Scaffold
-                }
-
-                CurrentApod(
-                    modifier = Modifier.padding(horizontal = Spacing.s16),
-                    apod = uiState.apods.first(),
-                    onShareClick = { context.shareLink(uiState.apods.first().permalink) },
-                    onReadClick = onApodClick,
+                TodayInSpace(
+                    Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s8),
+                    date =
+                        uiState.selectedDate.format(
+                            DateTimeFormatter.ofPattern("MMM dd, yyyy"),
+                        ),
                 )
-                PreviousApodStripe(apods = uiState.apods, onClick = onApodClick)
-                if (uiState.featuredVideoApod != null) {
-                    FeaturedApodVideoCard(
-                        Modifier.padding(horizontal = Spacing.s16),
-                        apod = uiState.featuredVideoApod!!,
+                if (uiState.error != null) {
+                    ErrorBox(
+                        modifier =
+                            Modifier.padding(
+                                top = Spacing.s4,
+                                bottom = Spacing.s16,
+                                start = Spacing.s16,
+                                end = Spacing.s16,
+                            ),
+                        text = uiState.error!!,
+                        onClick = viewModel::getCurrentApods,
                     )
                 }
-                DataCard(
-                    Modifier.padding(start = Spacing.s16, end = Spacing.s16, bottom = Spacing.s16),
-                    apod = uiState.apods.first(),
-                )
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s24),
+                ) {
+                    if (uiState.apods.isEmpty()) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                            Text(
+                                "No apods to show!",
+                                style = MaterialTheme.typography.headlineLarge,
+                            )
+                        }
+                        return@Scaffold
+                    }
+                    CurrentApod(
+                        modifier = Modifier.padding(horizontal = Spacing.s16),
+                        apod = uiState.apods.first(),
+                        onShareClick = { context.shareLink(uiState.apods.first().permalink) },
+                        onReadClick = onApodClick,
+                    )
+                    PreviousApodStripe(apods = uiState.apods, onClick = onApodClick)
+                    if (uiState.featuredVideoApod != null) {
+                        FeaturedApodVideoCard(
+                            Modifier.padding(horizontal = Spacing.s16),
+                            apod = uiState.featuredVideoApod!!,
+                        )
+                    }
+                    DataCard(
+                        Modifier.padding(start = Spacing.s16, end = Spacing.s16, bottom = Spacing.s16),
+                        apod = uiState.apods.first(),
+                    )
+                }
             }
         }
     }

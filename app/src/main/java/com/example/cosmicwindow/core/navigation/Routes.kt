@@ -10,4 +10,9 @@ object Routes {
 
     val earth = "Earth"
     val explore = "Explore"
+    val exploreDetail = "exploreDetail/{nasaId}"
+
+    fun exploreDetailRoute(nasaId: String) = "exploreDetail/$nasaId"
+
+    val saved = "Saved"
 }

@@ -7,10 +7,13 @@ import com.example.cosmicwindow.data.EarthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class EarthViewModel
@@ -21,6 +24,7 @@ class EarthViewModel
         private val _uiState = MutableStateFlow(EarthState())
         val uiState = _uiState.asStateFlow()
         private var apiJob: Job? = null
+        private var playbackJob: Job? = null
 
         init {
             loadEarthImages()
@@ -69,5 +73,24 @@ class EarthViewModel
                     )
                 }
             }
+        }
+
+        fun startPlayback() {
+            if (uiState.value.images.size <= 1) return
+
+            playbackJob?.cancel()
+
+            playbackJob =
+                viewModelScope.launch {
+                    while (isActive) {
+                        delay(500.milliseconds)
+                        updateSelected(((uiState.value.selectedIndex ?: 0) + 1) % uiState.value.images.size)
+                    }
+                }
+        }
+
+        fun stopPlayback() {
+            playbackJob?.cancel()
+            playbackJob = null
         }
     }

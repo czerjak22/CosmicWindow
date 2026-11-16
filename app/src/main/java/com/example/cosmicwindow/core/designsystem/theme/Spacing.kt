@@ -4,14 +4,7 @@ import androidx.compose.ui.unit.dp
 
 object Spacing {
     val border = 1.dp
-
-    val xs = 4.dp
-    val sm = 8.dp
-    val md = 16.dp
-    val lg = 24.dp
-    val xl = 32.dp
-    val xxl = 48.dp
-
+    val s2 = 2.dp
     val s4 = 4.dp
     val s6 = 6.dp
     val s8 = 8.dp

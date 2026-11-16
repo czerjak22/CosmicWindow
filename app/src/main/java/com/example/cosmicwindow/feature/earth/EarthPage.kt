@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,6 +25,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,25 +39,29 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.SubcomposeAsyncImage
+import coil3.imageLoader
+import coil3.request.ImageRequest
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
 import com.example.cosmicwindow.core.designsystem.components.CustomPlayButton
 import com.example.cosmicwindow.core.designsystem.components.ErrorBox
+import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
-import kotlinx.coroutines.delay
+import com.example.cosmicwindow.model.Earth
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -81,20 +85,38 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
     ) { innerPadding ->
 
         if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                contentAlignment = Alignment.Center,
+            ) {
+                LottieLoader(Modifier.size(Spacing.s48))
             }
             return@Scaffold
         }
 
         if (uiState.error != null) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(innerPadding),
+                contentAlignment = Alignment.Center,
+            ) {
                 ErrorBox(text = uiState.error!!, onClick = { viewModel.loadEarthImages() })
             }
             return@Scaffold
         }
         if (uiState.images.isEmpty()) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(innerPadding),
+                contentAlignment = Alignment.Center,
+            ) {
                 ErrorBox(text = "No Images found!")
             }
             return@Scaffold
@@ -104,12 +126,15 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
             modifier =
                 Modifier
                     .padding(innerPadding)
-                    .padding(horizontal = Spacing.s16, vertical = Spacing.s16)
+                    .padding(horizontal = Spacing.s16)
                     .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Spacing.s16),
         ) {
             EpicChip(Modifier.align(Alignment.End))
+            PreloadImages(
+                images = uiState.images,
+            )
             EarthImageDisplay(
                 modifier = Modifier.padding(horizontal = Spacing.s4),
                 imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
@@ -121,6 +146,8 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                 index = uiState.selectedIndex ?: 0,
                 totalSize = uiState.images.size,
                 indexUpdate = viewModel::updateSelected,
+                startPlayback = viewModel::startPlayback,
+                stopPlayback = viewModel::stopPlayback,
             )
             InfoCard(
                 info =
@@ -168,16 +195,24 @@ fun ControlCard(
     index: Int = 8,
     totalSize: Int = 12,
     indexUpdate: (Int) -> Unit,
+    startPlayback: () -> Unit,
+    stopPlayback: () -> Unit,
 ) {
     var isPlaying by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(isPlaying, index, totalSize) {
-        if (isPlaying && totalSize > 1) {
-            delay(500.milliseconds)
-            indexUpdate((index + 1) % totalSize)
+    LaunchedEffect(isPlaying, totalSize) {
+        if (isPlaying) {
+            startPlayback()
+        } else {
+            stopPlayback()
         }
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            stopPlayback()
+        }
+    }
     Box(
         modifier =
             modifier
@@ -232,7 +267,11 @@ fun ControlCard(
             FrameSlider(
                 frameCount = totalSize,
                 currentIndex = index,
-                onFrameSelected = indexUpdate,
+                onFrameSelected = { index ->
+                    stopPlayback()
+                    isPlaying = false
+                    indexUpdate(index)
+                },
             )
 
             Row(
@@ -244,6 +283,8 @@ fun ControlCard(
                     icon = R.drawable.previous_frame_icon,
                     description = null,
                     onClick = {
+                        stopPlayback()
+                        isPlaying = false
                         when (index) {
                             0 -> indexUpdate(totalSize - 1)
                             else -> indexUpdate(index - 1)
@@ -252,12 +293,14 @@ fun ControlCard(
                     iconSize = Spacing.s12,
                 )
                 CustomPlayButton(
-                    onClick = { isPlaying = !isPlaying }
+                    onClick = { isPlaying = !isPlaying },
                 )
                 CircleIconButton(
                     icon = R.drawable.next_frame_icon,
                     description = null,
                     onClick = {
+                        stopPlayback()
+                        isPlaying = false
                         when (index) {
                             totalSize - 1 -> indexUpdate(0)
                             else -> indexUpdate(index + 1)
@@ -336,6 +379,23 @@ fun FrameSlider(
 }
 
 @Composable
+fun PreloadImages(images: List<Earth>) {
+    val context = LocalContext.current
+
+    LaunchedEffect(images) {
+        val loader = context.imageLoader
+        images.forEach { url ->
+            loader.enqueue(
+                ImageRequest
+                    .Builder(context)
+                    .data(url.imageUrl)
+                    .build(),
+            )
+        }
+    }
+}
+
+@Composable
 fun EarthImageDisplay(
     modifier: Modifier = Modifier,
     imageUrl: String = "https://epic.gsfc.nasa.gov/archive/natural/2026/10/29/png/epic_1b_20261029000830.png",
@@ -398,9 +458,7 @@ fun EarthImageDisplay(
                                 ),
                         contentAlignment = Alignment.Center,
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(Spacing.s20),
-                        )
+                        LottieLoader(Modifier.padding(Spacing.s16))
                     }
                 },
                 error = {

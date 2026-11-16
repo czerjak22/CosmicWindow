@@ -3,7 +3,7 @@ package com.example.cosmicwindow.data.mapper
 import com.example.cosmicwindow.core.utils.extractVideoLink
 import com.example.cosmicwindow.data.dto.ApodDto
 import com.example.cosmicwindow.model.Apod
-import com.example.cosmicwindow.model.Mediatype
+import com.example.cosmicwindow.model.MediaType
 import tech.mappie.api.ObjectMappie
 
 object ApodMapper : ObjectMappie<ApodDto, Apod>() {
@@ -14,8 +14,8 @@ object ApodMapper : ObjectMappie<ApodDto, Apod>() {
             // to::explanation fromProperty from::explanation transform { it.stripHtml() }
             to::mediaType fromProperty from::mediaType transform {
                 when (it) {
-                    "video" -> Mediatype.VIDEO
-                    else -> Mediatype.PICTURE
+                    "video" -> MediaType.VIDEO
+                    else -> MediaType.PICTURE
                 }
             }
 
