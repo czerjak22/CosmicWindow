@@ -5,7 +5,6 @@ import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.model.MediaType
 import com.example.cosmicwindow.model.SavedItem
 import java.time.LocalDate
-import kotlin.text.Typography.copyright
 
 object SavedItemEntityMapper {
     fun map(from: SavedItemEntity): SavedItem =
@@ -23,7 +22,7 @@ object SavedItemEntityMapper {
                     copyright = from.copyright,
                     alt = from.alt,
                     url = from.permalink,
-                    hdurl = from.pictureLink,
+                    hdUrl = from.pictureLink,
                     mediaType = MediaType.PICTURE,
                     videoUrl = null,
                     postId = from.postId,
@@ -39,7 +38,7 @@ object ApodToSavedItemEntityMapper {
             dateSaved = LocalDate.now().toString(),
             postId = from.postId,
             dateCreated = from.date.toString(),
-            pictureLink = from.hdurl,
+            pictureLink = from.hdUrl,
             title = from.title,
             explanation = from.explanation,
             permalink = from.permalink,
@@ -57,7 +56,7 @@ object SavedItemMapper {
             dateSaved = from.savedDate.toString(),
             postId = from.apod.postId,
             dateCreated = from.apod.date.toString(),
-            pictureLink = from.apod.hdurl,
+            pictureLink = from.apod.hdUrl,
             title = from.apod.title,
             explanation = from.apod.explanation,
             permalink = from.apod.permalink,

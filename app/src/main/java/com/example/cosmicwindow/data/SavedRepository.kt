@@ -13,7 +13,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
@@ -62,8 +61,8 @@ class SavedRepository
             try {
                 withContext(Dispatchers.IO) {
                     val savedItemEntity = ApodToSavedItemEntityMapper.map(apod)
-                    if (apod.hdurl != null) {
-                        val imageBytes = imageApi.download(apod.hdurl).use { it.bytes() }
+                    if (apod.hdUrl != null) {
+                        val imageBytes = imageApi.download(apod.hdUrl).use { it.bytes() }
                         addImage(
                             imageBytes = imageBytes,
                             fileName = savedItemEntity.imageName,
@@ -72,9 +71,6 @@ class SavedRepository
                     val items = savedItemDAO.updateItem(savedItemEntity)
                     Log.w("Repository", "saved item: $items")
                 }
-            } catch (ex: UnknownHostException) {
-                Log.e("Repository", "addItem: $ex")
-                return Result.failure(RepositoryException("No internet connection, please retry when online"))
             } catch (ex: CancellationException) {
                 Log.e("Repository", "addItem: $ex")
                 throw ex
@@ -92,9 +88,6 @@ class SavedRepository
                     Log.w("Repository", "loadItems got items: ${items.size}")
                     Result.success(items)
                 }
-            } catch (ex: UnknownHostException) {
-                Log.e("Repository", "loadItems: $ex")
-                return Result.failure(RepositoryException("No internet connection, please retry when online"))
             } catch (ex: CancellationException) {
                 Log.e("Repository", "loadItems: $ex")
                 throw ex
@@ -104,6 +97,19 @@ class SavedRepository
             }
         }
 
+        suspend fun isSaved(postId: Long): Result<Boolean> =
+            try {
+                Result.success(
+                    withContext(Dispatchers.IO) {
+                        savedItemDAO.isSaved(postId)
+                    },
+                )
+            } catch (ex: CancellationException) {
+                throw ex
+            } catch (ex: Exception) {
+                Result.failure(RepositoryException("Could not read saved items: ${ex.message}"))
+            }
+
         suspend fun findItemByPostId(postId: Long): Result<SavedItem?> {
             try {
                 return withContext(Dispatchers.IO) {
@@ -112,11 +118,7 @@ class SavedRepository
                     Log.w("Repository", "findItemById got item: $item")
                     Result.success(savedItem)
                 }
-            } catch (ex: UnknownHostException) {
-                Log.e("Repository", "findItemById: $ex")
-                return Result.failure(RepositoryException("No internet connection, please retry when online"))
             } catch (ex: CancellationException) {
-                Log.e("Repository", "findItemById: $ex")
                 throw ex
             } catch (ex: Exception) {
                 Log.e("Repository", "findItemById: $ex")
@@ -131,9 +133,6 @@ class SavedRepository
                     removeImage(item.imageName)
                     Result.success(savedItemDAO.deleteItem(SavedItemMapper.map(item)))
                 }
-            } catch (ex: UnknownHostException) {
-                Log.e("Repository", "deleteItem: $ex")
-                return Result.failure(RepositoryException("No internet connection, please retry when online"))
             } catch (ex: CancellationException) {
                 Log.e("Repository", "deleteItem: $ex")
                 throw ex
@@ -149,11 +148,8 @@ class SavedRepository
                     val savedItem = ApodToSavedItemEntityMapper.map(item)
                     removeImage(savedItem.imageName)
                     Log.w("Repository", "deleteItem got item: $item")
-                    Result.success(savedItemDAO.deleteItem(savedItem))
+                    Result.success(savedItemDAO.deleteItemByPostId(savedItem.postId))
                 }
-            } catch (ex: UnknownHostException) {
-                Log.e("Repository", "deleteItem: $ex")
-                return Result.failure(RepositoryException("No internet connection, please retry when online"))
             } catch (ex: CancellationException) {
                 Log.e("Repository", "deleteItem: $ex")
                 throw ex

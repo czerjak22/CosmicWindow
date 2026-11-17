@@ -90,7 +90,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
 
         if (showDatePicker) {
             CurrentDatePicker(
-                onDateSelected = { selectedDate -> viewModel.updateCurretDay(selectedDate) },
+                onDateSelected = { selectedDate -> viewModel.updateCurrentDay(selectedDate) },
                 onDismiss = { showDatePicker = false },
             )
         }
@@ -169,6 +169,8 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                         apod = uiState.apods.first(),
                         onShareClick = { context.shareLink(uiState.apods.first().permalink) },
                         onReadClick = onApodClick,
+                        bookmarkState = uiState.apods.first().isSaved,
+                        onBookmarkClick = { viewModel.toggleApodSave(uiState.apods.first()) },
                     )
                     PreviousApodStripe(apods = uiState.apods, onClick = onApodClick)
                     if (uiState.featuredVideoApod != null) {
@@ -387,7 +389,7 @@ fun VideoThumbnailCard(
                 .clickable { onClick() },
     ) {
         AsyncImage(
-            apod.hdurl,
+            apod.hdUrl,
             contentDescription = apod.alt,
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize(),
@@ -481,6 +483,7 @@ fun CurrentApod(
     onReadClick: (Apod) -> Unit = {},
     onBookmarkClick: () -> Unit = {},
     onShareClick: () -> Unit = {},
+    bookmarkState: Boolean,
 ) {
     Box(
         modifier =
@@ -489,7 +492,7 @@ fun CurrentApod(
                 .clip(RoundedCornerShape(24.dp)),
     ) {
         AsyncImage(
-            model = apod.hdurl ?: apod.url,
+            model = apod.hdUrl ?: apod.url,
             contentDescription = apod.alt,
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize(),
@@ -594,7 +597,11 @@ fun CurrentApod(
                 }
 
                 CircleIconButton(
-                    icon = R.drawable.bookmark_icon,
+                    icon = if (bookmarkState) {
+                        R.drawable.bookmark_filled_icon
+                    } else {
+                        R.drawable.bookmark_icon
+                    },
                     description = "Bookmark",
                     onClick = onBookmarkClick,
                 )
@@ -630,7 +637,7 @@ fun PreviousApodDay(
         ) {
             Box {
                 AsyncImage(
-                    model = apod.hdurl ?: apod.url,
+                    model = apod.hdUrl ?: apod.url,
                     contentDescription = apod.alt,
                     contentScale = ContentScale.Crop,
                     modifier =

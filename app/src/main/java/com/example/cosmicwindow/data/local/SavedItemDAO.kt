@@ -3,6 +3,7 @@ package com.example.cosmicwindow.data.local
 import androidx.room3.Dao
 import androidx.room3.Delete
 import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Upsert
 import com.example.cosmicwindow.data.local.entity.SavedItemEntity
@@ -13,9 +14,12 @@ interface SavedItemDAO {
     suspend fun getAll(): List<SavedItemEntity>
 
     @Query("SELECT * FROM saved_apods WHERE post_id=:postId")
-    fun getByPostId(postId: Long): SavedItemEntity?
+    suspend fun getByPostId(postId: Long): SavedItemEntity?
 
-    @Insert
+    @Query("SELECT EXISTS(SELECT 1 FROM saved_apods WHERE post_id = :postId)")
+    suspend fun isSaved(postId: Long): Boolean
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertItem(item: SavedItemEntity): Long
 
     @Upsert
@@ -23,4 +27,8 @@ interface SavedItemDAO {
 
     @Delete
     suspend fun deleteItem(item: SavedItemEntity)
+
+    @Query("DELETE FROM saved_apods WHERE post_id= :postId")
+    suspend fun deleteItemByPostId(postId: Long)
+
 }

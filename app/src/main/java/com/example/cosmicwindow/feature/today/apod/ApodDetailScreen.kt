@@ -75,14 +75,14 @@ fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickB
                 onClickBack = onClickBack,
                 onBookmark = {
                     if (uiState.apod != null) {
-                        if (uiState.isSaved) {
+                        if (uiState.apod!!.isSaved) {
                             viewModel.removeSavedApod(uiState.apod!!)
                         } else {
                             viewModel.savedApod(uiState.apod!!)
                         }
                     }
                 },
-                isSaved = uiState.isSaved,
+                isSaved = uiState.apod?.isSaved ?: false,
             )
         },
     ) { innerPadding ->
@@ -104,12 +104,12 @@ fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickB
                 return@Scaffold
             }
             ApodImage(
-                imageUri = uiState.apod!!.hdurl ?: uiState.apod!!.url,
+                imageUri = uiState.apod!!.hdUrl ?: uiState.apod!!.url,
                 onFullscreenClick = { showFullscreen = true },
             )
             if (showFullscreen) {
                 FullscreenImageDialog(
-                    imageUrl = uiState.apod!!.hdurl ?: uiState.apod!!.url,
+                    imageUrl = uiState.apod!!.hdUrl ?: uiState.apod!!.url,
                     onDismiss = { showFullscreen = false },
                 )
             }

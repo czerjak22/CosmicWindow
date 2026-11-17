@@ -2,10 +2,14 @@ package com.example.cosmicwindow.data.local.entity
 
 import androidx.room3.ColumnInfo
 import androidx.room3.Entity
+import androidx.room3.Index
 import androidx.room3.PrimaryKey
 import java.time.LocalDate
 
-@Entity("saved_apods")
+@Entity(
+    "saved_apods",
+    indices = [Index(value = ["post_id"], unique = true)]
+)
 data class SavedItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
     @ColumnInfo(name = "image_name") val imageName: String,

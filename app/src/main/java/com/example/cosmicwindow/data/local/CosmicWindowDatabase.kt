@@ -6,7 +6,7 @@ import com.example.cosmicwindow.data.local.entity.SavedItemEntity
 
 @Database(
     entities = [SavedItemEntity::class],
-    version = 2,
+    version = 3,
 )
 abstract class CosmicWindowDatabase : RoomDatabase() {
     abstract fun savedItemDAO(): SavedItemDAO
