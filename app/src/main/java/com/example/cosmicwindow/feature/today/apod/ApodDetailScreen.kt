@@ -50,7 +50,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
@@ -62,33 +61,28 @@ import com.example.cosmicwindow.core.utils.shareLink
 import com.example.cosmicwindow.model.Apod
 
 @Composable
-fun ApodDetailsScreen(
-    modifier: Modifier = Modifier,
-    viewModel: ApodDetailViewModel = hiltViewModel(),
-    onClickBack: () -> Unit,
-) {
+fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickBack: () -> Unit) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val navController = rememberNavController()
     var showFullscreen by remember { mutableStateOf(false) }
 
-    fun shareApod() {
-        when {
-            uiState.apod != null -> {
-                context.shareLink(uiState.apod!!.permalink)
-            }
-
-            else -> {}
-        }
-    }
-
+    val shareApod = { if (uiState.apod != null) context.shareLink(uiState.apod!!.permalink) }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             StoryHeader(
                 onShare = { shareApod() },
                 onClickBack = onClickBack,
-                onBookmark = {},
+                onBookmark = {
+                    if (uiState.apod != null) {
+                        if (uiState.isSaved) {
+                            viewModel.removeSavedApod(uiState.apod!!)
+                        } else {
+                            viewModel.savedApod(uiState.apod!!)
+                        }
+                    }
+                },
+                isSaved = uiState.isSaved,
             )
         },
     ) { innerPadding ->
@@ -387,6 +381,7 @@ fun StoryHeader(
     onClickBack: () -> Unit = {},
     onBookmark: () -> Unit = {},
     onShare: () -> Unit = {},
+    isSaved: Boolean,
 ) {
     Row(
         modifier =
@@ -414,7 +409,10 @@ fun StoryHeader(
             onClick = onBookmark,
         ) {
             Image(
-                painter = painterResource(R.drawable.bookmark_icon),
+                painter =
+                    painterResource(
+                        if (isSaved) R.drawable.bookmark_filled_icon else R.drawable.bookmark_icon,
+                    ),
                 contentDescription = "bookmarkButton",
             )
         }

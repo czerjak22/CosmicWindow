@@ -14,6 +14,7 @@ data class Apod(
     val hdurl: String? = null,
     val mediaType: MediaType,
     val videoUrl: String?,
+    val postId: Long,
 ) {
     override fun toString(): String = "Apod:$date, $title, $mediaType"
 }

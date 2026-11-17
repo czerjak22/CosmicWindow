@@ -19,4 +19,5 @@ data class ApodDto(
     val hdurl: String? = null,
     @SerialName("media_type") val mediaType: String,
     @SerialName("basic_html") val basicHtml: String,
+    @SerialName("post_id") val postId: Long,
 )

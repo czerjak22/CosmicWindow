@@ -12,8 +12,8 @@ interface SavedItemDAO {
     @Query("SELECT * from saved_apods")
     suspend fun getAll(): List<SavedItemEntity>
 
-    @Query("SELECT * from saved_apods WHERE id =:id")
-    suspend fun getById(id: Int): SavedItemEntity?
+    @Query("SELECT * FROM saved_apods WHERE post_id=:postId")
+    fun getByPostId(postId: Long): SavedItemEntity?
 
     @Insert
     suspend fun insertItem(item: SavedItemEntity): Long
@@ -23,6 +23,4 @@ interface SavedItemDAO {
 
     @Delete
     suspend fun deleteItem(item: SavedItemEntity)
-
-
 }

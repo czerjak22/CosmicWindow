@@ -6,4 +6,5 @@ data class ApodDetailState(
     val apod: Apod? = null,
     val error: String? = null,
     val isLoading: Boolean = true,
+    val isSaved: Boolean = false,
 )

@@ -23,7 +23,7 @@ fun AppHeader(
     modifier: Modifier = Modifier,
     mainTitle: String,
     secondaryTitle: String,
-    leftIcon: Int?=null,
+    leftIcon: Int? = null,
     onClick: () -> Unit,
     leftIconModifier: Modifier = Modifier,
     leftIconSize: Dp = Spacing.s48,
@@ -51,7 +51,7 @@ fun AppHeader(
                     modifier =
                         leftIconModifier
                             .size(leftIconSize),
-                    )
+                )
             }
             Column(verticalArrangement = Arrangement.Center) {
                 Text(

@@ -9,9 +9,14 @@ import java.time.LocalDate
 data class SavedItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
     @ColumnInfo(name = "image_name") val imageName: String,
-    @ColumnInfo(name = "title") val title: String,
-    @ColumnInfo(name = "description") val description: String,
-    @ColumnInfo(name = "saved_date") val savedDate: String = LocalDate.now().toString(),
-    )
-
-
+    @ColumnInfo(name = "date_saved") val dateSaved: String = LocalDate.now().toString(),
+    @ColumnInfo(name = "post_id") val postId: Long,
+    @ColumnInfo(name = "date_created") val dateCreated: String,
+    @ColumnInfo(name = "picture_link") val pictureLink: String? = null,
+    val title: String,
+    val explanation: String,
+    val permalink: String,
+    val credit: String,
+    val copyright: String?,
+    val alt: String,
+)

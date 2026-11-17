@@ -1,6 +1,5 @@
 package com.example.cosmicwindow.feature.saved
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,19 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.AppHeader
 import com.example.cosmicwindow.core.designsystem.components.CollapsingColumn
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SavedPage(
-    viewModel: SavedViewModel = hiltViewModel()
-) {
+fun SavedPage(viewModel: SavedViewModel = hiltViewModel()) {
     //  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -62,12 +57,9 @@ fun SavedPage(
                 )
             }
 
-            Box(Modifier.fillMaxSize(), Alignment.Center)
-            {
+            Box(Modifier.fillMaxSize(), Alignment.Center) {
                 Text("Saved Page")
             }
-
         }
     }
 }
-

@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.cosmicwindow.data.network.ApodApi
 import com.example.cosmicwindow.data.network.EarthApi
 import com.example.cosmicwindow.data.network.ExploreApi
+import com.example.cosmicwindow.data.network.ImageApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -72,4 +73,14 @@ object NetworkModule {
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(ExploreApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideImageApi(client: OkHttpClient): ImageApi =
+        Retrofit
+            .Builder()
+            .baseUrl("https://google.com")
+            .client(client)
+            .build()
+            .create(ImageApi::class.java)
 }

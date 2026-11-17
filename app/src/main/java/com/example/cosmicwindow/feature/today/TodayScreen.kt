@@ -387,7 +387,7 @@ fun VideoThumbnailCard(
                 .clickable { onClick() },
     ) {
         AsyncImage(
-            apod.hdurl ?: apod.url,
+            apod.hdurl,
             contentDescription = apod.alt,
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize(),

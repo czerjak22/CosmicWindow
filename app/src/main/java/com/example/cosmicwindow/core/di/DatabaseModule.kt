@@ -14,24 +14,19 @@ import jakarta.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
     fun provideLocalDatabase(
-        @ApplicationContext context: Context
-    ): CosmicWindowDatabase {
-        return Room.databaseBuilder(
-            context,
-            CosmicWindowDatabase::class.java,
-            "cosmic_window.db"
-        ).build()
-    }
+        @ApplicationContext context: Context,
+    ): CosmicWindowDatabase =
+        Room
+            .databaseBuilder(
+                context,
+                CosmicWindowDatabase::class.java,
+                "cosmic_window.db",
+            ).fallbackToDestructiveMigration()
+            .build()
 
     @Provides
-    fun provideSavedItemDao(
-        database: CosmicWindowDatabase
-    ): SavedItemDAO {
-        return database.savedItemDAO()
-    }
+    fun provideSavedItemDao(database: CosmicWindowDatabase): SavedItemDAO = database.savedItemDAO()
 }
-
