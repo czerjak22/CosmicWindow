@@ -18,91 +18,82 @@ import java.time.LocalDate
 
 @HiltViewModel
 class ApodDetailViewModel
-@Inject
-constructor(
-    savedStateHandle: SavedStateHandle,
-    private val apodRepository: ApodRepository,
-    private val savedRepository: SavedRepository,
-) : ViewModel() {
-    private val date = LocalDate.parse(checkNotNull(savedStateHandle.get<String>("date")))
-    private var saveJob: Job? = null
-    private val _uiState = MutableStateFlow<ApodDetailState>(ApodDetailState())
-    val uiState = _uiState.asStateFlow()
+    @Inject
+    constructor(
+        savedStateHandle: SavedStateHandle,
+        private val apodRepository: ApodRepository,
+        private val savedRepository: SavedRepository,
+    ) : ViewModel() {
+        private val date = LocalDate.parse(checkNotNull(savedStateHandle.get<String>("date")))
+        private var saveJob: Job? = null
+        private val _uiState = MutableStateFlow<ApodDetailState>(ApodDetailState())
+        val uiState = _uiState.asStateFlow()
 
-    init {
-        loadApod()
-    }
+        init {
+            loadApod()
+        }
 
-    fun loadApod() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            Log.w("debug", "$date ez amit megkaptam!")
-            apodRepository.getApod(date).fold(
-                onSuccess = { newApod ->
-                    _uiState.update { it.copy(apod = newApod, isLoading = false) }
-                    checkSaved(newApod)
-                },
-                onFailure = { err ->
-                    _uiState.update { it.copy(error = err.message ?: "error", isLoading = false) }
-                },
-            )
+        fun loadApod() {
+            viewModelScope.launch {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+                Log.w("debug", "$date ez amit megkaptam!")
+                apodRepository.getApod(date).fold(
+                    onSuccess = { newApod ->
+                        _uiState.update { it.copy(apod = newApod, isLoading = false) }
+                        checkSaved(newApod)
+                    },
+                    onFailure = { err ->
+                        _uiState.update { it.copy(error = err.message ?: "error", isLoading = false) }
+                    },
+                )
+            }
         }
-    }
 
-    fun savedApod(apod: Apod) {
-        if (apod.isSaved) {
-            return
+        fun toggleApodSave() {
+            if (_uiState.value.apod == null) {
+                return
+            }
+            _uiState.update { it.copy(apod = it.apod!!.copy(isSaved = !it.apod.isSaved)) }
+            saveOrDeleteApod()
         }
-        if (saveJob?.isActive == true) {
-            return
+
+        fun saveOrDeleteApod() {
+            val apod = _uiState.value.apod ?: return
+            saveJob?.cancel()
+            saveJob =
+                viewModelScope.launch {
+                    val willBeSaved = apod.isSaved
+                    val result =
+                        if (willBeSaved) {
+                            savedRepository.saveItem(apod)
+                        } else {
+                            savedRepository.deleteItem(apod)
+                        }
+                    result.fold(
+                        onSuccess = {
+                            Log.w("ViewModel", " ${if (willBeSaved) "Saving" else "Deleting"} apod")
+                            _uiState.update {
+                                it.copy(apod = it.apod!!.copy(isSaved = willBeSaved))
+                            }
+                        },
+                        onFailure = { err ->
+                            _uiState.update { it.copy(error = err.message ?: "error") }
+                        },
+                    )
+                }
         }
-        saveJob =
+
+        fun checkSaved(apod: Apod) {
             viewModelScope.launch {
                 Log.w("ViewModel", "$apod to be saved!")
-                savedRepository.saveItem(apod).fold(
-                    onSuccess = { newApod ->
-                        _uiState.update { it.copy(apod = apod.copy(isSaved = true)) }
+                savedRepository.isSaved(apod.postId).fold(
+                    onSuccess = { savedItem ->
+                        _uiState.update { it.copy(apod = apod.copy(isSaved = savedItem)) }
                     },
                     onFailure = { err ->
                         _uiState.update { it.copy(error = err.message ?: "error") }
                     },
                 )
             }
-    }
-
-    fun removeSavedApod(apod: Apod) {
-        if (!apod.isSaved) {
-            return
-        }
-        if (saveJob?.isActive == true) {
-            return
-        }
-
-        saveJob =
-            viewModelScope.launch {
-                Log.w("ViewModel", "$apod to be saved!")
-                savedRepository.deleteItem(apod).fold(
-                    onSuccess = { newApod ->
-                        _uiState.update { it.copy(apod = apod.copy(isSaved = false)) }
-                    },
-                    onFailure = { err ->
-                        _uiState.update { it.copy(error = err.message ?: "error") }
-                    },
-                )
-            }
-    }
-
-    fun checkSaved(apod: Apod) {
-        viewModelScope.launch {
-            Log.w("ViewModel", "$apod to be saved!")
-            savedRepository.findItemByPostId(apod.postId).fold(
-                onSuccess = { savedItem ->
-                    _uiState.update { it.copy(apod = apod.copy(isSaved = savedItem != null)) }
-                },
-                onFailure = { err ->
-                    _uiState.update { it.copy(error = err.message ?: "error") }
-                },
-            )
         }
     }
-}

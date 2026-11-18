@@ -11,6 +11,8 @@ import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.model.SavedItem
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
@@ -26,6 +28,7 @@ class SavedRepository
         val imageApi: ImageApi,
     ) {
         private val imagesDir = File(context.filesDir, "images")
+        private val writeMutex = Mutex()
 
         suspend fun addImage(imageBytes: ByteArray, fileName: String): Result<String> =
             withContext(Dispatchers.IO) {
@@ -58,27 +61,29 @@ class SavedRepository
             }
 
         suspend fun saveItem(apod: Apod): Result<Unit> {
-            try {
-                withContext(Dispatchers.IO) {
-                    val savedItemEntity = ApodToSavedItemEntityMapper.map(apod)
-                    if (apod.hdUrl != null) {
-                        val imageBytes = imageApi.download(apod.hdUrl).use { it.bytes() }
-                        addImage(
-                            imageBytes = imageBytes,
-                            fileName = savedItemEntity.imageName,
-                        )
+            writeMutex.withLock {
+                try {
+                    withContext(Dispatchers.IO) {
+                        val savedItemEntity = ApodToSavedItemEntityMapper.map(apod)
+                        if (apod.hdUrl != null) {
+                            val imageBytes = imageApi.download(apod.hdUrl).use { it.bytes() }
+                            addImage(
+                                imageBytes = imageBytes,
+                                fileName = savedItemEntity.imageName,
+                            )
+                        }
+                        val items = savedItemDAO.updateItem(savedItemEntity)
+                        Log.w("Repository", "saved item: $items")
                     }
-                    val items = savedItemDAO.updateItem(savedItemEntity)
-                    Log.w("Repository", "saved item: $items")
+                } catch (ex: CancellationException) {
+                    Log.e("Repository", "addItem: $ex")
+                    throw ex
+                } catch (ex: Exception) {
+                    Log.e("Repository", "addItem: $ex")
+                    return Result.failure(RepositoryException("Something Bad Happened"))
                 }
-            } catch (ex: CancellationException) {
-                Log.e("Repository", "addItem: $ex")
-                throw ex
-            } catch (ex: Exception) {
-                Log.e("Repository", "addItem: $ex")
-                return Result.failure(RepositoryException("Something Bad Happened"))
+                return Result.success(Unit)
             }
-            return Result.success(Unit)
         }
 
         suspend fun loadItems(): Result<List<SavedItem>> {
@@ -143,19 +148,21 @@ class SavedRepository
         }
 
         suspend fun deleteItem(item: Apod): Result<Unit> {
-            try {
-                return withContext(Dispatchers.IO) {
-                    val savedItem = ApodToSavedItemEntityMapper.map(item)
-                    removeImage(savedItem.imageName)
-                    Log.w("Repository", "deleteItem got item: $item")
-                    Result.success(savedItemDAO.deleteItemByPostId(savedItem.postId))
+            writeMutex.withLock {
+                try {
+                    return withContext(Dispatchers.IO) {
+                        val savedItem = ApodToSavedItemEntityMapper.map(item)
+                        removeImage(savedItem.imageName)
+                        Log.w("Repository", "deleteItem got item: $item")
+                        Result.success(savedItemDAO.deleteItemByPostId(savedItem.postId))
+                    }
+                } catch (ex: CancellationException) {
+                    Log.e("Repository", "deleteItem: $ex")
+                    throw ex
+                } catch (ex: Exception) {
+                    Log.e("Repository", "deleteItem: $ex")
+                    return Result.failure(RepositoryException("Something Bad Happened"))
                 }
-            } catch (ex: CancellationException) {
-                Log.e("Repository", "deleteItem: $ex")
-                throw ex
-            } catch (ex: Exception) {
-                Log.e("Repository", "deleteItem: $ex")
-                return Result.failure(RepositoryException("Something Bad Happened"))
             }
         }
     }

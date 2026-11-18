@@ -30,5 +30,4 @@ interface SavedItemDAO {
 
     @Query("DELETE FROM saved_apods WHERE post_id= :postId")
     suspend fun deleteItemByPostId(postId: Long)
-
 }

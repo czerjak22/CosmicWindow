@@ -75,11 +75,7 @@ fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickB
                 onClickBack = onClickBack,
                 onBookmark = {
                     if (uiState.apod != null) {
-                        if (uiState.apod!!.isSaved) {
-                            viewModel.removeSavedApod(uiState.apod!!)
-                        } else {
-                            viewModel.savedApod(uiState.apod!!)
-                        }
+                        viewModel.toggleApodSave()
                     }
                 },
                 isSaved = uiState.apod?.isSaved ?: false,

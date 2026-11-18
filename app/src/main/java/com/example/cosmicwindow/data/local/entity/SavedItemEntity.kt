@@ -8,7 +8,7 @@ import java.time.LocalDate
 
 @Entity(
     "saved_apods",
-    indices = [Index(value = ["post_id"], unique = true)]
+    indices = [Index(value = ["post_id"], unique = true)],
 )
 data class SavedItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
