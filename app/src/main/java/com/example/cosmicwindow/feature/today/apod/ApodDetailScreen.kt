@@ -59,6 +59,7 @@ import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.core.utils.shareLink
 import com.example.cosmicwindow.model.Apod
+import com.example.cosmicwindow.model.MediaType
 
 @Composable
 fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickBack: () -> Unit) {
@@ -79,6 +80,7 @@ fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickB
                     }
                 },
                 isSaved = uiState.apod?.isSaved ?: false,
+                saveEnabled = (uiState.apod?.mediaType == MediaType.PICTURE),
             )
         },
     ) { innerPadding ->
@@ -378,6 +380,7 @@ fun StoryHeader(
     onBookmark: () -> Unit = {},
     onShare: () -> Unit = {},
     isSaved: Boolean,
+    saveEnabled: Boolean = true,
 ) {
     Row(
         modifier =
@@ -403,6 +406,7 @@ fun StoryHeader(
         Spacer(Modifier.weight(1f))
         IconButton(
             onClick = onBookmark,
+            enabled = saveEnabled,
         ) {
             Image(
                 painter =

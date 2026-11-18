@@ -76,6 +76,7 @@ import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.core.utils.getDayTextSince
 import com.example.cosmicwindow.core.utils.shareLink
 import com.example.cosmicwindow.model.Apod
+import com.example.cosmicwindow.model.MediaType
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -621,6 +622,7 @@ fun CurrentApod(
                         },
                     description = "Bookmark",
                     onClick = onBookmarkClick,
+                    enabled = apod.mediaType == MediaType.PICTURE,
                 )
                 CircleIconButton(
                     icon = R.drawable.share_icon,

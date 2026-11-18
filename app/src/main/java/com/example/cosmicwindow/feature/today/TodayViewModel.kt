@@ -46,12 +46,17 @@ class TodayViewModel
                         onSuccess = { apods ->
                             val first = apods.firstOrNull()
                             val newApods =
-                                if (first == null) {
-                                    Log.e("debug", "Apods are empty!")
-                                    apods
-                                } else {
-                                    listOf(first.copy(isSaved = checkSaved(first))) + apods.drop(1)
+                                when {
+                                    first == null -> {
+                                        Log.e("debug", "Apods are empty!")
+                                        apods
+                                    }
+
+                                    first.mediaType == MediaType.VIDEO -> apods
+                                    else ->
+                                        listOf(first.copy(isSaved = checkSaved(first))) + apods.drop(1)
                                 }
+
                             val videoApod = searchForFirstVideoApod(newApods)
                             _uiState.update {
                                 it.copy(
@@ -90,6 +95,7 @@ class TodayViewModel
                                     .first()
                                     .postId
                             -> it.copy(isSaved = checkSaved(it))
+
                             else -> it
                         }
                     }
@@ -115,6 +121,7 @@ class TodayViewModel
             }
 
         fun toggleApodSave(apod: Apod) {
+            if (apod.mediaType == MediaType.VIDEO) return
             val newApods =
                 _uiState.value.apods.map {
                     when {
@@ -123,6 +130,7 @@ class TodayViewModel
                                 .first()
                                 .postId
                         -> it.copy(isSaved = !apod.isSaved)
+
                         else -> it
                     }
                 }

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.cosmicwindow.data.ApodRepository
 import com.example.cosmicwindow.data.SavedRepository
 import com.example.cosmicwindow.model.Apod
+import com.example.cosmicwindow.model.MediaType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Job
@@ -50,7 +51,7 @@ class ApodDetailViewModel
         }
 
         fun toggleApodSave() {
-            if (_uiState.value.apod == null) {
+            if (_uiState.value.apod == null || _uiState.value.apod!!.mediaType == MediaType.VIDEO) {
                 return
             }
             _uiState.update { it.copy(apod = it.apod!!.copy(isSaved = !it.apod.isSaved)) }
