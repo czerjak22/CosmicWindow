@@ -708,7 +708,7 @@ fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
         Box(
             modifier =
                 Modifier
-                    .size(8.dp)
+                    .size(Spacing.s8)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.onPrimaryContainer),
         )

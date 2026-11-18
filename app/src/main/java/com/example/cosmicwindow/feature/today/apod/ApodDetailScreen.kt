@@ -333,7 +333,6 @@ fun ApodImage(
 ) {
     Box(
         modifier = modifier.fillMaxWidth(),
-        //  .height(535.dp)
     ) {
         AsyncImage(
             modifier = Modifier.fillMaxWidth(),

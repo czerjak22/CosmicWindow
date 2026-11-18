@@ -42,20 +42,26 @@ class SavedRepository
                 }
             }
 
-        fun getImage(fileName: String): Result<File?> {
+        suspend fun getImageFolderSizeMb(): Float =
+            withContext(Dispatchers.IO) {
+                val bytes = imagesDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+                bytes / (1024.0 * 1024.0).toFloat()
+            }
+
+        fun getImage(fileName: String): Result<String?> {
             return runCatching {
                 return Result.success(
-                    File(imagesDir, fileName).takeIf { it.exists() },
+                    File(imagesDir, fileName).takeIf { it.exists() }?.absolutePath,
                 )
             }
         }
 
-        suspend fun removeImage(fileUrl: String): Result<Unit> =
+        suspend fun removeImage(fileName: String): Result<Unit> =
             withContext(Dispatchers.IO) {
                 runCatching {
-                    val imageFile = File(fileUrl)
+                    val imageFile = File(imagesDir, fileName)
                     if (imageFile.exists() && !imageFile.delete()) {
-                        error("Failed to delete image: $fileUrl")
+                        error("Failed to delete image: $fileName")
                     }
                 }
             }
@@ -89,7 +95,12 @@ class SavedRepository
         suspend fun loadItems(): Result<List<SavedItem>> {
             try {
                 return withContext(Dispatchers.IO) {
-                    val items = savedItemDAO.getAll().map(SavedItemEntityMapper::map)
+                    val items =
+                        savedItemDAO
+                            .getAll()
+                            .map(SavedItemEntityMapper::map)
+                            .map { it.copy(imagePath = getImage(it.imageName).getOrNull()) }
+
                     Log.w("Repository", "loadItems got items: ${items.size}")
                     Result.success(items)
                 }

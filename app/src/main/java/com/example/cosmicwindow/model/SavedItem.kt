@@ -7,4 +7,5 @@ data class SavedItem(
     val imageName: String,
     val savedDate: LocalDate,
     val apod: Apod,
+    val imagePath: String? = null,
 )
