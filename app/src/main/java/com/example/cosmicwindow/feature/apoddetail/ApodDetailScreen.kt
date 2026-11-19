@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.feature.today.apod
+package com.example.cosmicwindow.feature.apoddetail
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -23,7 +25,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -51,10 +52,12 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.example.cosmicwindow.R
 import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
 import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.components.ExternalLinkOpenerButton
+import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.core.utils.shareLink
@@ -68,6 +71,7 @@ fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickB
     var showFullscreen by remember { mutableStateOf(false) }
 
     val shareApod = { if (uiState.apod != null) context.shareLink(uiState.apod!!.permalink) }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -84,82 +88,103 @@ fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickB
             )
         },
     ) { innerPadding ->
-        Column(
-            modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .verticalScroll((rememberScrollState())),
-        ) {
-            if (uiState.isLoading) {
-                LinearProgressIndicator(Modifier.fillMaxWidth())
-                return@Scaffold
-            }
-            if (uiState.error != null) {
-                ErrorBox(text = uiState.error!!, onClick = { viewModel.loadApod() })
-                return@Scaffold
-            }
-            if (uiState.apod == null) {
-                return@Scaffold
-            }
-            ApodImage(
-                imageUri = uiState.apod!!.hdUrl ?: uiState.apod!!.url,
-                onFullscreenClick = { showFullscreen = true },
-            )
-            if (showFullscreen) {
-                FullscreenImageDialog(
-                    imageUrl = uiState.apod!!.hdUrl ?: uiState.apod!!.url,
-                    onDismiss = { showFullscreen = false },
-                )
-            }
-            Column(
-                Modifier.padding(horizontal = Spacing.s16),
-                verticalArrangement = Arrangement.spacedBy(Spacing.s16),
-            ) {
-                Text(
-                    uiState.apod!!.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                if (uiState.apod!!.videoUrl != null) {
-                    VideoCard(url = uiState.apod!!.videoUrl!!)
+
+        when {
+            uiState.isLoading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    LottieLoader(Modifier.size(Spacing.s56))
                 }
+                return@Scaffold
+            }
 
-                Text(
-                    "Explanation",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
+            uiState.error != null -> {
+                ErrorBox(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .padding(horizontal = Spacing.s16),
+                    text = uiState.error!!,
+                    onClick = { viewModel.loadApod() },
                 )
-                Text(
-                    AnnotatedString.fromHtml(uiState.apod!!.explanation),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                DetailsCard(apod = uiState.apod!!)
+                return@Scaffold
+            }
 
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
-                            shape = RoundedCornerShape(RadiusSize.r9999),
-                        ),
+            uiState.apod == null -> {
+                return@Scaffold
+            }
+
+            else -> {
+                Column(
+                    modifier =
+                        Modifier
+                            .padding(innerPadding)
+                            .verticalScroll((rememberScrollState())),
                 ) {
-                    Button(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = Spacing.s10, vertical = Spacing.s8),
-                        onClick = { shareApod() },
+                    if (showFullscreen) {
+                        FullscreenImageDialog(
+                            imageUrl = uiState.apod!!.hdUrl ?: uiState.apod!!.url,
+                            onDismiss = { showFullscreen = false },
+                        )
+                    }
+                    ApodImage(
+                        imageUri = uiState.apod!!.hdUrl ?: uiState.apod!!.url,
+                        onFullscreenClick = { showFullscreen = true },
+                    )
+
+                    Column(
+                        Modifier.padding(horizontal = Spacing.s16),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.s16),
                     ) {
                         Text(
-                            "Share Story",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.W600,
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            uiState.apod!!.title,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
+                        if (uiState.apod!!.videoUrl != null) {
+                            VideoCard(url = uiState.apod!!.videoUrl!!)
+                        }
+
+                        Text(
+                            "Explanation",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        Text(
+                            AnnotatedString.fromHtml(uiState.apod!!.explanation),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        DetailsCard(apod = uiState.apod!!)
+                        ShareButton(onClick = shareApod)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ShareButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(RadiusSize.r9999),
+            ),
+    ) {
+        Button(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.s10, vertical = Spacing.s8),
+            onClick = onClick,
+        ) {
+            Text(
+                "Share Story",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.W600,
+                color = MaterialTheme.colorScheme.onPrimary,
+            )
         }
     }
 }
@@ -334,11 +359,21 @@ fun ApodImage(
     Box(
         modifier = modifier.fillMaxWidth(),
     ) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             modifier = Modifier.fillMaxWidth(),
             model = imageUri,
+            contentScale = ContentScale.FillWidth,
             contentDescription = "APOD image",
-            contentScale = ContentScale.Crop,
+            loading = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LottieLoader(Modifier.size(Spacing.s56))
+                }
+            },
         )
 
         Box(

@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.data
+package com.example.cosmicwindow.data.repository
 
 class RepositoryException(
     message: String? = null,

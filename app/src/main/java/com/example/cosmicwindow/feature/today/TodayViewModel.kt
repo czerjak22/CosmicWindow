@@ -3,8 +3,8 @@ package com.example.cosmicwindow.feature.today
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cosmicwindow.data.ApodRepository
-import com.example.cosmicwindow.data.SavedRepository
+import com.example.cosmicwindow.data.repository.ApodRepository
+import com.example.cosmicwindow.data.repository.SavedRepository
 import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.model.MediaType
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -3,7 +3,7 @@ package com.example.cosmicwindow.feature.earth
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cosmicwindow.data.EarthRepository
+import com.example.cosmicwindow.data.repository.EarthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Job

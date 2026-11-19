@@ -3,7 +3,7 @@ package com.example.cosmicwindow.feature.saved
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cosmicwindow.data.SavedRepository
+import com.example.cosmicwindow.data.repository.SavedRepository
 import com.example.cosmicwindow.model.SavedItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject

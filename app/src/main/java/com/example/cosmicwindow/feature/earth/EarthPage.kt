@@ -84,75 +84,84 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
         },
     ) { innerPadding ->
 
-        if (uiState.isLoading) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                LottieLoader(Modifier.size(Spacing.s48))
-            }
-            return@Scaffold
-        }
+        when {
 
-        if (uiState.error != null) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(innerPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                ErrorBox(text = uiState.error!!, onClick = { viewModel.loadEarthImages() })
+            uiState.isLoading -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LottieLoader(Modifier.size(Spacing.s48))
+                }
+                return@Scaffold
             }
-            return@Scaffold
-        }
-        if (uiState.images.isEmpty()) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(innerPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                ErrorBox(text = "No Images found!")
-            }
-            return@Scaffold
-        }
 
-        Column(
-            modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(horizontal = Spacing.s16)
-                    .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Spacing.s16),
-        ) {
-            EpicChip(Modifier.align(Alignment.End))
-            PreloadImages(
-                images = uiState.images,
-            )
-            EarthImageDisplay(
-                modifier = Modifier.padding(horizontal = Spacing.s4),
-                imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
-                scale = 1.2f,
-            )
-            ControlCard(
-                modifier = Modifier.padding(top = Spacing.s8),
-                captureTime = uiState.images[uiState.selectedIndex!!].date,
-                index = uiState.selectedIndex ?: 0,
-                totalSize = uiState.images.size,
-                indexUpdate = viewModel::updateSelected,
-                startPlayback = viewModel::startPlayback,
-                stopPlayback = viewModel::stopPlayback,
-            )
-            InfoCard(
-                info =
-                    uiState.images[uiState.selectedIndex!!].caption,
-            )
+            uiState.error != null -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ErrorBox(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .padding(horizontal = Spacing.s16),
+                        text = uiState.error!!,
+                        onClick = { viewModel.loadEarthImages() })
+                }
+                return@Scaffold
+            }
+
+            uiState.images.isEmpty() -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ErrorBox(text = "No Images found!")
+                }
+                return@Scaffold
+            }
+            else ->
+                Column(
+                    modifier =
+                        Modifier
+                            .padding(innerPadding)
+                            .padding(horizontal = Spacing.s16)
+                            .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s16),
+                ) {
+                    EpicChip(Modifier.align(Alignment.End))
+                    PreloadImages(
+                        images = uiState.images,
+                    )
+                    EarthImageDisplay(
+                        modifier = Modifier.padding(horizontal = Spacing.s4),
+                        imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
+                        scale = 1.2f,
+                    )
+                    ControlCard(
+                        modifier = Modifier.padding(top = Spacing.s8),
+                        captureTime = uiState.images[uiState.selectedIndex!!].date,
+                        index = uiState.selectedIndex ?: 0,
+                        totalSize = uiState.images.size,
+                        indexUpdate = viewModel::updateSelected,
+                        startPlayback = viewModel::startPlayback,
+                        stopPlayback = viewModel::stopPlayback,
+                    )
+                    InfoCard(
+                        info =
+                            uiState.images[uiState.selectedIndex!!].caption,
+                    )
+                }
         }
     }
 }
@@ -433,7 +442,8 @@ fun EarthImageDisplay(
                             radius = haloRadius,
                             center = center,
                         )
-                    }.clip(CircleShape),
+                    }
+                    .clip(CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             SubcomposeAsyncImage(

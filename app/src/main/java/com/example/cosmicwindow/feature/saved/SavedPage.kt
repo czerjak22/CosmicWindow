@@ -71,7 +71,7 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SavedPage(viewModel: SavedViewModel = hiltViewModel()) {
+fun SavedPage(viewModel: SavedViewModel = hiltViewModel(), onItemClicked: (SavedItem) -> Unit) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -153,12 +153,13 @@ fun SavedPage(viewModel: SavedViewModel = hiltViewModel()) {
                     savedItemNumber = uiState.items.size,
                     downloadsSize = uiState.folderSize,
                 )
-                Spacer(Modifier.height(Spacing.s16))
+                Spacer(Modifier.height(Spacing.s4))
             }
             SavedCardContainer(
                 modifier = Modifier.padding(horizontal = Spacing.s16),
                 savedItems = uiState.items,
                 onSavedItemRemove = { viewModel.onDeleteClicked(it) },
+                onSavedItemOpen = onItemClicked,
             )
         }
     }
@@ -231,12 +232,13 @@ fun SavedCardContainer(
     modifier: Modifier = Modifier,
     savedItems: List<SavedItem>,
     onSavedItemRemove: (SavedItem) -> Unit,
+    onSavedItemOpen: (SavedItem) -> Unit,
 ) {
     val visibleItems = remember(savedItems) { savedItems.filter { it.apod.isSaved } }
 
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(vertical = Spacing.s16),
+        contentPadding = PaddingValues(top = Spacing.s12, bottom = Spacing.s16),
         verticalArrangement = Arrangement.spacedBy(Spacing.s16),
     ) {
         items(
@@ -257,6 +259,7 @@ fun SavedCardContainer(
                         ),
                     savedItem = it,
                     onBookmarkPressed = { onSavedItemRemove(it) },
+                    onClickOpen = { onSavedItemOpen(it) },
                 )
             }
         }
@@ -268,6 +271,7 @@ fun SavedCard(
     modifier: Modifier = Modifier,
     savedItem: SavedItem,
     onBookmarkPressed: () -> Unit,
+    onClickOpen: () -> Unit,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -402,7 +406,7 @@ fun SavedCard(
                     Surface(
                         color = Color.Transparent,
                         shape = RoundedCornerShape(RadiusSize.r9999),
-                        onClick = {},
+                        onClick = onClickOpen,
                     ) {
                         Row(
                             modifier = Modifier.padding(Spacing.s10),

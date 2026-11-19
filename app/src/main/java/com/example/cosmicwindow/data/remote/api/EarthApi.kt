@@ -1,6 +1,6 @@
-package com.example.cosmicwindow.data.network
+package com.example.cosmicwindow.data.remote.api
 
-import com.example.cosmicwindow.data.dto.EarthDto
+import com.example.cosmicwindow.data.remote.dto.EarthDto
 import retrofit2.http.GET
 
 interface EarthApi {

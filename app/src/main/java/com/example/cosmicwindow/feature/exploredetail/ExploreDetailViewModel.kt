@@ -1,9 +1,9 @@
-package com.example.cosmicwindow.feature.explore.detail
+package com.example.cosmicwindow.feature.exploredetail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cosmicwindow.data.ExploreRepository
+import com.example.cosmicwindow.data.repository.ExploreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow

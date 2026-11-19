@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Cosmic Window</string>
+    <string name="today_change_date_description">Change date</string>
+    <string name="main_title">Cosmic Window</string>
+    <string name="apod_secondary_title">ASTRONOMY PICTURE OF THE DAY</string>
+    <string name="no_apod_to_show">No apods to show!</string>
 </resources>

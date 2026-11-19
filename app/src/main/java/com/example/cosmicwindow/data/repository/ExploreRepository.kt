@@ -1,10 +1,10 @@
-package com.example.cosmicwindow.data
+package com.example.cosmicwindow.data.repository
 
 import android.util.Log
 import android.util.LruCache
 import com.example.cosmicwindow.data.mapper.QueryMapper
 import com.example.cosmicwindow.data.mapper.ResponseMapper
-import com.example.cosmicwindow.data.network.ExploreApi
+import com.example.cosmicwindow.data.remote.api.ExploreApi
 import com.example.cosmicwindow.model.QueryExplore
 import com.example.cosmicwindow.model.SearchResult
 import com.example.cosmicwindow.model.SearchResultItem

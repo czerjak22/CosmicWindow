@@ -1,7 +1,7 @@
 package com.example.cosmicwindow.data.mapper
 
 import com.example.cosmicwindow.core.utils.extractVideoLink
-import com.example.cosmicwindow.data.dto.ApodDto
+import com.example.cosmicwindow.data.remote.dto.ApodDto
 import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.model.MediaType
 import tech.mappie.api.ObjectMappie

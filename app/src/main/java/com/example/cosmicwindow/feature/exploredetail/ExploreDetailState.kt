@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.feature.explore.detail
+package com.example.cosmicwindow.feature.exploredetail
 
 import com.example.cosmicwindow.model.SearchResultItem
 

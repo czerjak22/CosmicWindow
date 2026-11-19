@@ -13,8 +13,8 @@ interface SavedItemDAO {
     @Query("SELECT * from saved_apods")
     suspend fun getAll(): List<SavedItemEntity>
 
-    @Query("SELECT * FROM saved_apods WHERE post_id=:postId")
-    suspend fun getByPostId(postId: Long): SavedItemEntity?
+    @Query("SELECT * FROM saved_apods WHERE date_created=:dateCreated")
+    suspend fun getByDateCreated(dateCreated: String): SavedItemEntity?
 
     @Query("SELECT EXISTS(SELECT 1 FROM saved_apods WHERE post_id = :postId)")
     suspend fun isSaved(postId: Long): Boolean
@@ -28,6 +28,6 @@ interface SavedItemDAO {
     @Delete
     suspend fun deleteItem(item: SavedItemEntity)
 
-    @Query("DELETE FROM saved_apods WHERE post_id= :postId")
+    @Query("DELETE FROM saved_apods WHERE date_created= :postId")
     suspend fun deleteItemByPostId(postId: Long)
 }

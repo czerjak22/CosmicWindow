@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.feature.explore.detail
+package com.example.cosmicwindow.feature.exploredetail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

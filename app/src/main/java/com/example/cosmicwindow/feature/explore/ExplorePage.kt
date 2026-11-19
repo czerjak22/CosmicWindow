@@ -107,20 +107,6 @@ fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel(), onItemClick: (Str
         modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection),
     ) { innerPadding ->
 
-        if (uiState.error != null) {
-            Box(
-                modifier =
-                    Modifier
-                        .padding(innerPadding)
-                        .padding(Spacing.s16)
-                        .fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                ErrorBox(text = uiState.error!!, onClick = viewModel::onErrorRetry)
-            }
-            return@Scaffold
-        }
-
         Column(
             modifier = Modifier.padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -148,6 +134,20 @@ fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel(), onItemClick: (Str
                     onFilterClick = viewModel::toggleFilter,
                     filters = uiState.queryState.filters,
                 )
+            }
+
+            if (uiState.error != null) {
+                Box(
+                    modifier =
+                        Modifier
+                            .padding(innerPadding)
+                            .padding(Spacing.s16)
+                            .fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ErrorBox(text = uiState.error!!, onClick = viewModel::onErrorRetry)
+                }
+                return@Scaffold
             }
 
             ImageGrid(
@@ -212,7 +212,7 @@ fun CardElement(
                                     val palette = Palette.from(bitmap).clearFilters().generate()
                                     val swatch =
                                         palette.lightVibrantSwatch ?: palette.vibrantSwatch ?: palette.lightMutedSwatch
-                                            ?: palette.mutedSwatch ?: palette.dominantSwatch
+                                        ?: palette.mutedSwatch ?: palette.dominantSwatch
                                     swatch?.let { Color(it.rgb) }
                                 }
                         }
@@ -524,9 +524,11 @@ fun SearchBar(
                         .border(
                             width = Spacing.border,
                             color = MaterialTheme.colorScheme.outlineVariant,
-                        ).background(
+                        )
+                        .background(
                             color = MaterialTheme.colorScheme.secondary,
-                        ).padding(horizontal = Spacing.s10, vertical = Spacing.s10),
+                        )
+                        .padding(horizontal = Spacing.s10, vertical = Spacing.s10),
                 interactionSource = interactionSource,
                 textStyle =
                     MaterialTheme.typography.bodyMedium.copy(

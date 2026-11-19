@@ -1,6 +1,6 @@
 package com.example.cosmicwindow.data.mapper
 
-import com.example.cosmicwindow.data.dto.explore.SearchResponseDto
+import com.example.cosmicwindow.data.remote.dto.explore.SearchResponseDto
 import com.example.cosmicwindow.model.SearchResult
 import com.example.cosmicwindow.model.SearchResultItem
 import java.time.Instant

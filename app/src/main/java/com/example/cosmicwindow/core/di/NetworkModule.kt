@@ -1,10 +1,10 @@
 package com.example.cosmicwindow.core.di
 
 import android.util.Log
-import com.example.cosmicwindow.data.network.ApodApi
-import com.example.cosmicwindow.data.network.EarthApi
-import com.example.cosmicwindow.data.network.ExploreApi
-import com.example.cosmicwindow.data.network.ImageApi
+import com.example.cosmicwindow.data.remote.api.ApodApi
+import com.example.cosmicwindow.data.remote.api.EarthApi
+import com.example.cosmicwindow.data.remote.api.ExploreApi
+import com.example.cosmicwindow.data.remote.api.ImageApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.data.network
+package com.example.cosmicwindow.data.remote.api
 
 import okhttp3.ResponseBody
 import retrofit2.http.GET

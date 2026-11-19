@@ -1,5 +1,7 @@
 package com.example.cosmicwindow.core.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -13,12 +15,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.cosmicwindow.feature.apoddetail.ApodDetailsScreen
 import com.example.cosmicwindow.feature.earth.EarthPage
 import com.example.cosmicwindow.feature.explore.ExplorePage
-import com.example.cosmicwindow.feature.explore.detail.ExploreDetailScreen
+import com.example.cosmicwindow.feature.exploredetail.ExploreDetailScreen
 import com.example.cosmicwindow.feature.saved.SavedPage
 import com.example.cosmicwindow.feature.today.TodayScreen
-import com.example.cosmicwindow.feature.today.apod.ApodDetailsScreen
 
 @Composable
 fun Navigation(modifier: Modifier = Modifier) {
@@ -52,6 +54,18 @@ fun Navigation(modifier: Modifier = Modifier) {
             composable(
                 Routes.apodDetail,
                 arguments = listOf(navArgument("date") { type = NavType.StringType }),
+                enterTransition = {
+                    slideIntoContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(350),
+                    )
+                },
+                popExitTransition = {
+                    slideOutOfContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(350),
+                    )
+                },
             ) {
                 ApodDetailsScreen(
                     onClickBack = { navController.popBackStack() },
@@ -74,7 +88,9 @@ fun Navigation(modifier: Modifier = Modifier) {
                 )
             }
             composable(Routes.saved) {
-                SavedPage()
+                SavedPage(onItemClicked = { savedItem ->
+                    navController.navigate(Routes.apodDetailRoute(savedItem.apod.date))
+                })
             }
         }
     }

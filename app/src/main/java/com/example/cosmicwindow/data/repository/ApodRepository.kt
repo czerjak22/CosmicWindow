@@ -1,8 +1,8 @@
-package com.example.cosmicwindow.data
+package com.example.cosmicwindow.data.repository
 
 import android.util.Log
 import com.example.cosmicwindow.data.mapper.ApodMapper
-import com.example.cosmicwindow.data.network.ApodApi
+import com.example.cosmicwindow.data.remote.api.ApodApi
 import com.example.cosmicwindow.model.Apod
 import kotlinx.coroutines.CancellationException
 import java.net.UnknownHostException

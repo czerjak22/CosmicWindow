@@ -1,6 +1,6 @@
-package com.example.cosmicwindow.data.dto
+package com.example.cosmicwindow.data.remote.dto
 
-import com.example.cosmicwindow.data.network.LocaleDateTimeSerializer
+import com.example.cosmicwindow.data.remote.serializer.LocaleDateTimeSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime

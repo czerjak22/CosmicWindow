@@ -1,6 +1,6 @@
 package com.example.cosmicwindow.data.mapper
 
-import com.example.cosmicwindow.data.dto.EarthDto
+import com.example.cosmicwindow.data.remote.dto.EarthDto
 import com.example.cosmicwindow.model.Earth
 import tech.mappie.api.ObjectMappie
 import java.time.format.DateTimeFormatter

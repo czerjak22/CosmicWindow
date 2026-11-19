@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.data.dto.explore
+package com.example.cosmicwindow.data.remote.dto.explore
 
 data class QueryRequestDto(
     val filters: String?,

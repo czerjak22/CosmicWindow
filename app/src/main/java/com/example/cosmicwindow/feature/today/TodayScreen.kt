@@ -48,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
@@ -133,12 +134,12 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     rightIconComposable = {
                         Icon(
                             painterResource(R.drawable.calendar_icon),
-                            contentDescription = "Day set icon",
+                            contentDescription = stringResource(R.string.today_change_date_description),
                             tint = MaterialTheme.colorScheme.onSecondary,
                         )
                     },
-                    mainTitle = "Cosmic Window",
-                    secondaryTitle = "ASTRONOMY PICTURE OF THE DAY",
+                    mainTitle = stringResource(R.string.main_title),
+                    secondaryTitle = stringResource(R.string.apod_secondary_title),
                 )
             }
 
@@ -175,7 +176,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     if (uiState.apods.isEmpty()) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             Text(
-                                "No apods to show!",
+                                stringResource(R.string.no_apod_to_show),
                                 style = MaterialTheme.typography.headlineLarge,
                             )
                         }

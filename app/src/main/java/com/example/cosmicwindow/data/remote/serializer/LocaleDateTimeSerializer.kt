@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.data.network
+package com.example.cosmicwindow.data.remote.serializer
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

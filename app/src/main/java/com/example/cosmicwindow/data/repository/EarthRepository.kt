@@ -1,8 +1,8 @@
-package com.example.cosmicwindow.data
+package com.example.cosmicwindow.data.repository
 
 import android.util.Log
 import com.example.cosmicwindow.data.mapper.EarthMapper
-import com.example.cosmicwindow.data.network.EarthApi
+import com.example.cosmicwindow.data.remote.api.EarthApi
 import com.example.cosmicwindow.model.Earth
 import jakarta.inject.Inject
 import jakarta.inject.Singleton

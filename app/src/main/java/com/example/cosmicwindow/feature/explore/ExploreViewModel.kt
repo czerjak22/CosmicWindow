@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cosmicwindow.R
-import com.example.cosmicwindow.data.ExploreRepository
+import com.example.cosmicwindow.data.repository.ExploreRepository
 import com.example.cosmicwindow.model.Filter
 import com.example.cosmicwindow.model.QueryExplore
 import com.example.cosmicwindow.model.SearchResultItem
