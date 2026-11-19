@@ -1,6 +1,9 @@
 package com.example.cosmicwindow.feature.saved
 
-import android.R.attr.contentDescription
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,12 +25,19 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +50,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -53,6 +65,8 @@ import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.model.SavedItem
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +75,7 @@ fun SavedPage(viewModel: SavedViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val lifecycleOwner = LocalLifecycleOwner.current
-
+    val snackbarHostState = remember { SnackbarHostState() }
     DisposableEffect(lifecycleOwner) {
         val observer =
             LifecycleEventObserver { _, event ->
@@ -71,8 +85,40 @@ fun SavedPage(viewModel: SavedViewModel = hiltViewModel()) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collectLatest { event ->
+            when (event) {
+                SavedEvent.ShowUndoDelete -> {
+                    val result =
+                        withTimeoutOrNull(SavedViewModel.UNDO_TIMEOUT) {
+                            snackbarHostState.showSnackbar(
+                                message = "Item removed",
+                                actionLabel = "Undo",
+                                duration = SnackbarDuration.Indefinite,
+                            )
+                        }
+
+                    if (result == SnackbarResult.ActionPerformed) {
+                        viewModel.undoDelete()
+                    }
+                }
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection),
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    actionColor = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(RadiusSize.r16),
+                )
+            }
+        },
     ) { innerPadding ->
 
         if (uiState.error != null) {
@@ -107,8 +153,13 @@ fun SavedPage(viewModel: SavedViewModel = hiltViewModel()) {
                     savedItemNumber = uiState.items.size,
                     downloadsSize = uiState.folderSize,
                 )
+                Spacer(Modifier.height(Spacing.s16))
             }
-            SavedCardContainer(modifier = Modifier.padding(horizontal = Spacing.s16), savedItems = uiState.items)
+            SavedCardContainer(
+                modifier = Modifier.padding(horizontal = Spacing.s16),
+                savedItems = uiState.items,
+                onSavedItemRemove = { viewModel.onDeleteClicked(it) },
+            )
         }
     }
 }
@@ -176,23 +227,48 @@ fun OfflineStatsCard(
 }
 
 @Composable
-fun SavedCardContainer(modifier: Modifier = Modifier, savedItems: List<SavedItem>) {
+fun SavedCardContainer(
+    modifier: Modifier = Modifier,
+    savedItems: List<SavedItem>,
+    onSavedItemRemove: (SavedItem) -> Unit,
+) {
+    val visibleItems = remember(savedItems) { savedItems.filter { it.apod.isSaved } }
+
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(vertical = Spacing.s16),
         verticalArrangement = Arrangement.spacedBy(Spacing.s16),
     ) {
         items(
-            items = savedItems,
+            items = visibleItems,
             key = { it.id },
         ) {
-            SavedCard(modifier = Modifier, savedItem = it)
+            if (it.apod.isSaved) {
+                SavedCard(
+                    modifier =
+                        Modifier.animateItem(
+                            fadeInSpec = tween(300),
+                            fadeOutSpec = tween(300),
+                            placementSpec =
+                                spring(
+                                    stiffness = Spring.StiffnessMediumLow,
+                                    visibilityThreshold = IntOffset.VisibilityThreshold,
+                                ),
+                        ),
+                    savedItem = it,
+                    onBookmarkPressed = { onSavedItemRemove(it) },
+                )
+            }
         }
     }
 }
 
 @Composable
-fun SavedCard(modifier: Modifier = Modifier, savedItem: SavedItem) {
+fun SavedCard(
+    modifier: Modifier = Modifier,
+    savedItem: SavedItem,
+    onBookmarkPressed: () -> Unit,
+) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surfaceVariant,
@@ -250,9 +326,9 @@ fun SavedCard(modifier: Modifier = Modifier, savedItem: SavedItem) {
 
                         Spacer(Modifier.weight(1f))
                         CircleIconButton(
-                            icon = R.drawable.bookmark_icon,
+                            icon = R.drawable.bookmark_filled_icon,
                             description = null,
-                            onClick = {},
+                            onClick = onBookmarkPressed,
                             backgroundColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
                             foregroundColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         )

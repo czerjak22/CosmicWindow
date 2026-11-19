@@ -4,15 +4,27 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cosmicwindow.data.SavedRepository
-import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.model.SavedItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
+
+sealed interface SavedEvent {
+    data object ShowUndoDelete : SavedEvent
+}
+
+private data class PendingDelete(
+    val item: SavedItem,
+    val job: Job,
+)
 
 @HiltViewModel
 class SavedViewModel
@@ -22,8 +34,15 @@ class SavedViewModel
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(SavedState())
         val uiState = _uiState.asStateFlow()
-        private var saveJob: Job? = null
         private var loadJob: Job? = null
+
+        companion object {
+            val UNDO_TIMEOUT = 3.seconds
+        }
+
+        private val _events = Channel<SavedEvent>(Channel.BUFFERED)
+        val events = _events.receiveAsFlow()
+        private var pendingDelete: PendingDelete? = null
 
         init {
             loadItems()
@@ -36,14 +55,15 @@ class SavedViewModel
             _uiState.update { it.copy(isLoading = true, error = null) }
             loadJob =
                 viewModelScope.launch {
+                    val folderSize = savedRepository.getImageFolderSizeMb()
                     savedRepository.loadItems().fold(
                         onSuccess = { items ->
-                            val folderSize = savedRepository.getImageFolderSizeMb()
+                            val newItems = items.map { it.copy(apod = it.apod.copy(isSaved = true)) }
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
                                     error = null,
-                                    items = items,
+                                    items = newItems,
                                     folderSize = folderSize,
                                 )
                             }
@@ -59,89 +79,61 @@ class SavedViewModel
             loadItems()
         }
 
-        fun reevaluateApod(savedItem: SavedItem) {
-            if (uiState.value.items.isEmpty()) {
-                return
-            }
+        fun onDeleteClicked(savedItem: SavedItem) {
+            commitPendingDelete()
+            setSaved(savedItem.id, false)
 
-            viewModelScope.launch {
-                val newItems =
-                    _uiState.value.items.map {
-                        when {
-                            it.id == savedItem.id
-                            -> it.copy(apod = it.apod.copy(isSaved = checkSaved(it.apod)))
-
-                            else -> it
-                        }
-                    }
-                _uiState.update { it.copy(items = newItems) }
-            }
-        }
-
-        fun toggleItemSave(savedItem: SavedItem) {
-            val newItems =
-                _uiState.value.items.map {
-                    when {
-                        it.id == savedItem.id
-                        ->
-                            it.copy(
-                                apod = it.apod.copy(isSaved = !savedItem.apod.isSaved),
-                            )
-
-                        else -> it
-                    }
-                }
-            _uiState.update { it.copy(items = newItems) }
-            // saveOrDeleteApod(savedItem)
-        }
-
-        fun saveOrDeleteApod(savedItem: SavedItem) {
-            saveJob?.cancel()
-            saveJob =
+            val job =
                 viewModelScope.launch {
-                    val willBeSaved = !savedItem.apod.isSaved
-                    val result =
-//                    if (willBeSaved) {
-//                           savedRepository.saveItem(savedItem.apod)
-//                    } else {
-                        savedRepository.deleteItem(savedItem)
-                    //   }
-
-                    result.fold(
-                        onSuccess = {
-                            Log.w("ViewModel", " ${if (willBeSaved) "Saving" else "Deleting"} apod")
-                            _uiState.update {
-                                it.copy(
-                                    items =
-                                        it.items.map {
-                                            if (it.id ==
-                                                savedItem.id
-                                            ) {
-                                                it.copy(apod = it.apod.copy(isSaved = willBeSaved))
-                                            } else {
-                                                it
-                                            }
-                                        },
-                                )
-                            }
-                        },
-                        onFailure = { err ->
-                            _uiState.update { it.copy(error = err.message ?: "error") }
-                        },
-                    )
+                    delay(UNDO_TIMEOUT)
+                    pendingDelete = null
+                    finalizeDelete(savedItem)
                 }
+            pendingDelete = PendingDelete(savedItem, job)
+            _events.trySend(SavedEvent.ShowUndoDelete)
         }
 
-        private suspend fun checkSaved(apod: Apod): Boolean {
-            Log.w("ViewModel", "$apod to be saved!")
-            savedRepository.isSaved(apod.postId).fold(
-                onSuccess = { isSaved ->
-                    return isSaved
+        fun undoDelete() {
+            val pending = pendingDelete ?: return
+            pending.job.cancel()
+            pendingDelete = null
+            setSaved(pending.item.id, true)
+        }
+
+        fun commitPendingDelete() {
+            val pending = pendingDelete ?: return
+            pending.job.cancel()
+            pendingDelete = null
+            viewModelScope.launch { finalizeDelete(pending.item) }
+        }
+
+        private suspend fun finalizeDelete(item: SavedItem) {
+            savedRepository.deleteItem(item).fold(
+                onSuccess = {
+                    Log.w("ViewModel", "Deleted apod ${item.id}")
+                    val folderSize = savedRepository.getImageFolderSizeMb()
+                    _uiState.update { state ->
+                        state.copy(
+                            items = state.items.filterNot { it.id == item.id },
+                            folderSize = folderSize,
+                        )
+                    }
                 },
                 onFailure = { err ->
+                    setSaved(item.id, true)
                     _uiState.update { it.copy(error = err.message ?: "error") }
-                    return false
                 },
             )
+        }
+
+        private fun setSaved(id: Long, saved: Boolean) {
+            _uiState.update { state ->
+                state.copy(
+                    items =
+                        state.items.map {
+                            if (it.id == id) it.copy(apod = it.apod.copy(isSaved = saved)) else it
+                        },
+                )
+            }
         }
     }
