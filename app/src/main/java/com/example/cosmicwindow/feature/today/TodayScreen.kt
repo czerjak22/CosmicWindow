@@ -316,7 +316,7 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
         modifier =
             modifier.background(
                 color = MaterialTheme.colorScheme.secondary,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(Spacing.s16),
             ),
         border = BorderStroke(Spacing.border, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
         shape = RoundedCornerShape(RadiusSize.r16),
@@ -333,7 +333,7 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f),
                 ) {
@@ -359,7 +359,7 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                         fontWeight = FontWeight.W500,
                         maxLines = 1,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp),
+                        modifier = Modifier.padding(horizontal = Spacing.s6, vertical = Spacing.s6),
                     )
                 }
             }
@@ -450,7 +450,7 @@ fun VideoThumbnailCard(
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
             ) {
                 Image(
                     painter = painterResource(R.drawable.open_elsewhere_icon),
@@ -481,14 +481,14 @@ fun PastApodEntryText(modifier: Modifier = Modifier) {
             contentDescription = null,
         )
         Text(
-            "Previous 7 days",
+            stringResource(R.string.apod_prevoius_stripe_main_label),
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.W600,
         )
         Spacer(Modifier.weight(1f))
         Text(
-            "Past APOD Entries",
+            stringResource(R.string.apod_previous_stripe_description),
             color = MaterialTheme.colorScheme.onSecondary,
             style = MaterialTheme.typography.bodyMedium,
             lineHeight = 26.sp,
@@ -509,7 +509,7 @@ fun CurrentApod(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp)),
+                .clip(RoundedCornerShape(Spacing.s24)),
     ) {
         AsyncImage(
             model = apod.hdUrl ?: apod.url,
@@ -542,7 +542,7 @@ fun CurrentApod(
                         end = Spacing.s16,
                         bottom = Spacing.s16,
                     ),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -558,7 +558,7 @@ fun CurrentApod(
                 Image(
                     painterResource(R.drawable.camera_icon),
                     contentDescription = null,
-                    modifier = Modifier.size(12.dp),
+                    modifier = Modifier.size(Spacing.s12),
                 )
                 Text(
                     "•",
@@ -586,18 +586,18 @@ fun CurrentApod(
                 style = MaterialTheme.typography.bodyLarge,
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Spacing.s8))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
             ) {
                 Button(
                     onClick = { onReadClick(apod) },
                     modifier =
                         Modifier
                             .weight(1f)
-                            .height(48.dp),
+                            .height(Spacing.s48),
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -605,14 +605,16 @@ fun CurrentApod(
                         ),
                 ) {
                     Text(
-                        "Read Cosmic Story",
+                        stringResource(R.string.apod_detail_page_button_label),
                         style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(Spacing.s8))
                     Icon(
                         painterResource(R.drawable.forward_icon),
-                        contentDescription = "Go to description",
-                        modifier = Modifier.size(12.dp),
+                        contentDescription = stringResource(R.string.apod_detail_page_button_description),
+                        modifier = Modifier.size(Spacing.s12),
                     )
                 }
 
@@ -682,7 +684,7 @@ fun PreviousApodDay(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                 Text(
                     getDayTextSince(apod.date),
                     style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
@@ -705,7 +707,7 @@ fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
         Box(
             modifier =
@@ -715,7 +717,7 @@ fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
                     .background(MaterialTheme.colorScheme.onPrimaryContainer),
         )
         Text(
-            text = stringResource(R.string.toady_in_space_header) + date,
+            text = stringResource(R.string.toady_in_space_header, date),
             color = MaterialTheme.colorScheme.onSecondary,
             style = MaterialTheme.typography.bodyLarge,
         )

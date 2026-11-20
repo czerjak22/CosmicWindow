@@ -189,20 +189,19 @@ fun OfflineStatsCard(
                 painter = painterResource(R.drawable.download_card_icon),
                 contentDescription = null,
             )
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Offline Ready",
+                    stringResource(R.string.offline_ready_label),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.W600,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    "$savedItemNumber " + stringResource(R.string.saved_discoveries_description),
+                    stringResource(R.string.saved_discoveries_description, savedItemNumber),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
-            Spacer(Modifier.weight(1f))
             Surface(
                 color = MaterialTheme.colorScheme.tertiary,
                 shape = RoundedCornerShape(RadiusSize.r9999),
@@ -399,12 +398,14 @@ fun SavedCard(
                             contentDescription = null,
                         )
                         Text(
-                            stringResource(R.string.saved_offline_helper) + " " +
+                            stringResource(
+                                R.string.saved_offline_helper,
                                 savedItem.savedDate.format(
                                     DateTimeFormatter.ofPattern(
                                         "MMM yy",
                                     ),
                                 ),
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.W500,
                             color = MaterialTheme.colorScheme.onSecondary,
@@ -418,7 +419,10 @@ fun SavedCard(
                         onClick = onClickOpen,
                     ) {
                         Row(
-                            modifier = Modifier.padding(Spacing.s10),
+                            modifier =
+                                Modifier
+                                    .padding(Spacing.s10)
+                                    .weight(1f),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
                         ) {
