@@ -193,10 +193,16 @@ fun DetailKeywords(
                 title = stringResource(R.string.observation_date),
                 content = searchResult.dateCreated.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
             )
-            searchResult.center?.let {
+            if (searchResult.center != null) {
                 ColumnElement(
                     title = stringResource(R.string.research_center_label),
-                    content = it,
+                    content = searchResult.center,
+                )
+            }
+            if (searchResult.photographer != null) {
+                ColumnElement(
+                    title = stringResource(R.string.photographer_label),
+                    content = searchResult.photographer,
                 )
             }
         }

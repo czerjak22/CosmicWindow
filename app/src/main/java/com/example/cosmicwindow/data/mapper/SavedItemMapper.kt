@@ -2,7 +2,6 @@ package com.example.cosmicwindow.data.mapper
 
 import com.example.cosmicwindow.data.local.entity.SavedItemEntity
 import com.example.cosmicwindow.model.Apod
-import com.example.cosmicwindow.model.MediaType
 import com.example.cosmicwindow.model.SavedItem
 import java.time.LocalDate
 
@@ -23,8 +22,8 @@ object SavedItemEntityMapper {
                     alt = from.alt,
                     url = from.permalink,
                     hdUrl = from.pictureLink,
-                    mediaType = MediaType.PICTURE,
-                    videoUrl = null,
+                    mediaType = from.mediaType,
+                    videoUrl = from.videoUrl,
                     postId = from.postId,
                 ),
         )
@@ -45,6 +44,8 @@ object ApodToSavedItemEntityMapper {
             credit = from.credit,
             copyright = from.copyright,
             alt = from.alt,
+            mediaType = from.mediaType,
+            videoUrl = from.videoUrl,
         )
 }
 
@@ -63,5 +64,7 @@ object SavedItemMapper {
             credit = from.apod.credit,
             copyright = from.apod.copyright,
             alt = from.apod.alt,
+            mediaType = from.apod.mediaType,
+            videoUrl = from.apod.videoUrl,
         )
 }

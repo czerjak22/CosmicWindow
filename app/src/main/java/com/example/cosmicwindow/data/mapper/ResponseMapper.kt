@@ -27,6 +27,7 @@ object ResponseMapper {
                     originalUrl = originalLink?.href,
                     description = data.description ?: data.description508,
                     center = data.center,
+                    photographer = data.photographer,
                 )
             }
         return SearchResult(searchItems = items, totalFinds = from.totalHits)

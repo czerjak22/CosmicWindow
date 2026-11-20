@@ -13,4 +13,5 @@ data class ItemDataDto(
     @SerialName("description_508")
     val description508: String = "",
     val center: String? = null,
+    val photographer: String? = null,
 )

@@ -4,6 +4,7 @@ import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
+import com.example.cosmicwindow.model.MediaType
 import java.time.LocalDate
 
 @Entity(
@@ -23,4 +24,6 @@ data class SavedItemEntity(
     val credit: String,
     val copyright: String?,
     val alt: String,
+    @ColumnInfo(name = "media_type") val mediaType: MediaType,
+    @ColumnInfo(name = "video_url") val videoUrl: String?,
 )
