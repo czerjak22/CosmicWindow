@@ -24,7 +24,8 @@ object DatabaseModule {
                 context,
                 CosmicWindowDatabase::class.java,
                 "cosmic_window.db",
-            ).fallbackToDestructiveMigration()
+            )
+            .fallbackToDestructiveMigration()
             .build()
 
     @Provides

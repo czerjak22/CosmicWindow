@@ -68,28 +68,32 @@ constructor(
         }
 
     suspend fun saveItem(apod: Apod): Result<Unit> {
-        writeMutex.withLock {
-            try {
+        return try {
+
+            val savedItemEntity = ApodToSavedItemEntityMapper.map(apod)
+
+            val imageBytes = apod.hdUrl?.let { url ->
                 withContext(Dispatchers.IO) {
-                    val savedItemEntity = ApodToSavedItemEntityMapper.map(apod)
-                    if (apod.hdUrl != null) {
-                        val imageBytes = imageApi.download(apod.hdUrl).use { it.bytes() }
-                        addImage(
-                            imageBytes = imageBytes,
-                            fileName = savedItemEntity.imageName,
-                        )
+                    imageApi.download(url).use { it.bytes() }
+                }
+            }
+
+            writeMutex.withLock {
+                withContext(Dispatchers.IO) {
+                    if (imageBytes != null) {
+                        addImage(imageBytes = imageBytes, fileName = savedItemEntity.imageName)
                     }
                     val items = savedItemDAO.updateItem(savedItemEntity)
                     Log.w("Repository", "saved item: $items")
                 }
-            } catch (ex: CancellationException) {
-                Log.e("Repository", "addItem: $ex")
-                throw ex
-            } catch (ex: Exception) {
-                Log.e("Repository", "addItem: $ex")
-                return Result.failure(RepositoryException("Something Bad Happened"))
             }
-            return Result.success(Unit)
+            Result.success(Unit)
+        } catch (ex: CancellationException) {
+            Log.e("Repository", "saveItem: $ex")
+            throw ex
+        } catch (ex: Exception) {
+            Log.e("Repository", "saveItem: $ex")
+            Result.failure(RepositoryException("Something Bad Happened"))
         }
     }
 
@@ -143,12 +147,25 @@ constructor(
         }
     }
 
+
+    private suspend fun deleteLocked(
+        imageName: String,
+        deleteRow: suspend () -> Int,
+    ): Result<Unit> = writeMutex.withLock {
+        withContext(Dispatchers.IO) {
+            val rowsDeleted = deleteRow()
+            removeImage(imageName).onFailure {
+                Log.w("Repository", "Failed to remove image $imageName", it)
+            }
+            Log.w("Repository", "deleted $rowsDeleted row(s) for $imageName")
+            Result.success(Unit)
+        }
+    }
+
     suspend fun deleteItem(item: SavedItem): Result<Unit> {
         try {
-            return withContext(Dispatchers.IO) {
-                Log.w("Repository", "deleteItem got item: $item")
-                removeImage(item.imageName)
-                Result.success(savedItemDAO.deleteItem(SavedItemMapper.map(item)))
+            return deleteLocked(item.imageName) {
+                savedItemDAO.deleteItem(SavedItemMapper.map(item))
             }
         } catch (ex: CancellationException) {
             Log.e("Repository", "deleteItem: $ex")
@@ -161,12 +178,10 @@ constructor(
 
     suspend fun deleteItem(item: Apod): Result<Unit> {
         writeMutex.withLock {
-            try {
-                return withContext(Dispatchers.IO) {
-                    val savedItem = ApodToSavedItemEntityMapper.map(item)
-                    removeImage(savedItem.imageName)
-                    Log.w("Repository", "deleteItem got item: $item")
-                    Result.success(savedItemDAO.deleteItemByPostId(savedItem.postId))
+            return try {
+                val savedItem = ApodToSavedItemEntityMapper.map(item)
+                deleteLocked(savedItem.imageName) {
+                    savedItemDAO.deleteItemByPostId(item.postId)
                 }
             } catch (ex: CancellationException) {
                 Log.e("Repository", "deleteItem: $ex")
