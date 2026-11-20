@@ -28,6 +28,6 @@ interface SavedItemDAO {
     @Delete
     suspend fun deleteItem(item: SavedItemEntity): Int
 
-    @Query("DELETE FROM saved_apods WHERE date_created= :postId")
+    @Query("DELETE FROM saved_apods WHERE post_id= :postId")
     suspend fun deleteItemByPostId(postId: Long): Int
 }

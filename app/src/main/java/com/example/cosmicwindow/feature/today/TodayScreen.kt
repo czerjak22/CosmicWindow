@@ -188,7 +188,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                         onShareClick = { context.shareLink(uiState.apods.first().permalink) },
                         onReadClick = onApodClick,
                         bookmarkState = uiState.apods.first().isSaved,
-                        onBookmarkClick =  viewModel::toggleFirstApodSave,
+                        onBookmarkClick = viewModel::toggleFirstApodSave,
                     )
                     PreviousApodStripe(apods = uiState.apods, onClick = onApodClick)
                     if (uiState.featuredVideoApod != null) {
