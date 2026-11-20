@@ -16,7 +16,7 @@ import javax.inject.Inject
 class ExploreDetailViewModel
     @Inject
     constructor(
-        val savedStateHandle: SavedStateHandle,
+        savedStateHandle: SavedStateHandle,
         val exploreRepository: ExploreRepository,
     ) : ViewModel() {
         val id = savedStateHandle.get<String>("nasaId")

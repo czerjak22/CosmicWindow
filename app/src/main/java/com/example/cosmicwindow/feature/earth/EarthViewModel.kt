@@ -49,18 +49,15 @@ class EarthViewModel
                             )
                         }
                         Log.w(
-                            "modelView",
+                            "ViewModel",
                             "Loaded images to state successfully imageSize:${newImages.size} , " +
                                 "date:${if (newImages.isNotEmpty()) newImages.first().date else "images are empty"}",
                         )
                     }, onFailure = { err ->
+                        Log.w("ViewModel", "error: $err")
                         _uiState.update {
                             it.copy(images = emptyList(), isLoading = false, error = err.message)
                         }
-                        Log.w(
-                            "modelView",
-                            "error: $err",
-                        )
                     })
                 }
         }

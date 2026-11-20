@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
@@ -76,6 +77,9 @@ fun SavedPage(viewModel: SavedViewModel = hiltViewModel(), onItemClicked: (Saved
     val scrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarMessage = stringResource(R.string.item_deletion_snackbar)
+    val snackbarBUttonLabel = stringResource(R.string.undo_button_label)
+
     DisposableEffect(lifecycleOwner) {
         val observer =
             LifecycleEventObserver { _, event ->
@@ -92,8 +96,8 @@ fun SavedPage(viewModel: SavedViewModel = hiltViewModel(), onItemClicked: (Saved
                     val result =
                         withTimeoutOrNull(SavedViewModel.UNDO_TIMEOUT) {
                             snackbarHostState.showSnackbar(
-                                message = "Item removed",
-                                actionLabel = "Undo",
+                                message = snackbarMessage,
+                                actionLabel = snackbarBUttonLabel,
                                 duration = SnackbarDuration.Indefinite,
                             )
                         }
@@ -145,8 +149,8 @@ fun SavedPage(viewModel: SavedViewModel = hiltViewModel(), onItemClicked: (Saved
                     onClick = {},
                     leftIconSize = Spacing.s20,
                     rightIconComposable = {},
-                    mainTitle = "Saved",
-                    secondaryTitle = "COSMIC WINDOW",
+                    mainTitle = stringResource(R.string.saved_page_title),
+                    secondaryTitle = stringResource(R.string.saved_page_subtitle),
                 )
                 OfflineStatsCard(
                     Modifier.padding(horizontal = Spacing.s16),
@@ -193,7 +197,7 @@ fun OfflineStatsCard(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    "$savedItemNumber discoveries synced to device",
+                    "$savedItemNumber " + stringResource(R.string.saved_discoveries_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -395,7 +399,12 @@ fun SavedCard(
                             contentDescription = null,
                         )
                         Text(
-                            "Saved offline · " + savedItem.savedDate.format(DateTimeFormatter.ofPattern("MMM yy")),
+                            stringResource(R.string.saved_offline_helper) + " " +
+                                savedItem.savedDate.format(
+                                    DateTimeFormatter.ofPattern(
+                                        "MMM yy",
+                                    ),
+                                ),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.W500,
                             color = MaterialTheme.colorScheme.onSecondary,
@@ -414,7 +423,7 @@ fun SavedCard(
                             horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
                         ) {
                             Text(
-                                "Read Story",
+                                stringResource(R.string.to_detailPage_button_label),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.W500,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,

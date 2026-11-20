@@ -73,6 +73,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -122,8 +123,8 @@ fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel(), onItemClick: (Str
                             contentDescription = null,
                         )
                     },
-                    mainTitle = "Explore NASA",
-                    secondaryTitle = "IMAGE LIBRARY",
+                    mainTitle = stringResource(R.string.explore_page_title),
+                    secondaryTitle = stringResource(R.string.explore_page_subtitle),
                 )
                 SearchBar(
                     modifier = Modifier.padding(horizontal = Spacing.s16),
@@ -176,10 +177,10 @@ fun CardElement(
     val defaultColor = MaterialTheme.colorScheme.tertiary
     var accentColor by remember(searchItem.nasaId) { mutableStateOf<Color?>(defaultColor) }
     val scope = rememberCoroutineScope()
+
     val alpha by animateFloatAsState(
         targetValue = if (isLoaded) 1f else 0f,
         animationSpec = tween(300),
-        label = "cardAlpha",
     )
 
     Surface(
@@ -212,13 +213,13 @@ fun CardElement(
                                     val palette = Palette.from(bitmap).clearFilters().generate()
                                     val swatch =
                                         palette.lightVibrantSwatch ?: palette.vibrantSwatch ?: palette.lightMutedSwatch
-                                        ?: palette.mutedSwatch ?: palette.dominantSwatch
+                                            ?: palette.mutedSwatch ?: palette.dominantSwatch
                                     swatch?.let { Color(it.rgb) }
                                 }
                         }
                     },
                     onError = { err ->
-                        Log.w("UI", "ExplorerCardImage failed to load error:$err")
+                        Log.w("UI", "ExplorerCardImage failed to load because:$err")
                         isLoaded = true
                     },
                 )
@@ -299,7 +300,7 @@ fun LoadingRow(modifier: Modifier = Modifier) {
     ) {
         CircularProgressIndicator(Modifier.size(Spacing.s16))
         Text(
-            "Loading more NASA archive images...",
+            stringResource(R.string.explore_loading_more_label),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
@@ -352,7 +353,7 @@ fun ImageGrid(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        "Nothing Found",
+                        stringResource(R.string.nothing_found),
                         style = MaterialTheme.typography.headlineLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
@@ -413,7 +414,7 @@ fun FilterButton(
         ) {
             Icon(
                 painter = painterResource(filter.icon),
-                contentDescription = "filterButton",
+                contentDescription = null,
                 modifier = Modifier.size(Spacing.s14),
             )
             Text(
@@ -487,17 +488,19 @@ fun SearchBar(
             }
         }
 
+    val voiceInputPromt = stringResource(R.string.voice_input_promt)
+    val voiceNotAvailable = stringResource(R.string.voice_input_not_available)
     val startVoiceInput = {
         val intent =
             Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-                putExtra(RecognizerIntent.EXTRA_PROMPT, "Search NASA images")
+                putExtra(RecognizerIntent.EXTRA_PROMPT, voiceInputPromt)
             }
         try {
             speechLauncher.launch(intent)
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(context, "Speech recognition not available", Toast.LENGTH_SHORT).show()
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(context, voiceNotAvailable, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -524,11 +527,9 @@ fun SearchBar(
                         .border(
                             width = Spacing.border,
                             color = MaterialTheme.colorScheme.outlineVariant,
-                        )
-                        .background(
+                        ).background(
                             color = MaterialTheme.colorScheme.secondary,
-                        )
-                        .padding(horizontal = Spacing.s10, vertical = Spacing.s10),
+                        ).padding(horizontal = Spacing.s10, vertical = Spacing.s10),
                 interactionSource = interactionSource,
                 textStyle =
                     MaterialTheme.typography.bodyMedium.copy(
@@ -553,7 +554,7 @@ fun SearchBar(
                         ) {
                             if (textFieldState.text.isEmpty()) {
                                 Text(
-                                    text = "Search NASA images (e.g. Mars, Nebula)",
+                                    text = stringResource(R.string.explore_search_suggestion),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
@@ -570,7 +571,7 @@ fun SearchBar(
             ) {
                 Image(
                     painter = painterResource(R.drawable.voice_icon),
-                    contentDescription = "voice input button",
+                    contentDescription = stringResource(R.string.voice_input_button_description),
                 )
             }
         }

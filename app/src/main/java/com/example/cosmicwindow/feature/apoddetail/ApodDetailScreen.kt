@@ -42,6 +42,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
@@ -99,9 +100,10 @@ fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickB
 
             uiState.error != null -> {
                 ErrorBox(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .padding(horizontal = Spacing.s16),
+                    modifier =
+                        Modifier
+                            .padding(innerPadding)
+                            .padding(horizontal = Spacing.s16),
                     text = uiState.error!!,
                     onClick = { viewModel.loadApod() },
                 )
@@ -144,7 +146,7 @@ fun ApodDetailsScreen(viewModel: ApodDetailViewModel = hiltViewModel(), onClickB
                         }
 
                         Text(
-                            "Explanation",
+                            stringResource(R.string.explanation_label),
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onBackground,
                         )
@@ -180,7 +182,7 @@ fun ShareButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
             onClick = onClick,
         ) {
             Text(
-                "Share Story",
+                stringResource(R.string.share_story_button),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.W600,
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -229,7 +231,7 @@ fun VideoCard(modifier: Modifier = Modifier, url: String) {
             ExternalLinkOpenerButton(
                 videoHandler = LocalUriHandler.current,
                 url = url,
-                buttonText = "Open video",
+                buttonText = stringResource(R.string.open_video_button),
             )
         }
     }
@@ -249,21 +251,21 @@ fun DetailsCard(modifier: Modifier = Modifier, apod: Apod) {
     ) {
         Column(modifier = Modifier.padding(Spacing.s16)) {
             Text(
-                "ATTRIBUTION & SOURCE",
+                stringResource(R.string.attribution_label),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.W600,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
 
-            InfoRow("Source", "NASA APOD API")
+            InfoRow(stringResource(R.string.source_label), stringResource(R.string.nasa_apod_api))
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             InfoRow(
-                "Credit",
+                stringResource(R.string.credit_label),
                 AnnotatedString.fromHtml(apod.credit).text,
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             InfoRow(
-                "Copyright",
+                stringResource(R.string.copyright_label),
                 AnnotatedString.fromHtml(apod.copyright ?: apod.credit).text,
                 valueColor = MaterialTheme.colorScheme.onTertiaryContainer,
             )
@@ -271,7 +273,7 @@ fun DetailsCard(modifier: Modifier = Modifier, apod: Apod) {
                 modifier = Modifier.fillMaxWidth(),
                 videoHandler = LocalUriHandler.current,
                 url = apod.permalink,
-                buttonText = "View original APOD entry",
+                buttonText = stringResource(R.string.view_original_apod_button_label),
             )
         }
     }
@@ -327,7 +329,7 @@ fun FullscreenImageDialog(imageUrl: String, onDismiss: () -> Unit) {
         ) {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = "Fullscreen image",
+                contentDescription = stringResource(R.string.fullscreen_image_description),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -342,7 +344,7 @@ fun FullscreenImageDialog(imageUrl: String, onDismiss: () -> Unit) {
             ) {
                 Icon(
                     Icons.Default.Close,
-                    contentDescription = "Close",
+                    contentDescription = stringResource(R.string.close_label),
                     tint = Color.White,
                 )
             }
@@ -363,12 +365,13 @@ fun ApodImage(
             modifier = Modifier.fillMaxWidth(),
             model = imageUri,
             contentScale = ContentScale.FillWidth,
-            contentDescription = "APOD image",
+            contentDescription = stringResource(R.string.apod_image_description),
             loading = {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(16f / 9f),
                     contentAlignment = Alignment.Center,
                 ) {
                     LottieLoader(Modifier.size(Spacing.s56))
@@ -399,7 +402,7 @@ fun ApodImage(
             CircleIconButton(
                 modifier = Modifier.padding(top = Spacing.s8, end = Spacing.s16),
                 icon = R.drawable.fullscreen_icon,
-                description = "Fullscreen the Apod picture.",
+                description = stringResource(R.string.fullscreen_image_description),
                 onClick = onFullscreenClick,
                 backgroundColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f),
             )
@@ -429,7 +432,7 @@ fun StoryHeader(
         ) {
             Image(
                 painter = painterResource(R.drawable.back_icon),
-                contentDescription = "backButton",
+                contentDescription = stringResource(R.string.back_button_description),
             )
         }
         Text(
@@ -447,7 +450,7 @@ fun StoryHeader(
                     painterResource(
                         if (isSaved) R.drawable.bookmark_filled_icon else R.drawable.bookmark_icon,
                     ),
-                contentDescription = "bookmarkButton",
+                contentDescription = stringResource(R.string.bookmark_description),
             )
         }
         IconButton(
@@ -455,7 +458,7 @@ fun StoryHeader(
         ) {
             Image(
                 painter = painterResource(R.drawable.share_icon),
-                contentDescription = "shareButton",
+                contentDescription = stringResource(R.string.share_story_button),
             )
         }
     }

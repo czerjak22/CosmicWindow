@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
@@ -115,19 +116,15 @@ fun Details(modifier: Modifier = Modifier, searchResult: SearchResultItem) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 ColumnElement(
-                    title = "Observation Date",
+                    title = stringResource(R.string.observation_date),
                     content = searchResult.dateCreated.format(DateTimeFormatter.ofPattern("MMM dd, yyy")),
                 )
                 if (searchResult.center != null) {
                     ColumnElement(
-                        title = "Center",
+                        title = stringResource(R.string.research_center_label),
                         content = searchResult.center,
                     )
                 }
-                //            ColumnElement(
-                //                title = "Photographer",
-                //                content = searchResult.
-                //            )
             }
         }
     }
@@ -194,7 +191,7 @@ fun ImagePage(
 
         CircleIconButton(
             icon = R.drawable.exit_icon,
-            description = "Back button",
+            description = stringResource(R.string.back_button_description),
             onClick = onBackPressed,
             backgroundColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
             modifier =

@@ -238,7 +238,7 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
                             .padding(end = Spacing.s8),
                 )
                 Text(
-                    "Public NASA Data • APOD Archive",
+                    stringResource(R.string.apod_archive_text),
                     style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 26.sp),
                     fontWeight = FontWeight.W500,
                     color = MaterialTheme.colorScheme.onSecondary,
@@ -246,7 +246,10 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
             }
 
             Text(
-                text = AnnotatedString.fromHtml("Image Credit: ${apod.credit}"),
+                text =
+                    AnnotatedString.fromHtml(
+                        stringResource(R.string.image_credit) + ": " + apod.credit,
+                    ),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -259,7 +262,7 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
                 ),
             ) {
                 Text(
-                    text = "Independent educational explorer • Not affiliated with NASA",
+                    text = stringResource(R.string.affiliation_description),
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -621,13 +624,13 @@ fun CurrentApod(
                         } else {
                             R.drawable.bookmark_icon
                         },
-                    description = "Bookmark",
+                    description = stringResource(R.string.bookmark_description),
                     onClick = onBookmarkClick,
                     enabled = apod.mediaType == MediaType.PICTURE,
                 )
                 CircleIconButton(
                     icon = R.drawable.share_icon,
-                    description = "Share",
+                    description = stringResource(R.string.share_description),
                     onClick = onShareClick,
                 )
             }
@@ -714,7 +717,7 @@ fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
                     .background(MaterialTheme.colorScheme.onPrimaryContainer),
         )
         Text(
-            text = "Today in Space • $date",
+            text = stringResource(R.string.toady_in_space_header) + date,
             color = MaterialTheme.colorScheme.onSecondary,
             style = MaterialTheme.typography.bodyLarge,
         )

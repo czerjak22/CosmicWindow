@@ -23,7 +23,7 @@ class TodayViewModel
         val apodRepository: ApodRepository,
         val savedRepository: SavedRepository,
     ) : ViewModel() {
-        private val _uiState = MutableStateFlow<TodayState>(TodayState())
+        private val _uiState = MutableStateFlow(TodayState())
         private var loadApodsJob: Job? = null
         private var saveJob: Job? = null
         val uiState = _uiState.asStateFlow()
@@ -170,7 +170,7 @@ class TodayViewModel
         }
 
         private suspend fun checkSaved(apod: Apod): Boolean {
-            Log.w("ViewModel", "$apod to be saved!")
+            Log.w("ViewModel", "$apod is saved checked")
             savedRepository.isSaved(apod.postId).fold(
                 onSuccess = { isSaved ->
                     return isSaved

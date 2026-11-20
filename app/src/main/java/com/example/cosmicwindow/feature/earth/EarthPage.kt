@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -78,14 +79,13 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                         contentDescription = null,
                     )
                 },
-                mainTitle = "Earth in Motion",
-                secondaryTitle = "DSCOVR EPIC",
+                mainTitle = stringResource(R.string.earth_page_title),
+                secondaryTitle = stringResource(R.string.earth_page_subtitle),
             )
         },
     ) { innerPadding ->
 
         when {
-
             uiState.isLoading -> {
                 Box(
                     modifier =
@@ -108,11 +108,13 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                     contentAlignment = Alignment.Center,
                 ) {
                     ErrorBox(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .padding(horizontal = Spacing.s16),
+                        modifier =
+                            Modifier
+                                .padding(innerPadding)
+                                .padding(horizontal = Spacing.s16),
                         text = uiState.error!!,
-                        onClick = { viewModel.loadEarthImages() })
+                        onClick = { viewModel.loadEarthImages() },
+                    )
                 }
                 return@Scaffold
             }
@@ -125,10 +127,11 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                             .padding(innerPadding),
                     contentAlignment = Alignment.Center,
                 ) {
-                    ErrorBox(text = "No Images found!")
+                    ErrorBox(text = stringResource(R.string.no_images_found))
                 }
                 return@Scaffold
             }
+
             else ->
                 Column(
                     modifier =
@@ -186,7 +189,7 @@ fun InfoCard(modifier: Modifier = Modifier, info: String) {
         ) {
             Image(
                 painter = painterResource(R.drawable.info_card),
-                contentDescription = "Info card",
+                contentDescription = null,
             )
             Text(
                 info,
@@ -237,7 +240,7 @@ fun ControlCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column {
                     Text(
-                        "CAPTURE TIME",
+                        stringResource(R.string.earth_capture_time_label),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.W500,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -407,7 +410,7 @@ fun PreloadImages(images: List<Earth>) {
 @Composable
 fun EarthImageDisplay(
     modifier: Modifier = Modifier,
-    imageUrl: String = "https://epic.gsfc.nasa.gov/archive/natural/2026/10/29/png/epic_1b_20261029000830.png",
+    imageUrl: String,
     scale: Float = 1.15f,
 ) {
     val glowColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -442,13 +445,12 @@ fun EarthImageDisplay(
                             radius = haloRadius,
                             center = center,
                         )
-                    }
-                    .clip(CircleShape),
+                    }.clip(CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             SubcomposeAsyncImage(
                 model = imageUrl,
-                contentDescription = "Earth Image",
+                contentDescription = null,
                 modifier =
                     Modifier
                         .fillMaxSize()
@@ -484,7 +486,7 @@ fun EarthImageDisplay(
                     ) {
                         Image(
                             painter = painterResource(R.drawable.no_internet),
-                            contentDescription = "Image unavailable",
+                            contentDescription = stringResource(R.string.unavailable_image_description),
                         )
                     }
                 },
@@ -513,7 +515,7 @@ fun EpicChip(modifier: Modifier = Modifier) {
                 contentDescription = null,
             )
             Text(
-                "EPIC Feed",
+                stringResource(R.string.earth_epic_feed_text),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSecondary,
             )
