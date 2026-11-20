@@ -23,11 +23,11 @@ fun AppHeader(
     modifier: Modifier = Modifier,
     mainTitle: String,
     secondaryTitle: String,
-    leftIcon: Int,
+    leftIcon: Int? = null,
     onClick: () -> Unit,
     leftIconModifier: Modifier = Modifier,
     leftIconSize: Dp = Spacing.s48,
-    leftIconComposable: @Composable () -> Unit,
+    rightIconComposable: @Composable () -> Unit,
 ) {
     Row(
         modifier =
@@ -44,14 +44,15 @@ fun AppHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
-            Image(
-                painter = painterResource(leftIcon),
-                contentDescription = "Today Header's icon",
-                modifier =
-                    leftIconModifier
-                        .size(leftIconSize),
-                // contentScale = ContentScale.Fit
-            )
+            if (leftIcon != null) {
+                Image(
+                    painter = painterResource(leftIcon),
+                    contentDescription = "Today Header's icon",
+                    modifier =
+                        leftIconModifier
+                            .size(leftIconSize),
+                )
+            }
             Column(verticalArrangement = Arrangement.Center) {
                 Text(
                     mainTitle,
@@ -66,7 +67,7 @@ fun AppHeader(
             }
         }
         IconButton(onClick = onClick) {
-            leftIconComposable()
+            rightIconComposable()
         }
     }
 }

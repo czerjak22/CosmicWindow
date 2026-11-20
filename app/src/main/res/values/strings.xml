@@ -1,3 +1,58 @@
 <resources>
-    <string name="app_name">Cosmic Window</string>
+    <string name="app_name" translatable="false">Cosmic Window</string>
+    <string name="today_change_date_description">Change date</string>
+    <string name="main_title" translatable="false">Cosmic Window</string>
+    <string name="apod_secondary_title">ASTRONOMY PICTURE OF THE DAY</string>
+    <string name="no_apod_to_show">No apods to show!</string>
+    <string name="apod_archive_text">Public NASA Data • APOD Archive</string>
+    <string name="image_credit">Image Credit</string>
+    <string name="share_description">Share</string>
+    <string name="bookmark_description">Bookmark</string>
+    <string name="toady_in_space_header">Today in Space %1$s</string>
+    <string name="affiliation_description">Independent educational explorer • Not affiliated with NASA</string>
+    <string name="item_deletion_snackbar">Item removed</string>
+    <string name="undo_button_label">Undo</string>
+    <string name="saved_page_title">Saved</string>
+    <string name="saved_page_subtitle" translatable="false">COSMIC WINDOW</string>
+    <string name="saved_discoveries_description">%1$s discoveries synced to device</string>
+    <string name="saved_offline_helper">Saved offline • %1$s</string>
+    <string name="to_detailPage_button_label">Read Story</string>
+    <string name="observation_date">Observation Date</string>
+    <string name="research_center_label">Center</string>
+    <string name="photographer_label">Photographer</string>
+    <string name="back_button_description">Back button</string>
+    <string name="explore_page_title">Explore NASA</string>
+    <string name="explore_page_subtitle">IMAGE LIBRARY</string>
+    <string name="explore_loading_more_label">Loading more NASA archive images...</string>
+    <string name="nothing_found">Nothing Found</string>
+    <string name="voice_input_promt">Search NASA images</string>
+    <string name="voice_input_not_available">Speech recognition not available</string>
+    <string name="explore_search_suggestion">Search NASA images (e.g. Mars, Nebula)</string>
+    <string name="voice_input_button_description">voice input button</string>
+    <string name="earth_page_title">Earth in Motion</string>
+    <string name="earth_page_subtitle" translatable="false">DISCOVR EPIC</string>
+    <string name="no_images_found">No Images found</string>
+    <string name="earth_capture_time_label">CAPTURE TIME</string>
+    <string name="unavailable_image_description">Image unavailable</string>
+    <string name="earth_epic_feed_text">EPIC Feed</string>
+    <string name="explanation_label">Explanation</string>
+    <string name="share_story_button">Share Story</string>
+    <string name="open_video_button">Open video</string>
+    <string name="attribution_label">ATTRIBUTION &amp; SOURCE</string>
+    <string name="source_label">Source</string>
+    <string name="nasa_apod_api" translatable="false">NASA APOD API</string>
+    <string name="credit_label">Credit</string>
+    <string name="copyright_label">Copyright</string>
+    <string name="view_original_apod_button_label">View original APOD entry</string>
+    <string name="fullscreen_image_description">Fullscreen image</string>
+    <string name="close_label">Close</string>
+    <string name="apod_image_description">APOD image</string>
+    <string name="apod_fullscreen_button_description">Fullscreen the Apod picture.</string>
+    <string name="apod_story_detail">APOD Story Detail</string>
+    <string name="offline_ready_label">Offline Ready</string>
+    <string name="apod_detail_page_button_label">Read Cosmic Story</string>
+    <string name="apod_prevoius_stripe_main_label">Previous 7 days</string>
+    <string name="apod_previous_stripe_description">Past APOD Entries</string>
+    <string name="apod_detail_page_button_description">Go to description</string>
+
 </resources>

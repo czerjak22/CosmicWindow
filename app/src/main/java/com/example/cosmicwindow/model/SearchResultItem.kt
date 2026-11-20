@@ -10,4 +10,5 @@ data class SearchResultItem(
     val originalUrl: String?,
     val description: String,
     val center: String?,
+    val photographer: String?,
 )

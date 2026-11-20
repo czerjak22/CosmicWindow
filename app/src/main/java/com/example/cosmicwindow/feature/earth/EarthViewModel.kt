@@ -3,7 +3,7 @@ package com.example.cosmicwindow.feature.earth
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cosmicwindow.data.EarthRepository
+import com.example.cosmicwindow.data.repository.EarthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.Job
@@ -49,18 +49,15 @@ class EarthViewModel
                             )
                         }
                         Log.w(
-                            "modelView",
+                            "ViewModel",
                             "Loaded images to state successfully imageSize:${newImages.size} , " +
                                 "date:${if (newImages.isNotEmpty()) newImages.first().date else "images are empty"}",
                         )
                     }, onFailure = { err ->
+                        Log.w("ViewModel", "error: $err")
                         _uiState.update {
                             it.copy(images = emptyList(), isLoading = false, error = err.message)
                         }
-                        Log.w(
-                            "modelView",
-                            "error: $err",
-                        )
                     })
                 }
         }

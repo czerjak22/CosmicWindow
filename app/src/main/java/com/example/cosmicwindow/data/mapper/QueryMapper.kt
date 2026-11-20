@@ -1,6 +1,6 @@
 package com.example.cosmicwindow.data.mapper
 
-import com.example.cosmicwindow.data.dto.explore.QueryRequestDto
+import com.example.cosmicwindow.data.remote.dto.explore.QueryRequestDto
 import com.example.cosmicwindow.model.QueryExplore
 import tech.mappie.api.ObjectMappie
 

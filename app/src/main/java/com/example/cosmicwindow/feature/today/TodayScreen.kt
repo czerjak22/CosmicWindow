@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
@@ -55,6 +57,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.example.cosmicwindow.R
@@ -81,6 +86,18 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) viewModel.reevaluateTodayApod()
+            }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     Scaffold(
         modifier =
             Modifier
@@ -90,7 +107,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
 
         if (showDatePicker) {
             CurrentDatePicker(
-                onDateSelected = { selectedDate -> viewModel.updateCurretDay(selectedDate) },
+                onDateSelected = { selectedDate -> viewModel.updateCurrentDay(selectedDate) },
                 onDismiss = { showDatePicker = false },
             )
         }
@@ -113,15 +130,15 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     modifier = Modifier,
                     leftIcon = R.drawable.header_image,
                     onClick = { showDatePicker = true },
-                    leftIconComposable = {
+                    rightIconComposable = {
                         Icon(
                             painterResource(R.drawable.calendar_icon),
-                            contentDescription = "Day set icon",
+                            contentDescription = stringResource(R.string.today_change_date_description),
                             tint = MaterialTheme.colorScheme.onSecondary,
                         )
                     },
-                    mainTitle = "Cosmic Window",
-                    secondaryTitle = "ASTRONOMY PICTURE OF THE DAY",
+                    mainTitle = stringResource(R.string.main_title),
+                    secondaryTitle = stringResource(R.string.apod_secondary_title),
                 )
             }
 
@@ -158,7 +175,7 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                     if (uiState.apods.isEmpty()) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             Text(
-                                "No apods to show!",
+                                stringResource(R.string.no_apod_to_show),
                                 style = MaterialTheme.typography.headlineLarge,
                             )
                         }
@@ -169,6 +186,8 @@ fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod)
                         apod = uiState.apods.first(),
                         onShareClick = { context.shareLink(uiState.apods.first().permalink) },
                         onReadClick = onApodClick,
+                        bookmarkState = uiState.apods.first().isSaved,
+                        onBookmarkClick = viewModel::toggleFirstApodSave,
                     )
                     PreviousApodStripe(apods = uiState.apods, onClick = onApodClick)
                     if (uiState.featuredVideoApod != null) {
@@ -218,7 +237,7 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
                             .padding(end = Spacing.s8),
                 )
                 Text(
-                    "Public NASA Data • APOD Archive",
+                    stringResource(R.string.apod_archive_text),
                     style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 26.sp),
                     fontWeight = FontWeight.W500,
                     color = MaterialTheme.colorScheme.onSecondary,
@@ -226,7 +245,10 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
             }
 
             Text(
-                text = AnnotatedString.fromHtml("Image Credit: ${apod.credit}"),
+                text =
+                    AnnotatedString.fromHtml(
+                        stringResource(R.string.image_credit) + ": " + apod.credit,
+                    ),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -239,7 +261,7 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
                 ),
             ) {
                 Text(
-                    text = "Independent educational explorer • Not affiliated with NASA",
+                    text = stringResource(R.string.affiliation_description),
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -294,7 +316,7 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
         modifier =
             modifier.background(
                 color = MaterialTheme.colorScheme.secondary,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(Spacing.s16),
             ),
         border = BorderStroke(Spacing.border, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
         shape = RoundedCornerShape(RadiusSize.r16),
@@ -311,7 +333,7 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f),
                 ) {
@@ -337,7 +359,7 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                         fontWeight = FontWeight.W500,
                         maxLines = 1,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp),
+                        modifier = Modifier.padding(horizontal = Spacing.s6, vertical = Spacing.s6),
                     )
                 }
             }
@@ -387,7 +409,7 @@ fun VideoThumbnailCard(
                 .clickable { onClick() },
     ) {
         AsyncImage(
-            apod.hdurl ?: apod.url,
+            apod.hdUrl,
             contentDescription = apod.alt,
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize(),
@@ -428,7 +450,7 @@ fun VideoThumbnailCard(
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
             ) {
                 Image(
                     painter = painterResource(R.drawable.open_elsewhere_icon),
@@ -459,14 +481,14 @@ fun PastApodEntryText(modifier: Modifier = Modifier) {
             contentDescription = null,
         )
         Text(
-            "Previous 7 days",
+            stringResource(R.string.apod_prevoius_stripe_main_label),
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.W600,
         )
         Spacer(Modifier.weight(1f))
         Text(
-            "Past APOD Entries",
+            stringResource(R.string.apod_previous_stripe_description),
             color = MaterialTheme.colorScheme.onSecondary,
             style = MaterialTheme.typography.bodyMedium,
             lineHeight = 26.sp,
@@ -481,15 +503,16 @@ fun CurrentApod(
     onReadClick: (Apod) -> Unit = {},
     onBookmarkClick: () -> Unit = {},
     onShareClick: () -> Unit = {},
+    bookmarkState: Boolean,
 ) {
     Box(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp)),
+                .clip(RoundedCornerShape(Spacing.s24)),
     ) {
         AsyncImage(
-            model = apod.hdurl ?: apod.url,
+            model = apod.hdUrl ?: apod.url,
             contentDescription = apod.alt,
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize(),
@@ -519,7 +542,7 @@ fun CurrentApod(
                         end = Spacing.s16,
                         bottom = Spacing.s16,
                     ),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -535,7 +558,7 @@ fun CurrentApod(
                 Image(
                     painterResource(R.drawable.camera_icon),
                     contentDescription = null,
-                    modifier = Modifier.size(12.dp),
+                    modifier = Modifier.size(Spacing.s12),
                 )
                 Text(
                     "•",
@@ -563,18 +586,18 @@ fun CurrentApod(
                 style = MaterialTheme.typography.bodyLarge,
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Spacing.s8))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
             ) {
                 Button(
                     onClick = { onReadClick(apod) },
                     modifier =
                         Modifier
                             .weight(1f)
-                            .height(48.dp),
+                            .height(Spacing.s48),
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -582,25 +605,32 @@ fun CurrentApod(
                         ),
                 ) {
                     Text(
-                        "Read Cosmic Story",
+                        stringResource(R.string.apod_detail_page_button_label),
                         style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(Spacing.s8))
                     Icon(
                         painterResource(R.drawable.forward_icon),
-                        contentDescription = "Go to description",
-                        modifier = Modifier.size(12.dp),
+                        contentDescription = stringResource(R.string.apod_detail_page_button_description),
+                        modifier = Modifier.size(Spacing.s12),
                     )
                 }
 
                 CircleIconButton(
-                    icon = R.drawable.bookmark_icon,
-                    description = "Bookmark",
+                    icon =
+                        if (bookmarkState) {
+                            R.drawable.bookmark_filled_icon
+                        } else {
+                            R.drawable.bookmark_icon
+                        },
+                    description = stringResource(R.string.bookmark_description),
                     onClick = onBookmarkClick,
                 )
                 CircleIconButton(
                     icon = R.drawable.share_icon,
-                    description = "Share",
+                    description = stringResource(R.string.share_description),
                     onClick = onShareClick,
                 )
             }
@@ -630,7 +660,7 @@ fun PreviousApodDay(
         ) {
             Box {
                 AsyncImage(
-                    model = apod.hdurl ?: apod.url,
+                    model = apod.hdUrl ?: apod.url,
                     contentDescription = apod.alt,
                     contentScale = ContentScale.Crop,
                     modifier =
@@ -654,7 +684,7 @@ fun PreviousApodDay(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                 Text(
                     getDayTextSince(apod.date),
                     style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
@@ -677,17 +707,17 @@ fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
     ) {
         Box(
             modifier =
                 Modifier
-                    .size(8.dp)
+                    .size(Spacing.s8)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.onPrimaryContainer),
         )
         Text(
-            text = "Today in Space • $date",
+            text = stringResource(R.string.toady_in_space_header, date),
             color = MaterialTheme.colorScheme.onSecondary,
             style = MaterialTheme.typography.bodyLarge,
         )

@@ -1,6 +1,6 @@
 package com.example.cosmicwindow.data.mapper
 
-import com.example.cosmicwindow.data.dto.explore.SearchResponseDto
+import com.example.cosmicwindow.data.remote.dto.explore.SearchResponseDto
 import com.example.cosmicwindow.model.SearchResult
 import com.example.cosmicwindow.model.SearchResultItem
 import java.time.Instant
@@ -27,6 +27,7 @@ object ResponseMapper {
                     originalUrl = originalLink?.href,
                     description = data.description ?: data.description508,
                     center = data.center,
+                    photographer = data.photographer,
                 )
             }
         return SearchResult(searchItems = items, totalFinds = from.totalHits)

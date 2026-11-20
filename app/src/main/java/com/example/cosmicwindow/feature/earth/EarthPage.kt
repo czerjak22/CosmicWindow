@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -72,87 +73,98 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                 leftIcon = R.drawable.earth_header_icon,
                 onClick = {},
                 leftIconSize = Spacing.s20,
-                leftIconComposable = {
+                rightIconComposable = {
                     Image(
                         painterResource(R.drawable.profile_image),
                         contentDescription = null,
                     )
                 },
-                mainTitle = "Earth in Motion",
-                secondaryTitle = "DSCOVR EPIC",
+                mainTitle = stringResource(R.string.earth_page_title),
+                secondaryTitle = stringResource(R.string.earth_page_subtitle),
             )
         },
     ) { innerPadding ->
 
-        if (uiState.isLoading) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                LottieLoader(Modifier.size(Spacing.s48))
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LottieLoader(Modifier.size(Spacing.s48))
+                }
+                return@Scaffold
             }
-            return@Scaffold
-        }
 
-        if (uiState.error != null) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(innerPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                ErrorBox(text = uiState.error!!, onClick = { viewModel.loadEarthImages() })
+            uiState.error != null -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ErrorBox(
+                        modifier =
+                            Modifier
+                                .padding(innerPadding)
+                                .padding(horizontal = Spacing.s16),
+                        text = uiState.error!!,
+                        onClick = { viewModel.loadEarthImages() },
+                    )
+                }
+                return@Scaffold
             }
-            return@Scaffold
-        }
-        if (uiState.images.isEmpty()) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(innerPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                ErrorBox(text = "No Images found!")
-            }
-            return@Scaffold
-        }
 
-        Column(
-            modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(horizontal = Spacing.s16)
-                    .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Spacing.s16),
-        ) {
-            EpicChip(Modifier.align(Alignment.End))
-            PreloadImages(
-                images = uiState.images,
-            )
-            EarthImageDisplay(
-                modifier = Modifier.padding(horizontal = Spacing.s4),
-                imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
-                scale = 1.2f,
-            )
-            ControlCard(
-                modifier = Modifier.padding(top = Spacing.s8),
-                captureTime = uiState.images[uiState.selectedIndex!!].date,
-                index = uiState.selectedIndex ?: 0,
-                totalSize = uiState.images.size,
-                indexUpdate = viewModel::updateSelected,
-                startPlayback = viewModel::startPlayback,
-                stopPlayback = viewModel::stopPlayback,
-            )
-            InfoCard(
-                info =
-                    uiState.images[uiState.selectedIndex!!].caption,
-            )
+            uiState.images.isEmpty() -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ErrorBox(text = stringResource(R.string.no_images_found))
+                }
+                return@Scaffold
+            }
+
+            else ->
+                Column(
+                    modifier =
+                        Modifier
+                            .padding(innerPadding)
+                            .padding(horizontal = Spacing.s16)
+                            .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s16),
+                ) {
+                    EpicChip(Modifier.align(Alignment.End))
+                    PreloadImages(
+                        images = uiState.images,
+                    )
+                    EarthImageDisplay(
+                        modifier = Modifier.padding(horizontal = Spacing.s4),
+                        imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
+                        scale = 1.2f,
+                    )
+                    ControlCard(
+                        modifier = Modifier.padding(top = Spacing.s8),
+                        captureTime = uiState.images[uiState.selectedIndex!!].date,
+                        index = uiState.selectedIndex ?: 0,
+                        totalSize = uiState.images.size,
+                        indexUpdate = viewModel::updateSelected,
+                        startPlayback = viewModel::startPlayback,
+                        stopPlayback = viewModel::stopPlayback,
+                    )
+                    InfoCard(
+                        info =
+                            uiState.images[uiState.selectedIndex!!].caption,
+                    )
+                }
         }
     }
 }
@@ -177,7 +189,7 @@ fun InfoCard(modifier: Modifier = Modifier, info: String) {
         ) {
             Image(
                 painter = painterResource(R.drawable.info_card),
-                contentDescription = "Info card",
+                contentDescription = null,
             )
             Text(
                 info,
@@ -228,7 +240,7 @@ fun ControlCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column {
                     Text(
-                        "CAPTURE TIME",
+                        stringResource(R.string.earth_capture_time_label),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.W500,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -398,7 +410,7 @@ fun PreloadImages(images: List<Earth>) {
 @Composable
 fun EarthImageDisplay(
     modifier: Modifier = Modifier,
-    imageUrl: String = "https://epic.gsfc.nasa.gov/archive/natural/2026/10/29/png/epic_1b_20261029000830.png",
+    imageUrl: String,
     scale: Float = 1.15f,
 ) {
     val glowColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -438,7 +450,7 @@ fun EarthImageDisplay(
         ) {
             SubcomposeAsyncImage(
                 model = imageUrl,
-                contentDescription = "Earth Image",
+                contentDescription = null,
                 modifier =
                     Modifier
                         .fillMaxSize()
@@ -474,7 +486,7 @@ fun EarthImageDisplay(
                     ) {
                         Image(
                             painter = painterResource(R.drawable.no_internet),
-                            contentDescription = "Image unavailable",
+                            contentDescription = stringResource(R.string.unavailable_image_description),
                         )
                     }
                 },
@@ -503,7 +515,7 @@ fun EpicChip(modifier: Modifier = Modifier) {
                 contentDescription = null,
             )
             Text(
-                "EPIC Feed",
+                stringResource(R.string.earth_epic_feed_text),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSecondary,
             )

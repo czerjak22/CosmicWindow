@@ -3,7 +3,8 @@ package com.example.cosmicwindow.feature.today
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cosmicwindow.data.ApodRepository
+import com.example.cosmicwindow.data.repository.ApodRepository
+import com.example.cosmicwindow.data.repository.SavedRepository
 import com.example.cosmicwindow.model.Apod
 import com.example.cosmicwindow.model.MediaType
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,57 +21,81 @@ class TodayViewModel
     @Inject
     constructor(
         val apodRepository: ApodRepository,
+        val savedRepository: SavedRepository,
     ) : ViewModel() {
-        private val _uiState = MutableStateFlow<TodayState>(TodayState())
-        private var apodokBetoltese: Job? = null
+        private val _uiState = MutableStateFlow(TodayState())
+        private var loadApodsJob: Job? = null
         val uiState = _uiState.asStateFlow()
-
-        fun updateError() {
-            _uiState.update { it.copy(error = "Baj van") }
-        }
 
         init {
             getCurrentApods()
         }
 
         fun getCurrentApods() {
-            apodokBetoltese?.cancel()
-            apodokBetoltese =
+            loadApodsJob?.cancel()
+            loadApodsJob =
                 viewModelScope.launch {
                     _uiState.update { it.copy(isLoading = true, error = null) }
-                    val apods =
-                        apodRepository.getApodWeek(_uiState.value.selectedDate).fold(
-                            onSuccess = { apods ->
-                                if (apods.isNotEmpty()) {
-                                    Log.w("debug", " got ${apods.size} First apod: ${apods.first()}")
-                                } else {
-                                    Log.e("debug", "Apods are empty!")
+
+                    apodRepository.getApodWeek(_uiState.value.selectedDate).fold(
+                        onSuccess = { apods ->
+                            val first = apods.firstOrNull()
+                            val newApods =
+                                when {
+                                    first == null -> {
+                                        Log.e("debug", "Apods are empty!")
+                                        apods
+                                    }
+
+                                    first.mediaType == MediaType.VIDEO -> apods
+                                    else -> listOf(first.copy(isSaved = checkSaved(first))) + apods.drop(1)
                                 }
-                                val videoApod = searchForFirstVideoApod(apods)
-                                _uiState.update {
-                                    it.copy(
-                                        apods = apods,
-                                        error = null,
-                                        featuredVideoApod = videoApod,
-                                        isLoading = false,
-                                    )
-                                }
-                            },
-                            onFailure = { error ->
-                                _uiState.update {
-                                    it.copy(
-                                        error = error.message,
-                                        isLoading = false,
-                                        apods = emptyList(),
-                                        featuredVideoApod = null,
-                                    )
-                                }
-                            },
-                        )
+
+                            val videoApod = searchForFirstVideoApod(newApods)
+                            _uiState.update {
+                                it.copy(
+                                    apods = newApods,
+                                    error = null,
+                                    featuredVideoApod = videoApod,
+                                    isLoading = false,
+                                )
+                            }
+                        },
+                        onFailure = { error ->
+                            _uiState.update {
+                                it.copy(
+                                    error = error.message,
+                                    isLoading = false,
+                                    apods = emptyList(),
+                                    featuredVideoApod = null,
+                                )
+                            }
+                        },
+                    )
                 }
         }
 
-        fun updateCurretDay(newDate: LocalDate) {
+        fun reevaluateTodayApod() {
+            if (loadApodsJob?.isActive == true || uiState.value.apods.isEmpty()) {
+                return
+            }
+            val apod = _uiState.value.apods.first()
+            viewModelScope.launch {
+                val isSaved = checkSaved(apod)
+                val newApods =
+                    _uiState.value.apods.map {
+                        when {
+                            it.postId == apod.postId
+                            -> it.copy(isSaved = isSaved)
+
+                            else -> it
+                        }
+                    }
+                _uiState.update { it.copy(apods = newApods) }
+            }
+        }
+
+        fun updateCurrentDay(newDate: LocalDate) {
             _uiState.update {
                 it.copy(
                     selectedDate = newDate,
@@ -86,4 +111,61 @@ class TodayViewModel
             apods.firstOrNull {
                 it.mediaType == MediaType.VIDEO && it.videoUrl != null
             }
+
+        fun toggleFirstApodSave() {
+            if (_uiState.value.apods.isEmpty()) return
+            val apod = _uiState.value.apods.first()
+            val newApods =
+                _uiState.value.apods.map {
+                    when {
+                        it.postId == apod.postId -> it.copy(isSaved = !apod.isSaved)
+
+                        else -> it
+                    }
+                }
+            _uiState.update { it.copy(apods = newApods) }
+            saveOrDeleteApod(apod)
+        }
+
+        fun saveOrDeleteApod(apod: Apod) {
+            viewModelScope.launch {
+                val willBeSaved = !apod.isSaved
+                val result =
+                    if (willBeSaved) {
+                        savedRepository.saveItem(apod)
+                    } else {
+                        savedRepository.deleteItem(apod)
+                    }
+
+                result.fold(
+                    onSuccess = {
+                        Log.w("ViewModel", " ${if (willBeSaved) "Saved " else "Deleted "} apod")
+                    },
+                    onFailure = { err ->
+                        _uiState.update { state ->
+                            state.copy(
+                                apods =
+                                    state.apods.map {
+                                        if (it.postId == apod.postId) it.copy(isSaved = !willBeSaved) else it
+                                    },
+                                error = err.message ?: " No error message provided",
+                            )
+                        }
+                    },
+                )
+            }
+        }
+
+        private suspend fun checkSaved(apod: Apod): Boolean {
+            Log.w("ViewModel", "$apod is saved checked")
+            savedRepository.isSaved(apod.postId).fold(
+                onSuccess = { isSaved ->
+                    return isSaved
+                },
+                onFailure = { err ->
+                    _uiState.update { it.copy(error = err.message ?: "error") }
+                    return false
+                },
+            )
+        }
     }
