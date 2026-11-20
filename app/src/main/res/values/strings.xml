@@ -25,7 +25,7 @@
     <string name="explore_loading_more_label">Loading more NASA archive images...</string>
     <string name="nothing_found">Nothing Found</string>
     <string name="voice_input_promt">Search NASA images</string>
-    <string name="voice_input_not_available">Seech recognition nat available</string>
+    <string name="voice_input_not_available">Speech recognition not available</string>
     <string name="explore_search_suggestion">Search NASA images (e.g. Mars, Nebula)</string>
     <string name="voice_input_button_description">voice input button</string>
     <string name="earth_page_title">Earth in Motion</string>

@@ -81,7 +81,7 @@ class SavedRepository
                 writeMutex.withLock {
                     withContext(Dispatchers.IO) {
                         if (imageBytes != null) {
-                            addImage(imageBytes = imageBytes, fileName = savedItemEntity.imageName)
+                            addImage(imageBytes = imageBytes, fileName = savedItemEntity.imageName).getOrThrow()
                         }
                         val items = savedItemDAO.updateItem(savedItemEntity)
                         Log.w("Repository", "saved item: $items")
@@ -134,7 +134,12 @@ class SavedRepository
             try {
                 return withContext(Dispatchers.IO) {
                     val item = savedItemDAO.getByDateCreated(createdDate.toString())
-                    val savedItem = if (item != null) SavedItemEntityMapper.map(item) else null
+                    val savedItem =
+                        if (item != null) {
+                            SavedItemEntityMapper.map(item).copy(imagePath = getImage(item.imageName).getOrNull())
+                        } else {
+                            null
+                        }
                     Log.w("Repository", "findItemById got item: $item")
                     Result.success(savedItem)
                 }
@@ -150,8 +155,10 @@ class SavedRepository
             writeMutex.withLock {
                 withContext(Dispatchers.IO) {
                     val rowsDeleted = deleteRow()
-                    removeImage(imageName).onFailure {
-                        Log.w("Repository", "Failed to remove image $imageName", it)
+                    if (rowsDeleted > 0) {
+                        removeImage(imageName).onFailure {
+                            Log.w("Repository", "Failed to remove image $imageName", it)
+                        }
                     }
                     Log.w("Repository", "deleted $rowsDeleted row(s) for $imageName")
                     Result.success(Unit)

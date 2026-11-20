@@ -25,7 +25,6 @@ class TodayViewModel
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(TodayState())
         private var loadApodsJob: Job? = null
-        private var saveJob: Job? = null
         val uiState = _uiState.asStateFlow()
 
         init {
@@ -80,16 +79,14 @@ class TodayViewModel
             if (loadApodsJob?.isActive == true || uiState.value.apods.isEmpty()) {
                 return
             }
-
+            val apod = _uiState.value.apods.first()
             viewModelScope.launch {
+                val isSaved = checkSaved(apod)
                 val newApods =
                     _uiState.value.apods.map {
                         when {
-                            it.postId ==
-                                _uiState.value.apods
-                                    .first()
-                                    .postId
-                            -> it.copy(isSaved = checkSaved(it))
+                            it.postId == apod.postId
+                            -> it.copy(isSaved = isSaved)
 
                             else -> it
                         }
@@ -131,34 +128,32 @@ class TodayViewModel
         }
 
         fun saveOrDeleteApod(apod: Apod) {
-            saveJob?.cancel()
-            saveJob =
-                viewModelScope.launch {
-                    val willBeSaved = !apod.isSaved
-                    val result =
-                        if (willBeSaved) {
-                            savedRepository.saveItem(apod)
-                        } else {
-                            savedRepository.deleteItem(apod)
-                        }
+            viewModelScope.launch {
+                val willBeSaved = !apod.isSaved
+                val result =
+                    if (willBeSaved) {
+                        savedRepository.saveItem(apod)
+                    } else {
+                        savedRepository.deleteItem(apod)
+                    }
 
-                    result.fold(
-                        onSuccess = {
-                            Log.w("ViewModel", " ${if (willBeSaved) "Saved " else "Deleted "} apod")
-                        },
-                        onFailure = { err ->
-                            _uiState.update { state ->
-                                state.copy(
-                                    apods =
-                                        state.apods.map {
-                                            if (it.postId == apod.postId) it.copy(isSaved = !willBeSaved) else it
-                                        },
-                                    error = err.message ?: " No error message provided",
-                                )
-                            }
-                        },
-                    )
-                }
+                result.fold(
+                    onSuccess = {
+                        Log.w("ViewModel", " ${if (willBeSaved) "Saved " else "Deleted "} apod")
+                    },
+                    onFailure = { err ->
+                        _uiState.update { state ->
+                            state.copy(
+                                apods =
+                                    state.apods.map {
+                                        if (it.postId == apod.postId) it.copy(isSaved = !willBeSaved) else it
+                                    },
+                                error = err.message ?: " No error message provided",
+                            )
+                        }
+                    },
+                )
+            }
         }
 
         private suspend fun checkSaved(apod: Apod): Boolean {

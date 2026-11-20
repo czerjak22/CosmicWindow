@@ -3,27 +3,40 @@ package com.example.cosmicwindow.feature.exploredetail
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -35,6 +48,7 @@ import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
 import com.example.cosmicwindow.model.SearchResultItem
 import java.time.format.DateTimeFormatter
+import kotlin.math.roundToInt
 
 @Composable
 fun ExploreDetailScreen(viewModel: ExploreDetailViewModel = hiltViewModel(), onClickBack: () -> Unit) {
@@ -67,7 +81,6 @@ fun ExploreDetailScreen(viewModel: ExploreDetailViewModel = hiltViewModel(), onC
             onPictureLoaded = { viewModel.pictureLoaded() },
             onErrorAction = viewModel::imageLoadError,
         )
-
         if (!uiState.pictureLoaded) {
             Box(
                 Modifier
@@ -75,56 +88,116 @@ fun ExploreDetailScreen(viewModel: ExploreDetailViewModel = hiltViewModel(), onC
                     .background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center,
             ) { LottieLoader() }
+            return@Scaffold
         }
     }
 }
 
 @Composable
-fun Details(modifier: Modifier = Modifier, searchResult: SearchResultItem) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Spacing.s8),
-    ) {
+fun Details(
+    searchResult: SearchResultItem,
+    modifier: Modifier = Modifier,
+    previewLines: Int = 3,
+    onCollapsedHeight: (Dp) -> Unit = {},
+) {
+    val density = LocalDensity.current
+    var titlePx by remember { mutableIntStateOf(0) }
+    var previewPx by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(titlePx, previewPx) {
+        onCollapsedHeight(with(density) { (titlePx + previewPx).toDp() } + Spacing.s8)
+    }
+
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.s8)) {
         Text(
             searchResult.title,
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
+            onTextLayout = { titlePx = it.size.height },
         )
         Text(
             AnnotatedString.fromHtml(searchResult.description),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 8,
-            overflow = TextOverflow.Ellipsis,
+            onTextLayout = {
+                val lines = minOf(previewLines, it.lineCount)
+                previewPx = if (lines > 0) it.getLineBottom(lines - 1).roundToInt() else 0
+            },
         )
+    }
+}
 
-        Box(
-            Modifier.background(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(RadiusSize.r12),
-            ),
+@Composable
+private fun DescriptionSheet(
+    searchResult: SearchResultItem,
+    sheetColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    val density = LocalDensity.current
+    var collapsed by remember { mutableStateOf(0.dp) }
+
+    BoxWithConstraints(modifier) {
+        val fadeHeight = maxHeight * 0.15f
+        val topPadding = fadeHeight * 0.2f
+        val imageGap = (maxHeight - topPadding - collapsed - Spacing.s16).coerceAtLeast(0.dp)
+        val fadePx = with(density) { fadeHeight.toPx() }
+
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
         ) {
-            Row(
+            Spacer(Modifier.height(imageGap))
+
+            Column(
                 Modifier
-                    .padding(Spacing.s16)
-                    .fillMaxWidth(),
-                horizontalArrangement =
-                    Arrangement.spacedBy(
-                        Spacing.s8,
-                        alignment = Alignment.CenterHorizontally,
-                    ),
-                verticalAlignment = Alignment.CenterVertically,
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, sheetColor.copy(alpha = 0.85f)),
+                            startY = 0f,
+                            endY = fadePx,
+                        ),
+                    ).padding(start = Spacing.s16, end = Spacing.s16, top = topPadding, bottom = Spacing.s16),
             ) {
+                Details(searchResult = searchResult, onCollapsedHeight = { collapsed = it })
+            }
+        }
+    }
+}
+
+@Composable
+fun DetailKeywords(
+    searchResult: SearchResultItem,
+    sheetColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier
+            .fillMaxWidth()
+            .background(Brush.verticalGradient(listOf(sheetColor.copy(alpha = 0.85f), sheetColor)))
+            .navigationBarsPadding()
+            .padding(Spacing.s16),
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
+                    shape = RoundedCornerShape(RadiusSize.r12),
+                ).padding(Spacing.s16),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ColumnElement(
+                title = stringResource(R.string.observation_date),
+                content = searchResult.dateCreated.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
+            )
+            searchResult.center?.let {
                 ColumnElement(
-                    title = stringResource(R.string.observation_date),
-                    content = searchResult.dateCreated.format(DateTimeFormatter.ofPattern("MMM dd, yyy")),
+                    title = stringResource(R.string.research_center_label),
+                    content = it,
                 )
-                if (searchResult.center != null) {
-                    ColumnElement(
-                        title = stringResource(R.string.research_center_label),
-                        content = searchResult.center,
-                    )
-                }
             }
         }
     }
@@ -163,6 +236,8 @@ fun ImagePage(
     onPictureLoaded: () -> Unit,
     onErrorAction: (errorMessage: String) -> Unit,
 ) {
+    val sheetColor = MaterialTheme.colorScheme.onSecondaryContainer
+
     Box(modifier = modifier.fillMaxSize()) {
         AsyncImage(
             model = searchResult.originalUrl ?: searchResult.thumbnailUrl,
@@ -177,17 +252,16 @@ fun ImagePage(
             },
         )
 
-        Box(
-            Modifier
-                .matchParentSize()
-                .background(
-                    Brush.verticalGradient(
-                        0.6f to Color.Transparent,
-                        0.8f to MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f),
-                        1f to MaterialTheme.colorScheme.onSecondaryContainer,
-                    ),
-                ),
-        )
+        Column(Modifier.fillMaxSize()) {
+            DescriptionSheet(
+                searchResult,
+                sheetColor,
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+            )
+            DetailKeywords(searchResult, sheetColor)
+        }
 
         CircleIconButton(
             icon = R.drawable.exit_icon,
@@ -199,15 +273,6 @@ fun ImagePage(
                     .align(Alignment.TopStart)
                     .padding(Spacing.s16),
             iconSize = Spacing.s14,
-        )
-
-        Details(
-            searchResult = searchResult,
-            modifier =
-                Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .padding(Spacing.s16),
         )
     }
 }
