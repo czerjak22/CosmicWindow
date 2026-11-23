@@ -1,5 +1,7 @@
 package com.example.cosmicwindow.feature.earth
 
+import android.util.Log
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -35,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -57,15 +61,25 @@ import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
+import com.example.cosmicwindow.feature.permissions.LocationPermissionSettingsDialog
+import com.example.cosmicwindow.feature.permissions.LocationPermissionState
+import com.example.cosmicwindow.feature.permissions.rememberLocationPermissionState
 import com.example.cosmicwindow.model.Earth
+import com.example.cosmicwindow.model.ProjectedPoint
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val locationPermission = rememberLocationPermissionState()
+
+    LaunchedEffect(locationPermission.state) {
+        if (locationPermission.state == LocationPermissionState.GRANTED) {
+            viewModel.enableLocationProjection()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -133,6 +147,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
             }
 
             else ->
+
                 Column(
                     modifier =
                         Modifier
@@ -142,6 +157,29 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(Spacing.s16),
                 ) {
+                    Button(
+                        onClick = {
+                            when (locationPermission.state) {
+                                LocationPermissionState.GRANTED -> {
+                                    Log.w("UI", " Location access already granted")
+                                }
+
+                                else -> {
+                                    locationPermission.requestPermission()
+                                }
+                            }
+                        },
+                    ) {
+                        Text("Get location")
+                    }
+
+                    if (locationPermission.showSettingsDialog) {
+                        LocationPermissionSettingsDialog(
+                            onOpenSettings = locationPermission.openSettings,
+                            onDismiss = locationPermission.dismissSettingsDialog,
+                        )
+                    }
+
                     EpicChip(Modifier.align(Alignment.End))
                     PreloadImages(
                         images = uiState.images,
@@ -150,6 +188,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                         modifier = Modifier.padding(horizontal = Spacing.s4),
                         imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
                         scale = 1.2f,
+                        projectedUserPoint = viewModel.projectLocationOntoImage(),
                     )
                     ControlCard(
                         modifier = Modifier.padding(top = Spacing.s8),
@@ -161,8 +200,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                         stopPlayback = viewModel::stopPlayback,
                     )
                     InfoCard(
-                        info =
-                            uiState.images[uiState.selectedIndex!!].caption,
+                        info = uiState.images[uiState.selectedIndex!!].caption,
                     )
                 }
         }
@@ -182,9 +220,7 @@ fun InfoCard(modifier: Modifier = Modifier, info: String) {
             ),
     ) {
         Row(
-            modifier =
-                Modifier
-                    .padding(Spacing.s16),
+            modifier = Modifier.padding(Spacing.s16),
             horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
             Image(
@@ -227,11 +263,10 @@ fun ControlCard(
     }
     Box(
         modifier =
-            modifier
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(RadiusSize.r12),
-                ),
+            modifier.background(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(RadiusSize.r12),
+            ),
     ) {
         Column(
             Modifier.padding(Spacing.s16),
@@ -398,10 +433,7 @@ fun PreloadImages(images: List<Earth>) {
         val loader = context.imageLoader
         images.forEach { url ->
             loader.enqueue(
-                ImageRequest
-                    .Builder(context)
-                    .data(url.imageUrl)
-                    .build(),
+                ImageRequest.Builder(context).data(url.imageUrl).build(),
             )
         }
     }
@@ -411,10 +443,11 @@ fun PreloadImages(images: List<Earth>) {
 fun EarthImageDisplay(
     modifier: Modifier = Modifier,
     imageUrl: String,
+    projectedUserPoint: ProjectedPoint?,
     scale: Float = 1.15f,
 ) {
     val glowColor = MaterialTheme.colorScheme.onPrimaryContainer
-
+    val dotColor = MaterialTheme.colorScheme.primary
     Box(
         modifier =
             modifier
@@ -492,6 +525,34 @@ fun EarthImageDisplay(
                 },
             )
         }
+        if (projectedUserPoint != null && projectedUserPoint.isVisible) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val scaledU = 0.5f + (projectedUserPoint.u - 0.5f) * scale
+                val scaledV = 0.5f + (projectedUserPoint.v - 0.5f) * scale
+
+                val pinCenter =
+                    Offset(
+                        x = size.width * scaledU,
+                        y = size.height * scaledV,
+                    )
+                drawCircle(
+                    color = dotColor.copy(alpha = 0.35f),
+                    radius = Spacing.s10.toPx(),
+                    center = pinCenter,
+                )
+
+                drawCircle(
+                    color = Color.White,
+                    radius = Spacing.s6.toPx(),
+                    center = pinCenter,
+                )
+                drawCircle(
+                    color = dotColor,
+                    radius = Spacing.s4.toPx(),
+                    center = pinCenter,
+                )
+            }
+        }
     }
 }
 
@@ -499,11 +560,10 @@ fun EarthImageDisplay(
 fun EpicChip(modifier: Modifier = Modifier) {
     Box(
         modifier =
-            modifier
-                .background(
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
-                    shape = RoundedCornerShape(RadiusSize.r9999),
-                ),
+            modifier.background(
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(RadiusSize.r9999),
+            ),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = Spacing.s12, vertical = Spacing.s4),

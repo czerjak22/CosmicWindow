@@ -7,5 +7,5 @@ data class Earth(
     val date: LocalDateTime,
     val caption: String,
     val telescopePosition: Position,
-    val centroidCoordinates: CentroidPosition
+    val centroidCoordinates: CentroidPosition,
 )

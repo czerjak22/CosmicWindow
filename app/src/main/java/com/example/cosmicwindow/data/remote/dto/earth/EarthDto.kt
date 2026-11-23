@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.data.remote.dto
+package com.example.cosmicwindow.data.remote.dto.earth
 
 import com.example.cosmicwindow.data.remote.serializer.LocaleDateTimeSerializer
 import kotlinx.serialization.SerialName
@@ -11,4 +11,6 @@ data class EarthDto(
     @Serializable(LocaleDateTimeSerializer::class)
     val date: LocalDateTime,
     val caption: String,
+    @SerialName("centroid_coordinates") val centroidCoordinates: CentroidCoordinates,
+    @SerialName("dscovr_j2000_position") val telescopePosition: TelescopePosition,
 )

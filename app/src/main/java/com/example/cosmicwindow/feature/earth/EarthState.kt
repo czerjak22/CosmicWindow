@@ -1,20 +1,14 @@
 package com.example.cosmicwindow.feature.earth
 
 import com.example.cosmicwindow.model.Earth
+import com.example.cosmicwindow.model.ProjectedPoint
 import java.time.LocalDate
 
 data class EarthState(
-    val images: List<Earth>,
-    val error: String?,
-    val isLoading: Boolean,
-    val selectedDate: LocalDate,
-    val selectedIndex: Int?,
-) {
-    constructor() : this(
-        emptyList<Earth>(),
-        error = null,
-        selectedDate = LocalDate.now(),
-        isLoading = true,
-        selectedIndex = null,
-    )
-}
+    val images: List<Earth> = emptyList(),
+    val error: String? = null,
+    val isLoading: Boolean = true,
+    val selectedDate: LocalDate = LocalDate.now(),
+    val selectedIndex: Int? = null,
+    val locationPoints: List<ProjectedPoint> = emptyList(),
+)
