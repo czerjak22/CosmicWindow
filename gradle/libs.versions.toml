@@ -30,6 +30,7 @@ ktlint = "14.2.0"
 lottie = "6.7.1"
 palette = "1.1.0"
 runtime = "1.12.1"
+playServicesLocation = "21.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -86,6 +87,7 @@ androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.re
 lottie-compose = { module = 'com.airbnb.android:lottie-compose', version.ref = "lottie" }
 #imagebitmap
 palette = { module = 'androidx.palette:palette-ktx', version.ref = "palette" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.media3.ui)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     // project
 
