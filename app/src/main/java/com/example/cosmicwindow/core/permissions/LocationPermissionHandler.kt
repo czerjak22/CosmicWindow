@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.feature.permissions
+package com.example.cosmicwindow.core.permissions
 
 import android.Manifest
 import android.app.Activity

@@ -1,4 +1,4 @@
-package com.example.cosmicwindow.feature.permissions
+package com.example.cosmicwindow.core.permissions
 
 enum class LocationPermissionState {
     GRANTED,

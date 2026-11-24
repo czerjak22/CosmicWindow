@@ -19,7 +19,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -61,9 +60,9 @@ import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
-import com.example.cosmicwindow.feature.permissions.LocationPermissionSettingsDialog
-import com.example.cosmicwindow.feature.permissions.LocationPermissionState
-import com.example.cosmicwindow.feature.permissions.rememberLocationPermissionState
+import com.example.cosmicwindow.core.permissions.LocationPermissionSettingsDialog
+import com.example.cosmicwindow.core.permissions.LocationPermissionState
+import com.example.cosmicwindow.core.permissions.rememberLocationPermissionState
 import com.example.cosmicwindow.model.Earth
 import com.example.cosmicwindow.model.ProjectedPoint
 import java.time.LocalDateTime
@@ -77,7 +76,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
 
     LaunchedEffect(locationPermission.state) {
         if (locationPermission.state == LocationPermissionState.GRANTED) {
-            viewModel.enableLocationProjection()
+            viewModel.toggleLocation(true)
         }
     }
 
@@ -157,22 +156,6 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(Spacing.s16),
                 ) {
-                    Button(
-                        onClick = {
-                            when (locationPermission.state) {
-                                LocationPermissionState.GRANTED -> {
-                                    Log.w("UI", " Location access already granted")
-                                }
-
-                                else -> {
-                                    locationPermission.requestPermission()
-                                }
-                            }
-                        },
-                    ) {
-                        Text("Get location")
-                    }
-
                     if (locationPermission.showSettingsDialog) {
                         LocationPermissionSettingsDialog(
                             onOpenSettings = locationPermission.openSettings,
@@ -188,7 +171,20 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                         modifier = Modifier.padding(horizontal = Spacing.s4),
                         imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
                         scale = 1.2f,
-                        projectedUserPoint = viewModel.projectLocationOntoImage(),
+                        projectedUserPoint = uiState.selectedIndexLocation,
+                        isLocationEnabled = uiState.isLocationEnabled,
+                        onLocationClick = {
+                            when (locationPermission.state) {
+                                LocationPermissionState.GRANTED -> {
+                                    Log.w("UI", " Location access already granted")
+                                    viewModel.toggleLocation()
+                                }
+
+                                else -> {
+                                    locationPermission.requestPermission()
+                                }
+                            }
+                        },
                     )
                     ControlCard(
                         modifier = Modifier.padding(top = Spacing.s8),
@@ -445,6 +441,8 @@ fun EarthImageDisplay(
     imageUrl: String,
     projectedUserPoint: ProjectedPoint?,
     scale: Float = 1.15f,
+    onLocationClick: () -> Unit,
+    isLocationEnabled: Boolean,
 ) {
     val glowColor = MaterialTheme.colorScheme.onPrimaryContainer
     val dotColor = MaterialTheme.colorScheme.primary
@@ -552,6 +550,18 @@ fun EarthImageDisplay(
                     center = pinCenter,
                 )
             }
+        }
+
+        Box(Modifier.matchParentSize(), contentAlignment = Alignment.BottomEnd) {
+            CircleIconButton(
+                icon =
+                    when (isLocationEnabled) {
+                        true -> R.drawable.location_on_icon
+                        false -> R.drawable.location_off_icon
+                    },
+                description = "turn on location",
+                onClick = onLocationClick,
+            )
         }
     }
 }

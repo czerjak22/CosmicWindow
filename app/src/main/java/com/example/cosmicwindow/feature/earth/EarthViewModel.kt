@@ -8,6 +8,11 @@ import com.example.cosmicwindow.data.repository.EarthRepository
 import com.example.cosmicwindow.model.ProjectedPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,11 +20,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.math.asin
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
-import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class EarthViewModel
@@ -32,29 +32,39 @@ class EarthViewModel
         val uiState = _uiState.asStateFlow()
         private var apiJob: Job? = null
         private var playbackJob: Job? = null
-        private var isLocationProjectionEnabled: Boolean = false
+
         private var userLocation: Pair<Double, Double>? = null
 
         init {
             loadEarthImages()
         }
 
-        fun enableLocationProjection() {
+        fun toggleLocation(desiredValue: Boolean? = null) {
             viewModelScope.launch {
-                isLocationProjectionEnabled = true
-                userLocation = locationUtils.getLocation()
+                _uiState.update { it.copy(isLocationEnabled = desiredValue ?: !it.isLocationEnabled) }
+                if (uiState.value.isLocationEnabled) {
+                    userLocation = locationUtils.getLocation()
+                    updateUserLocation()
+                } else {
+                    userLocation = null
+                    _uiState.update { it.copy(selectedIndexLocation = null) }
+                }
             }
         }
 
-        fun projectLocationOntoImage(): ProjectedPoint? {
-            if (!isLocationProjectionEnabled ||
+        private fun updateUserLocation() {
+            var projectedLocation: ProjectedPoint? = projectLocationOntoImage()
+            _uiState.update { it.copy(selectedIndexLocation = projectedLocation) }
+        }
+
+        private fun projectLocationOntoImage(): ProjectedPoint? {
+            if (!uiState.value.isLocationEnabled ||
                 uiState.value.images.isEmpty() ||
                 uiState.value.selectedIndex == null ||
                 userLocation == null
             ) {
                 return null
             }
-
             val earth = uiState.value.images[uiState.value.selectedIndex ?: 0]
             val centroid = earth.centroidCoordinates
             val telescopePos = earth.telescopePosition
@@ -66,7 +76,7 @@ class EarthViewModel
             val dLambda = lambda - lambda0
 
             val cosC = sin(phi0) * sin(phi) + cos(phi0) * cos(phi) * cos(dLambda)
-            if (cosC <= 0.2) {
+            if (cosC <= 0.001) {
                 return ProjectedPoint(isVisible = false, u = 0f, v = 0f)
             }
 
@@ -76,9 +86,7 @@ class EarthViewModel
             val earthRadiusKm = 6371.0
             val distKm =
                 sqrt(
-                    telescopePos.x * telescopePos.x +
-                        telescopePos.y * telescopePos.y +
-                        telescopePos.z * telescopePos.z,
+                    telescopePos.x * telescopePos.x + telescopePos.y * telescopePos.y + telescopePos.z * telescopePos.z,
                 )
             val perspectiveScale = (distKm - earthRadiusKm) / (distKm - earthRadiusKm * cosC)
             x *= perspectiveScale
@@ -87,7 +95,6 @@ class EarthViewModel
             val angularRadiusRad = asin(earthRadiusKm / distKm)
             val fovRad = Math.toRadians(0.7)
             val earthRadiusFraction = (angularRadiusRad / fovRad).toFloat()
-            // val earthRadiusFraction = 0.394
 
             val u = (0.5 + x * earthRadiusFraction).toFloat()
             val v = (0.5 - y * earthRadiusFraction).toFloat()
@@ -128,15 +135,13 @@ class EarthViewModel
         }
 
         fun updateSelected(newIndex: Int) {
-            if (uiState.value.locationPoints.isEmpty() && isLocationProjectionEnabled) {
-                enableLocationProjection()
-            }
             viewModelScope.launch {
                 _uiState.update {
                     it.copy(
                         selectedIndex = newIndex,
                     )
                 }
+                updateUserLocation()
             }
         }
 

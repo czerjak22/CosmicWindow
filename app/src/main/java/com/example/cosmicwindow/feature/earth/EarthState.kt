@@ -10,5 +10,6 @@ data class EarthState(
     val isLoading: Boolean = true,
     val selectedDate: LocalDate = LocalDate.now(),
     val selectedIndex: Int? = null,
-    val locationPoints: List<ProjectedPoint> = emptyList(),
+    val isLocationEnabled: Boolean = false,
+    val selectedIndexLocation: ProjectedPoint? = null,
 )
