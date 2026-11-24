@@ -247,7 +247,7 @@ fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
             Text(
                 text =
                     AnnotatedString.fromHtml(
-                        stringResource(R.string.image_credit) + ": " + apod.credit,
+                        stringResource(R.string.image_credit, apod.credit),
                     ),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
@@ -343,7 +343,7 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
                     )
 
                     Text(
-                        "Featured APOD Video",
+                        stringResource(R.string.today_videocard_title),
                         style = MaterialTheme.typography.headlineSmall,
                         maxLines = 1,
                     )
@@ -354,7 +354,7 @@ fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
                     modifier = Modifier.padding(Spacing.s10),
                 ) {
                     Text(
-                        text = "External Media",
+                        text = stringResource(R.string.today_videocard_external_label),
                         style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                         fontWeight = FontWeight.W500,

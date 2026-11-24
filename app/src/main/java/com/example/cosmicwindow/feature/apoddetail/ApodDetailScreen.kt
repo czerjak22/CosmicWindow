@@ -214,7 +214,7 @@ fun VideoCard(modifier: Modifier = Modifier, url: String) {
             )
 
             Text(
-                "Video Version Available",
+                stringResource(R.string.details_video_card_title),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier =

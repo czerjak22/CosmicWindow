@@ -75,7 +75,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
     val locationPermission = rememberLocationPermissionState()
 
     LaunchedEffect(locationPermission.state) {
-        if (locationPermission.state == LocationPermissionState.GRANTED) {
+        if (locationPermission.state == LocationPermissionState.GRANTED && uiState.isLocationEnabled) {
             viewModel.toggleLocation(true)
         }
     }
@@ -182,6 +182,7 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
 
                                 else -> {
                                     locationPermission.requestPermission()
+                                    viewModel.toggleLocation(true)
                                 }
                             }
                         },
@@ -298,7 +299,7 @@ fun ControlCard(
                             contentDescription = null,
                         )
                         Text(
-                            "Frame ${index + 1} of $totalSize",
+                            stringResource(R.string.earth_slider_chip, index + 1, totalSize),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.W200,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -403,17 +404,17 @@ fun FrameSlider(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                "Frame 1",
+                stringResource(R.string.earth_slider_frame_1),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSecondary,
             )
             Text(
-                "Sequence: 24h",
+                stringResource(R.string.earth_slider_sequence),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.6f),
             )
             Text(
-                "Frame $frameCount",
+                stringResource(R.string.earth_slider_last_frame, frameCount),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSecondary,
             )
@@ -522,33 +523,34 @@ fun EarthImageDisplay(
                     }
                 },
             )
-        }
-        if (projectedUserPoint != null && projectedUserPoint.isVisible) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val scaledU = 0.5f + (projectedUserPoint.u - 0.5f) * scale
-                val scaledV = 0.5f + (projectedUserPoint.v - 0.5f) * scale
 
-                val pinCenter =
-                    Offset(
-                        x = size.width * scaledU,
-                        y = size.height * scaledV,
+            if (projectedUserPoint != null && projectedUserPoint.isVisible) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val scaledU = 0.5f + (projectedUserPoint.u - 0.5f) * scale
+                    val scaledV = 0.5f + (projectedUserPoint.v - 0.5f) * scale
+
+                    val pinCenter =
+                        Offset(
+                            x = size.width * scaledU,
+                            y = size.height * scaledV,
+                        )
+                    drawCircle(
+                        color = dotColor.copy(alpha = 0.35f),
+                        radius = Spacing.s10.toPx(),
+                        center = pinCenter,
                     )
-                drawCircle(
-                    color = dotColor.copy(alpha = 0.35f),
-                    radius = Spacing.s10.toPx(),
-                    center = pinCenter,
-                )
 
-                drawCircle(
-                    color = Color.White,
-                    radius = Spacing.s6.toPx(),
-                    center = pinCenter,
-                )
-                drawCircle(
-                    color = dotColor,
-                    radius = Spacing.s4.toPx(),
-                    center = pinCenter,
-                )
+                    drawCircle(
+                        color = Color.White,
+                        radius = Spacing.s6.toPx(),
+                        center = pinCenter,
+                    )
+                    drawCircle(
+                        color = dotColor,
+                        radius = Spacing.s4.toPx(),
+                        center = pinCenter,
+                    )
+                }
             }
         }
 
@@ -559,7 +561,7 @@ fun EarthImageDisplay(
                         true -> R.drawable.location_on_icon
                         false -> R.drawable.location_off_icon
                     },
-                description = "turn on location",
+                description = stringResource(R.string.earh_turn_on_location_button_description),
                 onClick = onLocationClick,
             )
         }

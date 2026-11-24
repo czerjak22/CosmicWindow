@@ -5,7 +5,7 @@
     <string name="apod_secondary_title">ASTRONOMY PICTURE OF THE DAY</string>
     <string name="no_apod_to_show">No apods to show!</string>
     <string name="apod_archive_text">Public NASA Data • APOD Archive</string>
-    <string name="image_credit">Image Credit</string>
+    <string name="image_credit">Image Credit: %1$s</string>
     <string name="share_description">Share</string>
     <string name="bookmark_description">Bookmark</string>
     <string name="toady_in_space_header">Today in Space %1$s</string>
@@ -54,5 +54,17 @@
     <string name="apod_prevoius_stripe_main_label">Previous 7 days</string>
     <string name="apod_previous_stripe_description">Past APOD Entries</string>
     <string name="apod_detail_page_button_description">Go to description</string>
+    <string name="location_permission_window_title">Location permission required</string>
+    <string name="location_permission_window_description">" Location permission is required in order to display location on the earth map. You can enable it in the application settings.  "</string>
+    <string name="open_settings_button_label">Open Settings</string>
+    <string name="cancel_button_label">Cancel</string>
+    <string name="details_video_card_title">Video Version Available</string>
+    <string name="earh_turn_on_location_button_description">turn on location</string>
+    <string name="earth_slider_frame_1">Frame 1</string>
+    <string name="earth_slider_sequence">Sequence: 24h</string>
+    <string name="earth_slider_last_frame">Frame %1$d</string>
+    <string name="earth_slider_chip">\"Frame %1$d of %2$d\"</string>
+    <string name="today_videocard_title">Featured APOD Video</string>
+    <string name="today_videocard_external_label">External Media</string>
 
 </resources>

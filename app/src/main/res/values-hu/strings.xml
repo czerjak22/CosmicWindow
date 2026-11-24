@@ -4,7 +4,7 @@
     <string name="apod_secondary_title">A NAP CSILLAGÁSZATI KÉPE</string>
     <string name="no_apod_to_show">Nincs megjeleníthető APOD!</string>
     <string name="apod_archive_text">Nyilvános NASA-adatok • APOD-archívum</string>
-    <string name="image_credit">Kép forrása</string>
+    <string name="image_credit">Kép forrása: %1$s</string>
     <string name="share_description">Megosztás</string>
     <string name="bookmark_description">Könyvjelző</string>
     <string name="toady_in_space_header">Ma az űrben  %1$s</string>
@@ -50,4 +50,16 @@
     <string name="apod_prevoius_stripe_main_label">Elmúlt 7 nap</string>
     <string name="apod_previous_stripe_description">Korábbi APOD-bejegyzések</string>
     <string name="apod_detail_page_button_description">Ugrás a leíráshoz</string>
+    <string name="location_permission_window_title">Helyhozzáférési engedély szükséges</string>
+    <string name="location_permission_window_description">A Föld térképén való helymegjelenítéshez helyhozzáférési engedély szükséges. Ezt az alkalmazás beállításaiban engedélyezheti.</string>
+    <string name="open_settings_button_label">Beállítások megnyitása</string>
+    <string name="cancel_button_label">Mégse</string>
+    <string name="details_video_card_title">Videóváltozat elérhető</string>
+    <string name="earh_turn_on_location_button_description">Helymeghatározás bekapcsolása</string>
+    <string name="earth_slider_frame_1">1. képkocka</string>
+    <string name="earth_slider_sequence">Sorozat: 24 óra</string>
+    <string name="earth_slider_last_frame">Képkocka: %1$d</string>
+    <string name="earth_slider_chip">" %1$d. képkocka a %2$d-ból/ből"</string>
+    <string name="today_videocard_title">Mai kiemelt APOD-videó</string>
+    <string name="today_videocard_external_label">Külső média</string>
 </resources>

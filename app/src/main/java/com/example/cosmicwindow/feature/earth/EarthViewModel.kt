@@ -8,11 +8,6 @@ import com.example.cosmicwindow.data.repository.EarthRepository
 import com.example.cosmicwindow.model.ProjectedPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
-import kotlin.math.asin
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +15,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.math.asin
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class EarthViewModel
@@ -76,7 +76,7 @@ class EarthViewModel
             val dLambda = lambda - lambda0
 
             val cosC = sin(phi0) * sin(phi) + cos(phi0) * cos(phi) * cos(dLambda)
-            if (cosC <= 0.001) {
+            if (cosC <= 0.006) {
                 return ProjectedPoint(isVisible = false, u = 0f, v = 0f)
             }
 
@@ -93,7 +93,7 @@ class EarthViewModel
             y *= perspectiveScale
 
             val angularRadiusRad = asin(earthRadiusKm / distKm)
-            val fovRad = Math.toRadians(0.7)
+            val fovRad = Math.toRadians(0.62)
             val earthRadiusFraction = (angularRadiusRad / fovRad).toFloat()
 
             val u = (0.5 + x * earthRadiusFraction).toFloat()
@@ -120,6 +120,7 @@ class EarthViewModel
                                 selectedIndex = selected,
                             )
                         }
+                        updateUserLocation()
                         Log.w(
                             "ViewModel",
                             "Loaded images to state successfully imageSize:${newImages.size} , " +

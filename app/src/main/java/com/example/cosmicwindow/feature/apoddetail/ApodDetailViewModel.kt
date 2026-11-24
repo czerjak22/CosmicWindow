@@ -37,7 +37,7 @@ class ApodDetailViewModel
         fun loadApod() {
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoading = true, error = null) }
-                Log.w("debug", "$date ez amit megkaptam!")
+                Log.w("debug", " ApodDetails open with apod date:$date !")
 
                 savedRepository.findItemByCreatedDate(date).fold(
                     onSuccess = { item ->
