@@ -58,7 +58,11 @@ fun ExploreDetailScreen(viewModel: ExploreDetailViewModel = hiltViewModel(), onC
         when {
             uiState.error != null -> {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    ErrorBox(text = uiState.error!!, onClick = viewModel::onErrorRetry)
+                    ErrorBox(
+                        modifier = Modifier.padding(horizontal = Spacing.s16),
+                        text = uiState.error!!,
+                        onClick = viewModel::onErrorRetry,
+                    )
                 }
                 return@Scaffold
             }

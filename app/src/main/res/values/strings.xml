@@ -63,7 +63,7 @@
     <string name="earth_slider_frame_1">Frame 1</string>
     <string name="earth_slider_sequence">Sequence: 24h</string>
     <string name="earth_slider_last_frame">Frame %1$d</string>
-    <string name="earth_slider_chip">\"Frame %1$d of %2$d\"</string>
+    <string name="earth_slider_chip">Frame %1$d of %2$d</string>
     <string name="today_videocard_title">Featured APOD Video</string>
     <string name="today_videocard_external_label">External Media</string>
     <string name="navigation_today_label">Today</string>
