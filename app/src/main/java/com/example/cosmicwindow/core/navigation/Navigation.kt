@@ -44,7 +44,7 @@ fun Navigation(modifier: Modifier = Modifier) {
                     .padding(innerPadding)
                     .consumeWindowInsets(innerPadding),
             navController = navController,
-            startDestination = Routes.earth,
+            startDestination = Routes.today,
         ) {
             composable(Routes.today) {
                 TodayScreen(
