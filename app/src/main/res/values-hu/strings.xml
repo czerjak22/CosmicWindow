@@ -62,4 +62,8 @@
     <string name="earth_slider_chip">" %1$d. képkocka a %2$d-ból/ből"</string>
     <string name="today_videocard_title">Mai kiemelt APOD-videó</string>
     <string name="today_videocard_external_label">Külső média</string>
+    <string name="navigation_today_label">Ma</string>
+    <string name="navigation_earth_label">Föld</string>
+    <string name="navigation_explore_label">Felfedezés</string>
+    <string name="navigation_saved_label">Mentett</string>
 </resources>

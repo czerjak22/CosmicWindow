@@ -62,5 +62,9 @@
     <string name="earth_slider_chip">"Cadru %1$d din %2$d"</string>
     <string name="today_videocard_title">Videoclipul APOD al zilei</string>
     <string name="today_videocard_external_label">Conținut media extern</string>
+    <string name="navigation_today_label">Astăzi</string>
+    <string name="navigation_earth_label">Pământul</string>
+    <string name="navigation_explore_label">Explorează</string>
+    <string name="navigation_saved_label">Salvate</string>
 
 </resources>

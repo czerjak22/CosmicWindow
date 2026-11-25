@@ -66,5 +66,9 @@
     <string name="earth_slider_chip">\"Frame %1$d of %2$d\"</string>
     <string name="today_videocard_title">Featured APOD Video</string>
     <string name="today_videocard_external_label">External Media</string>
+    <string name="navigation_today_label">Today</string>
+    <string name="navigation_earth_label">Earth</string>
+    <string name="navigation_explore_label">Explore</string>
+    <string name="navigation_saved_label">Saved</string>
 
 </resources>
