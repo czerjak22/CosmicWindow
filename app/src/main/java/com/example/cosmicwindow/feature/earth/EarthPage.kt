@@ -1,5 +1,7 @@
 package com.example.cosmicwindow.feature.earth
 
+import android.util.Log
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,12 +38,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -56,15 +61,25 @@ import com.example.cosmicwindow.core.designsystem.components.ErrorBox
 import com.example.cosmicwindow.core.designsystem.components.LottieLoader
 import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
 import com.example.cosmicwindow.core.designsystem.theme.Spacing
+import com.example.cosmicwindow.core.permissions.LocationPermissionSettingsDialog
+import com.example.cosmicwindow.core.permissions.LocationPermissionState
+import com.example.cosmicwindow.core.permissions.rememberLocationPermissionState
 import com.example.cosmicwindow.model.Earth
+import com.example.cosmicwindow.model.ProjectedPoint
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val locationPermission = rememberLocationPermissionState()
+
+    LaunchedEffect(locationPermission.state) {
+        if (locationPermission.state == LocationPermissionState.GRANTED && uiState.isLocationEnabled) {
+            viewModel.toggleLocation(true)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -72,87 +87,120 @@ fun EarthPage(viewModel: EarthViewModel = hiltViewModel()) {
                 leftIcon = R.drawable.earth_header_icon,
                 onClick = {},
                 leftIconSize = Spacing.s20,
-                leftIconComposable = {
+                rightIconComposable = {
                     Image(
                         painterResource(R.drawable.profile_image),
                         contentDescription = null,
                     )
                 },
-                mainTitle = "Earth in Motion",
-                secondaryTitle = "DSCOVR EPIC",
+                mainTitle = stringResource(R.string.earth_page_title),
+                secondaryTitle = stringResource(R.string.earth_page_subtitle),
             )
         },
     ) { innerPadding ->
 
-        if (uiState.isLoading) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                LottieLoader(Modifier.size(Spacing.s48))
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LottieLoader(Modifier.size(Spacing.s48))
+                }
+                return@Scaffold
             }
-            return@Scaffold
-        }
 
-        if (uiState.error != null) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(innerPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                ErrorBox(text = uiState.error!!, onClick = { viewModel.loadEarthImages() })
+            uiState.error != null -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ErrorBox(
+                        modifier =
+                            Modifier
+                                .padding(innerPadding)
+                                .padding(horizontal = Spacing.s16),
+                        text = uiState.error!!,
+                        onClick = { viewModel.loadEarthImages() },
+                    )
+                }
+                return@Scaffold
             }
-            return@Scaffold
-        }
-        if (uiState.images.isEmpty()) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(innerPadding),
-                contentAlignment = Alignment.Center,
-            ) {
-                ErrorBox(text = "No Images found!")
-            }
-            return@Scaffold
-        }
 
-        Column(
-            modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .padding(horizontal = Spacing.s16)
-                    .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Spacing.s16),
-        ) {
-            EpicChip(Modifier.align(Alignment.End))
-            PreloadImages(
-                images = uiState.images,
-            )
-            EarthImageDisplay(
-                modifier = Modifier.padding(horizontal = Spacing.s4),
-                imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
-                scale = 1.2f,
-            )
-            ControlCard(
-                modifier = Modifier.padding(top = Spacing.s8),
-                captureTime = uiState.images[uiState.selectedIndex!!].date,
-                index = uiState.selectedIndex ?: 0,
-                totalSize = uiState.images.size,
-                indexUpdate = viewModel::updateSelected,
-                startPlayback = viewModel::startPlayback,
-                stopPlayback = viewModel::stopPlayback,
-            )
-            InfoCard(
-                info =
-                    uiState.images[uiState.selectedIndex!!].caption,
-            )
+            uiState.images.isEmpty() -> {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(innerPadding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ErrorBox(text = stringResource(R.string.no_images_found))
+                }
+                return@Scaffold
+            }
+
+            else ->
+
+                Column(
+                    modifier =
+                        Modifier
+                            .padding(innerPadding)
+                            .padding(horizontal = Spacing.s16)
+                            .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s16),
+                ) {
+                    if (locationPermission.showSettingsDialog) {
+                        LocationPermissionSettingsDialog(
+                            onOpenSettings = locationPermission.openSettings,
+                            onDismiss = locationPermission.dismissSettingsDialog,
+                        )
+                    }
+
+                    EpicChip(Modifier.align(Alignment.End))
+                    PreloadImages(
+                        images = uiState.images,
+                    )
+                    EarthImageDisplay(
+                        modifier = Modifier.padding(horizontal = Spacing.s4),
+                        imageUrl = uiState.images[uiState.selectedIndex!!].imageUrl,
+                        scale = 1.2f,
+                        projectedUserPoint = uiState.selectedIndexLocation,
+                        isLocationEnabled = uiState.isLocationEnabled,
+                        onLocationClick = {
+                            when (locationPermission.state) {
+                                LocationPermissionState.GRANTED -> {
+                                    Log.w("UI", " Location access already granted")
+                                    viewModel.toggleLocation()
+                                }
+
+                                else -> {
+                                    locationPermission.requestPermission()
+                                    viewModel.toggleLocation(true)
+                                }
+                            }
+                        },
+                    )
+                    ControlCard(
+                        modifier = Modifier.padding(top = Spacing.s8),
+                        captureTime = uiState.images[uiState.selectedIndex!!].date,
+                        index = uiState.selectedIndex ?: 0,
+                        totalSize = uiState.images.size,
+                        indexUpdate = viewModel::updateSelected,
+                        startPlayback = viewModel::startPlayback,
+                        stopPlayback = viewModel::stopPlayback,
+                    )
+                    InfoCard(
+                        info = uiState.images[uiState.selectedIndex!!].caption,
+                    )
+                }
         }
     }
 }
@@ -170,14 +218,12 @@ fun InfoCard(modifier: Modifier = Modifier, info: String) {
             ),
     ) {
         Row(
-            modifier =
-                Modifier
-                    .padding(Spacing.s16),
+            modifier = Modifier.padding(Spacing.s16),
             horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
         ) {
             Image(
                 painter = painterResource(R.drawable.info_card),
-                contentDescription = "Info card",
+                contentDescription = null,
             )
             Text(
                 info,
@@ -215,11 +261,10 @@ fun ControlCard(
     }
     Box(
         modifier =
-            modifier
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(RadiusSize.r12),
-                ),
+            modifier.background(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(RadiusSize.r12),
+            ),
     ) {
         Column(
             Modifier.padding(Spacing.s16),
@@ -228,7 +273,7 @@ fun ControlCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column {
                     Text(
-                        "CAPTURE TIME",
+                        stringResource(R.string.earth_capture_time_label),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.W500,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -255,10 +300,11 @@ fun ControlCard(
                             contentDescription = null,
                         )
                         Text(
-                            "Frame ${index + 1} of $totalSize",
+                            stringResource(R.string.earth_slider_chip, index + 1, totalSize),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.W200,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            maxLines = 1,
                         )
                     }
                 }
@@ -360,17 +406,17 @@ fun FrameSlider(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                "Frame 1",
+                stringResource(R.string.earth_slider_frame_1),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSecondary,
             )
             Text(
-                "Sequence: 24h",
+                stringResource(R.string.earth_slider_sequence),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.6f),
             )
             Text(
-                "Frame $frameCount",
+                stringResource(R.string.earth_slider_last_frame, frameCount),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSecondary,
             )
@@ -386,10 +432,7 @@ fun PreloadImages(images: List<Earth>) {
         val loader = context.imageLoader
         images.forEach { url ->
             loader.enqueue(
-                ImageRequest
-                    .Builder(context)
-                    .data(url.imageUrl)
-                    .build(),
+                ImageRequest.Builder(context).data(url.imageUrl).build(),
             )
         }
     }
@@ -398,11 +441,14 @@ fun PreloadImages(images: List<Earth>) {
 @Composable
 fun EarthImageDisplay(
     modifier: Modifier = Modifier,
-    imageUrl: String = "https://epic.gsfc.nasa.gov/archive/natural/2026/10/29/png/epic_1b_20261029000830.png",
+    imageUrl: String,
+    projectedUserPoint: ProjectedPoint?,
     scale: Float = 1.15f,
+    onLocationClick: () -> Unit,
+    isLocationEnabled: Boolean,
 ) {
     val glowColor = MaterialTheme.colorScheme.onPrimaryContainer
-
+    val dotColor = MaterialTheme.colorScheme.primary
     Box(
         modifier =
             modifier
@@ -433,15 +479,16 @@ fun EarthImageDisplay(
                             radius = haloRadius,
                             center = center,
                         )
-                    }.clip(CircleShape),
+                    },
             contentAlignment = Alignment.Center,
         ) {
             SubcomposeAsyncImage(
                 model = imageUrl,
-                contentDescription = "Earth Image",
+                contentDescription = null,
                 modifier =
                     Modifier
                         .fillMaxSize()
+                        .clip(CircleShape)
                         .graphicsLayer {
                             scaleX = scale
                             scaleY = scale
@@ -474,10 +521,51 @@ fun EarthImageDisplay(
                     ) {
                         Image(
                             painter = painterResource(R.drawable.no_internet),
-                            contentDescription = "Image unavailable",
+                            contentDescription = stringResource(R.string.unavailable_image_description),
                         )
                     }
                 },
+            )
+
+            if (projectedUserPoint != null && projectedUserPoint.isVisible) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val scaledU = 0.5f + (projectedUserPoint.u - 0.5f) * scale
+                    val scaledV = 0.5f + (projectedUserPoint.v - 0.5f) * scale
+
+                    val pinCenter =
+                        Offset(
+                            x = size.width * scaledU,
+                            y = size.height * scaledV,
+                        )
+                    drawCircle(
+                        color = dotColor.copy(alpha = 0.35f),
+                        radius = Spacing.s10.toPx(),
+                        center = pinCenter,
+                    )
+
+                    drawCircle(
+                        color = Color.White,
+                        radius = Spacing.s6.toPx(),
+                        center = pinCenter,
+                    )
+                    drawCircle(
+                        color = dotColor,
+                        radius = Spacing.s4.toPx(),
+                        center = pinCenter,
+                    )
+                }
+            }
+        }
+
+        Box(Modifier.matchParentSize(), contentAlignment = Alignment.BottomEnd) {
+            CircleIconButton(
+                icon =
+                    when (isLocationEnabled) {
+                        true -> R.drawable.location_on_icon
+                        false -> R.drawable.location_off_icon
+                    },
+                description = stringResource(R.string.earh_turn_on_location_button_description),
+                onClick = onLocationClick,
             )
         }
     }
@@ -487,11 +575,10 @@ fun EarthImageDisplay(
 fun EpicChip(modifier: Modifier = Modifier) {
     Box(
         modifier =
-            modifier
-                .background(
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
-                    shape = RoundedCornerShape(RadiusSize.r9999),
-                ),
+            modifier.background(
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(RadiusSize.r9999),
+            ),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = Spacing.s12, vertical = Spacing.s4),
@@ -503,7 +590,7 @@ fun EpicChip(modifier: Modifier = Modifier) {
                 contentDescription = null,
             )
             Text(
-                "EPIC Feed",
+                stringResource(R.string.earth_epic_feed_text),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSecondary,
             )

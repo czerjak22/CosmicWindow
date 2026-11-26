@@ -15,6 +15,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -62,7 +63,7 @@ fun AppNavigationBar(modifier: Modifier = Modifier, navController: NavController
                         contentDescription = null,
                     )
                 },
-                label = { Text(dest.label) },
+                label = { Text(stringResource(dest.label)) },
                 alwaysShowLabel = true,
                 colors =
                     NavigationBarItemDefaults.colors(

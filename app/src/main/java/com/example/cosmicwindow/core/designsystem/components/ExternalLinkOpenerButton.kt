@@ -27,6 +27,7 @@ fun ExternalLinkOpenerButton(
     buttonText: String = "Open video in browser",
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     @DrawableRes icon: Int = R.drawable.open_elsewhere_icon,
+    maxLines: Int = Int.MAX_VALUE,
 ) {
     Button(
         onClick = { videoHandler.openUri(url) },
@@ -47,6 +48,7 @@ fun ExternalLinkOpenerButton(
             text = buttonText,
             style = textStyle,
             modifier = Modifier.padding(end = Spacing.s4),
+            maxLines = maxLines,
         )
         Icon(
             painter = painterResource(icon),

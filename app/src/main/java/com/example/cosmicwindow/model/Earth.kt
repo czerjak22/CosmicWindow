@@ -6,4 +6,6 @@ data class Earth(
     val imageUrl: String,
     val date: LocalDateTime,
     val caption: String,
+    val telescopePosition: Position,
+    val centroidCoordinates: CentroidPosition,
 )

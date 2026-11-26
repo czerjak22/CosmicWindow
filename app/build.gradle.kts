@@ -39,6 +39,9 @@ android {
     buildFeatures {
         compose = true
     }
+    androidResources {
+        generateLocaleConfig = true
+    }
 }
 
 dependencies {
@@ -54,6 +57,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.media3.ui)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     // project
 
@@ -92,6 +96,7 @@ dependencies {
     implementation(libs.lottie.compose)
     // palette
     implementation(libs.palette)
+    implementation(libs.play.services.coroutines)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

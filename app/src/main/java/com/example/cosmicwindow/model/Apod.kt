@@ -11,9 +11,11 @@ data class Apod(
     val copyright: String? = null,
     val alt: String,
     val url: String,
-    val hdurl: String? = null,
+    val hdUrl: String? = null,
     val mediaType: MediaType,
     val videoUrl: String?,
+    val postId: Long,
+    val isSaved: Boolean = false,
 ) {
     override fun toString(): String = "Apod:$date, $title, $mediaType"
 }
