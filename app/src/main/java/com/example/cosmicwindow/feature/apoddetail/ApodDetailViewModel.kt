@@ -92,7 +92,12 @@ class ApodDetailViewModel
                             }
                         },
                         onFailure = { err ->
-                            _uiState.update { it.copy(error = err.message ?: "error") }
+                            _uiState.update {
+                                it.copy(
+                                    error = err.message ?: "error",
+                                    apod = it.apod!!.copy(isSaved = !willBeSaved),
+                                )
+                            }
                         },
                     )
                 }
