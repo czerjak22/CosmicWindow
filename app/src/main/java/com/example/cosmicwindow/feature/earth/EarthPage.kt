@@ -479,7 +479,7 @@ fun EarthImageDisplay(
                             radius = haloRadius,
                             center = center,
                         )
-                    }.clip(CircleShape),
+                    },
             contentAlignment = Alignment.Center,
         ) {
             SubcomposeAsyncImage(
@@ -488,6 +488,7 @@ fun EarthImageDisplay(
                 modifier =
                     Modifier
                         .fillMaxSize()
+                        .clip(CircleShape)
                         .graphicsLayer {
                             scaleX = scale
                             scaleY = scale

@@ -269,6 +269,7 @@ fun DetailsCard(modifier: Modifier = Modifier, apod: Apod) {
                 videoHandler = LocalUriHandler.current,
                 url = apod.permalink,
                 buttonText = stringResource(R.string.view_original_apod_button_label),
+                maxLines = 1,
             )
         }
     }

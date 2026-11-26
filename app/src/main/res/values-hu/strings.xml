@@ -39,7 +39,7 @@
     <string name="source_label">Forrás</string>
     <string name="credit_label">Készítő</string>
     <string name="copyright_label">Szerzői jog</string>
-    <string name="view_original_apod_button_label">Eredeti APOD-bejegyzés megtekintése</string>
+    <string name="view_original_apod_button_label">Eredeti bejegyzés megtekintése</string>
     <string name="fullscreen_image_description">Teljes képernyős kép</string>
     <string name="close_label">Bezárás</string>
     <string name="apod_image_description">APOD-kép</string>
