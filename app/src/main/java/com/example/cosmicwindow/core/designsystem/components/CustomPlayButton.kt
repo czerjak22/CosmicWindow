@@ -1,0 +1,37 @@
+package com.example.cosmicwindow.core.designsystem.components
+
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import com.example.cosmicwindow.R
+import com.example.cosmicwindow.core.designsystem.theme.Spacing
+
+@Composable
+fun CustomPlayButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+    @DrawableRes icon: Int = R.drawable.play_icon,
+) {
+    IconButton(
+        modifier =
+            modifier
+                .size(Spacing.s56)
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = CircleShape,
+                ),
+        onClick = onClick,
+    ) {
+        Image(
+            painter = painterResource(icon),
+            contentDescription = "Play",
+        )
+    }
+}

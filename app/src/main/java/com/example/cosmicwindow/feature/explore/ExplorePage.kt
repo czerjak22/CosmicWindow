@@ -1,0 +1,579 @@
+package com.example.cosmicwindow.feature.explore
+
+import android.app.Activity.RESULT_OK
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.speech.RecognizerIntent
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldDecorator
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.palette.graphics.Palette
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.toBitmap
+import com.example.cosmicwindow.R
+import com.example.cosmicwindow.core.designsystem.components.AppHeader
+import com.example.cosmicwindow.core.designsystem.components.CollapsingColumn
+import com.example.cosmicwindow.core.designsystem.components.ErrorBox
+import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
+import com.example.cosmicwindow.core.designsystem.theme.Spacing
+import com.example.cosmicwindow.model.Filter
+import com.example.cosmicwindow.model.SearchResultItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExplorePage(viewModel: ExploreViewModel = hiltViewModel(), onItemClick: (String) -> Unit) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection),
+    ) { innerPadding ->
+
+        Column(
+            modifier = Modifier.padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            CollapsingColumn(scrollBehavior = scrollBehaviour) {
+                AppHeader(
+                    leftIcon = R.drawable.earth_header_icon,
+                    onClick = {},
+                    leftIconSize = Spacing.s20,
+                    rightIconComposable = {
+                        Image(
+                            painterResource(R.drawable.profile_image),
+                            contentDescription = null,
+                        )
+                    },
+                    mainTitle = stringResource(R.string.explore_page_title),
+                    secondaryTitle = stringResource(R.string.explore_page_subtitle),
+                )
+                SearchBar(
+                    modifier = Modifier.padding(horizontal = Spacing.s16),
+                    onQueryChanged = { viewModel.onQueryChanged(it) },
+                    onSearch = { viewModel.newSearch() },
+                )
+                FilterBar(
+                    onFilterClick = viewModel::toggleFilter,
+                    filters = uiState.queryState.filters,
+                )
+            }
+
+            if (uiState.error != null) {
+                Box(
+                    modifier =
+                        Modifier
+                            .padding(innerPadding)
+                            .padding(Spacing.s16)
+                            .fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    ErrorBox(text = uiState.error!!, onClick = viewModel::onErrorRetry)
+                }
+                return@Scaffold
+            }
+
+            ImageGrid(
+                Modifier
+                    .padding(horizontal = Spacing.s16)
+                    .weight(1f)
+                    .fillMaxWidth(),
+                uiState.searchItems,
+                isLoadingMore = uiState.isLoading,
+                onLoadMore = viewModel::loadMore,
+                onItemClick = onItemClick,
+                prefetchVariable = viewModel.prefetchVariable,
+            )
+        }
+    }
+}
+
+@Composable
+fun CardElement(
+    modifier: Modifier = Modifier,
+    searchItem: SearchResultItem,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(RadiusSize.r16)
+    var isLoaded by remember(searchItem.nasaId) { mutableStateOf(false) }
+    val defaultColor = MaterialTheme.colorScheme.tertiary
+    var accentColor by remember(searchItem.nasaId) { mutableStateOf<Color?>(defaultColor) }
+    val scope = rememberCoroutineScope()
+
+    val alpha by animateFloatAsState(
+        targetValue = if (isLoaded) 1f else 0f,
+        animationSpec = tween(300),
+    )
+
+    Surface(
+        modifier =
+            modifier
+                .graphicsLayer { this.alpha = alpha }
+                .clip(shape)
+                .clickable(onClick = onClick),
+        shape = shape,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+    ) {
+        Column {
+            Box {
+                AsyncImage(
+                    model =
+                        ImageRequest
+                            .Builder(LocalContext.current)
+                            .data(searchItem.thumbnailUrl)
+                            .allowHardware(false)
+                            .build(),
+                    contentDescription = searchItem.title,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentScale = ContentScale.FillWidth,
+                    onSuccess = { state ->
+                        isLoaded = true
+                        val bitmap = state.result.image.toBitmap()
+                        scope.launch {
+                            accentColor =
+                                withContext(Dispatchers.Default) {
+                                    val palette = Palette.from(bitmap).clearFilters().generate()
+                                    val swatch =
+                                        palette.lightVibrantSwatch ?: palette.vibrantSwatch ?: palette.lightMutedSwatch
+                                            ?: palette.mutedSwatch ?: palette.dominantSwatch
+                                    swatch?.let { Color(it.rgb) }
+                                }
+                        }
+                    },
+                    onError = { err ->
+                        Log.w("UI", "ExplorerCardImage failed to load because:$err")
+                        isLoaded = true
+                    },
+                )
+
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                ),
+                            ),
+                        ),
+                )
+
+                Surface(
+                    modifier = Modifier.padding(Spacing.s8),
+                    shape = RoundedCornerShape(RadiusSize.r9999),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
+                ) {
+                    Text(
+                        text = searchItem.nasaId,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = accentColor ?: MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = Spacing.s8, vertical = Spacing.s4),
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip,
+                    )
+                }
+            }
+
+            Column(
+                Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s12),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s8),
+            ) {
+                Text(
+                    text = searchItem.title,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = searchItem.dateCreated.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    if (searchItem.center != null) {
+                        Text(
+                            text = searchItem.center,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = accentColor ?: MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LoadingRow(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement =
+            Arrangement.spacedBy(
+                Spacing.s8,
+                alignment = Alignment.CenterHorizontally,
+            ),
+    ) {
+        CircularProgressIndicator(Modifier.size(Spacing.s16))
+        Text(
+            stringResource(R.string.explore_loading_more_label),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+fun ImageGrid(
+    modifier: Modifier = Modifier,
+    searchResults: List<SearchResultItem>,
+    isLoadingMore: Boolean,
+    onLoadMore: () -> Unit,
+    onItemClick: (String) -> Unit,
+    prefetchVariable: Int,
+) {
+    val gridState = rememberLazyStaggeredGridState()
+    val screenWidthDp = LocalWindowInfo.current.containerDpSize.width
+
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val info = gridState.layoutInfo
+            val lastVisible = info.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            lastVisible >= info.totalItemsCount - prefetchVariable
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore, searchResults.size) {
+        if (shouldLoadMore) onLoadMore()
+    }
+
+    LazyVerticalStaggeredGrid(
+        state = gridState,
+        modifier = modifier,
+        columns = if (screenWidthDp < 600.dp) StaggeredGridCells.Fixed(2) else StaggeredGridCells.Adaptive(200.dp),
+        verticalItemSpacing = Spacing.s8,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+    ) {
+        item(span = StaggeredGridItemSpan.FullLine) {
+            Spacer(Modifier.height(Spacing.s8))
+        }
+
+        if (!isLoadingMore && searchResults.isEmpty()) {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(Spacing.s16),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        stringResource(R.string.nothing_found),
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+            return@LazyVerticalStaggeredGrid
+        }
+        items(
+            items = searchResults,
+            key = { it.nasaId },
+        ) { searchItem ->
+            CardElement(onClick = { onItemClick(searchItem.nasaId) }, searchItem = searchItem)
+        }
+
+        if (isLoadingMore) {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                LoadingRow(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = Spacing.s16),
+                )
+            }
+        }
+        item(span = StaggeredGridItemSpan.FullLine) {
+            Spacer(Modifier.height(Spacing.s16))
+        }
+    }
+}
+
+@Composable
+fun FilterButton(
+    modifier: Modifier = Modifier,
+    filter: Filter,
+    onClick: () -> Unit,
+) {
+    Button(
+        modifier = modifier,
+        onClick = onClick,
+        shape = RoundedCornerShape(RadiusSize.r9999),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor =
+                    if (filter.isActive) {
+                        MaterialTheme.colorScheme.primary.copy(
+                            alpha = 0.3f,
+                        )
+                    } else {
+                        MaterialTheme.colorScheme.secondary
+                    },
+                contentColor = if (filter.isActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondary,
+            ),
+        contentPadding = PaddingValues(Spacing.s16),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s6),
+        ) {
+            Icon(
+                painter = painterResource(filter.icon),
+                contentDescription = null,
+                modifier = Modifier.size(Spacing.s14),
+            )
+            Text(
+                filter.text,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+@Composable
+fun FilterBar(
+    modifier: Modifier = Modifier,
+    filters: List<Filter>,
+    onFilterClick: (Int) -> Unit,
+) {
+    LazyRow(
+        modifier =
+            modifier
+                .verticalScroll(
+                    rememberScrollState(),
+                ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+        contentPadding = PaddingValues(vertical = Spacing.s4),
+    ) {
+        item {
+            Spacer(Modifier.width(Spacing.s8))
+        }
+        items(filters.size) { index ->
+            FilterButton(
+                filter = filters[index],
+                onClick = { onFilterClick(index) },
+            )
+        }
+        item {
+            Spacer(Modifier.width(Spacing.s8))
+        }
+    }
+}
+
+@Composable
+fun SearchBar(
+    modifier: Modifier = Modifier,
+    onQueryChanged: (String) -> Unit,
+    onSearch: () -> Unit,
+) {
+    val textFieldState = rememberTextFieldState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val interactionSource = remember { MutableInteractionSource() }
+    val context = LocalContext.current
+
+    LaunchedEffect(textFieldState.text.toString()) {
+        onQueryChanged(textFieldState.text.toString())
+    }
+
+    val speechLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val spoken =
+                    result.data
+                        ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                        ?.firstOrNull()
+                if (!spoken.isNullOrBlank()) {
+                    textFieldState.setTextAndPlaceCursorAtEnd(spoken)
+                    onQueryChanged(spoken)
+                    onSearch()
+                }
+            }
+        }
+
+    val voiceInputPromt = stringResource(R.string.voice_input_promt)
+    val voiceNotAvailable = stringResource(R.string.voice_input_not_available)
+    val startVoiceInput = {
+        val intent =
+            Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+                putExtra(RecognizerIntent.EXTRA_PROMPT, voiceInputPromt)
+            }
+        try {
+            speechLauncher.launch(intent)
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(context, voiceNotAvailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(RadiusSize.r9999),
+        color = MaterialTheme.colorScheme.secondary,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = Spacing.s16),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+        ) {
+            Image(
+                painter = painterResource(R.drawable.search_icon),
+                contentDescription = null,
+            )
+
+            BasicTextField(
+                state = textFieldState,
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .border(
+                            width = Spacing.border,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        ).background(
+                            color = MaterialTheme.colorScheme.secondary,
+                        ).padding(horizontal = Spacing.s10, vertical = Spacing.s10),
+                interactionSource = interactionSource,
+                textStyle =
+                    MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                    ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant),
+                keyboardOptions =
+                    KeyboardOptions(
+                        imeAction = ImeAction.Search,
+                    ),
+                onKeyboardAction = {
+                    onQueryChanged(textFieldState.text.toString())
+                    onSearch()
+                    keyboardController?.hide()
+                },
+                lineLimits = TextFieldLineLimits.SingleLine,
+                decorator =
+                    TextFieldDecorator { innerTextField ->
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            if (textFieldState.text.isEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.explore_search_suggestion),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            innerTextField()
+                        }
+                    },
+            )
+            IconButton(
+                modifier = Modifier.padding(vertical = Spacing.s4),
+                onClick = startVoiceInput,
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.voice_icon),
+                    contentDescription = stringResource(R.string.voice_input_button_description),
+                )
+            }
+        }
+    }
+}

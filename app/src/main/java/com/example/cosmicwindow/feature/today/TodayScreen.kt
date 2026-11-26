@@ -1,0 +1,718 @@
+package com.example.cosmicwindow.feature.today
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.fromHtml
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import com.example.cosmicwindow.R
+import com.example.cosmicwindow.core.designsystem.components.AppHeader
+import com.example.cosmicwindow.core.designsystem.components.CircleIconButton
+import com.example.cosmicwindow.core.designsystem.components.CollapsingColumn
+import com.example.cosmicwindow.core.designsystem.components.CurrentDatePicker
+import com.example.cosmicwindow.core.designsystem.components.CustomPlayButton
+import com.example.cosmicwindow.core.designsystem.components.ErrorBox
+import com.example.cosmicwindow.core.designsystem.components.ExternalLinkOpenerButton
+import com.example.cosmicwindow.core.designsystem.components.LottieLoader
+import com.example.cosmicwindow.core.designsystem.components.VideoPlayer
+import com.example.cosmicwindow.core.designsystem.theme.RadiusSize
+import com.example.cosmicwindow.core.designsystem.theme.Spacing
+import com.example.cosmicwindow.core.utils.getDayTextSince
+import com.example.cosmicwindow.core.utils.shareLink
+import com.example.cosmicwindow.model.Apod
+import java.time.format.DateTimeFormatter
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TodayScreen(viewModel: TodayViewModel = hiltViewModel(), onApodClick: (Apod) -> Unit) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.reevaluateTodayApod()
+    }
+
+    Scaffold(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+    ) { innerPadding ->
+
+        if (showDatePicker) {
+            CurrentDatePicker(
+                onDateSelected = { selectedDate -> viewModel.updateCurrentDay(selectedDate) },
+                onDismiss = { showDatePicker = false },
+            )
+        }
+
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                LottieLoader(Modifier.size(Spacing.s48))
+            }
+            return@Scaffold
+        }
+
+        Column(
+            modifier = Modifier.padding(innerPadding),
+        ) {
+            CollapsingColumn(scrollBehavior = scrollBehavior) {
+                AppHeader(
+                    modifier = Modifier,
+                    leftIcon = R.drawable.header_image,
+                    onClick = { showDatePicker = true },
+                    rightIconComposable = {
+                        Icon(
+                            painterResource(R.drawable.calendar_icon),
+                            contentDescription = stringResource(R.string.today_change_date_description),
+                            tint = MaterialTheme.colorScheme.onSecondary,
+                        )
+                    },
+                    mainTitle = stringResource(R.string.main_title),
+                    secondaryTitle = stringResource(R.string.apod_secondary_title),
+                )
+            }
+
+            Column(
+                modifier =
+                    Modifier
+                        .padding(innerPadding)
+                        .verticalScroll((rememberScrollState())),
+            ) {
+                TodayInSpace(
+                    Modifier.padding(horizontal = Spacing.s16, vertical = Spacing.s8),
+                    date =
+                        uiState.selectedDate.format(
+                            DateTimeFormatter.ofPattern("MMM dd, yyyy"),
+                        ),
+                )
+                if (uiState.error != null) {
+                    ErrorBox(
+                        modifier =
+                            Modifier.padding(
+                                top = Spacing.s4,
+                                bottom = Spacing.s16,
+                                start = Spacing.s16,
+                                end = Spacing.s16,
+                            ),
+                        text = uiState.error!!,
+                        onClick = viewModel::getCurrentApods,
+                    )
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s24),
+                ) {
+                    if (uiState.apods.isEmpty()) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                            Text(
+                                stringResource(R.string.no_apod_to_show),
+                                style = MaterialTheme.typography.headlineLarge,
+                            )
+                        }
+                        return@Scaffold
+                    }
+                    CurrentApod(
+                        modifier = Modifier.padding(horizontal = Spacing.s16),
+                        apod = uiState.apods.first(),
+                        onShareClick = { context.shareLink(uiState.apods.first().permalink) },
+                        onReadClick = onApodClick,
+                        bookmarkState = uiState.apods.first().isSaved,
+                        onBookmarkClick = viewModel::toggleFirstApodSave,
+                    )
+                    PreviousApodStripe(apods = uiState.apods, onClick = onApodClick)
+                    if (uiState.featuredVideoApod != null) {
+                        FeaturedApodVideoCard(
+                            Modifier.padding(horizontal = Spacing.s16),
+                            apod = uiState.featuredVideoApod!!,
+                        )
+                    }
+                    DataCard(
+                        Modifier.padding(start = Spacing.s16, end = Spacing.s16, bottom = Spacing.s16),
+                        apod = uiState.apods.first(),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DataCard(modifier: Modifier = Modifier, apod: Apod) {
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        border =
+            BorderStroke(
+                Spacing.border,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+            ),
+        shape = RoundedCornerShape(RadiusSize.r16),
+    ) {
+        Column(
+            Modifier.padding(Spacing.s16),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.original_icon),
+                    contentDescription = null,
+                    modifier =
+                        Modifier
+                            .size(Spacing.s24)
+                            .padding(end = Spacing.s8),
+                )
+                Text(
+                    stringResource(R.string.apod_archive_text),
+                    style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 26.sp),
+                    fontWeight = FontWeight.W500,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                )
+            }
+
+            Text(
+                text =
+                    AnnotatedString.fromHtml(
+                        stringResource(R.string.image_credit, apod.credit),
+                    ),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Box(
+                Modifier.background(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(RadiusSize.r9999),
+                ),
+            ) {
+                Text(
+                    text = stringResource(R.string.affiliation_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier =
+                        Modifier.padding(
+                            start = Spacing.s24,
+                            end = Spacing.s24,
+                            top = Spacing.s6,
+                            bottom = Spacing.s6,
+                        ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PreviousApodStripe(
+    modifier: Modifier = Modifier,
+    apods: List<Apod>,
+    onClick: (Apod) -> Unit,
+) {
+    Column(modifier) {
+        PastApodEntryText(
+            Modifier.padding(
+                bottom = Spacing.s8,
+                start = Spacing.s16,
+                end = Spacing.s16,
+            ),
+        )
+        LazyRow(
+            modifier = Modifier.padding(bottom = Spacing.s8),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+        ) {
+            item {
+                Spacer(Modifier.width(Spacing.s8))
+            }
+            items(apods.size - 1) {
+                PreviousApodDay(apod = apods[it + 1], onClick = { onClick(apods[it + 1]) })
+            }
+            item {
+                Spacer(Modifier.width(Spacing.s8))
+            }
+        }
+    }
+}
+
+@Composable
+fun FeaturedApodVideoCard(modifier: Modifier = Modifier, apod: Apod) {
+    val videoHandler = LocalUriHandler.current
+    Surface(
+        modifier =
+            modifier.background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(Spacing.s16),
+            ),
+        border = BorderStroke(Spacing.border, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+        shape = RoundedCornerShape(RadiusSize.r16),
+    ) {
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(Spacing.s16),
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.video_icon),
+                        contentDescription = null,
+                    )
+
+                    Text(
+                        stringResource(R.string.today_videocard_title),
+                        style = MaterialTheme.typography.headlineSmall,
+                        maxLines = 1,
+                    )
+                }
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f),
+                    modifier = Modifier.padding(Spacing.s10),
+                ) {
+                    Text(
+                        text = stringResource(R.string.today_videocard_external_label),
+                        style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        fontWeight = FontWeight.W500,
+                        maxLines = 1,
+                        modifier = Modifier.padding(horizontal = Spacing.s6, vertical = Spacing.s6),
+                    )
+                }
+            }
+            VideoPlayer(
+                modifier =
+                    Modifier
+                        .padding(bottom = Spacing.s8)
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f)
+                        .clip(RoundedCornerShape(RadiusSize.r12)),
+                videoUri = apod.videoUrl!!,
+            )
+            Text(
+                apod.title,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = Spacing.s8),
+            )
+            Text(
+                AnnotatedString.fromHtml(apod.alt),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = Spacing.s8),
+            )
+
+            ExternalLinkOpenerButton(
+                modifier = Modifier.fillMaxWidth(),
+                videoHandler = videoHandler,
+                url = apod.permalink,
+            )
+        }
+    }
+}
+
+@Composable
+fun VideoThumbnailCard(
+    modifier: Modifier = Modifier,
+    apod: Apod,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+                .clip(RoundedCornerShape(RadiusSize.r12))
+                .clickable { onClick() },
+    ) {
+        AsyncImage(
+            apod.hdUrl,
+            contentDescription = apod.alt,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize(),
+        )
+
+        Box(
+            Modifier
+                .matchParentSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors =
+                            listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                            ),
+                    ),
+                ),
+        )
+        CustomPlayButton(modifier = Modifier.align(Alignment.Center))
+        Row(
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(
+                        start = Spacing.s12,
+                        end = Spacing.s12,
+                        bottom = Spacing.s10,
+                    ),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "3:00 |4k/fullHd",
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s4),
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.open_elsewhere_icon),
+                    null,
+                )
+                Text(
+                    "YouTube / APOD",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PastApodEntryText(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+    ) {
+        Image(
+            painter =
+                painterResource(
+                    R.drawable.table_icon,
+                ),
+            contentDescription = null,
+        )
+        Text(
+            stringResource(R.string.apod_prevoius_stripe_main_label),
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.W600,
+        )
+        Spacer(Modifier.weight(1f))
+        Text(
+            stringResource(R.string.apod_previous_stripe_description),
+            color = MaterialTheme.colorScheme.onSecondary,
+            style = MaterialTheme.typography.bodyMedium,
+            lineHeight = 26.sp,
+        )
+    }
+}
+
+@Composable
+fun CurrentApod(
+    modifier: Modifier = Modifier,
+    apod: Apod,
+    onReadClick: (Apod) -> Unit = {},
+    onBookmarkClick: () -> Unit = {},
+    onShareClick: () -> Unit = {},
+    bookmarkState: Boolean,
+) {
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(Spacing.s24)),
+    ) {
+        AsyncImage(
+            model = apod.hdUrl ?: apod.url,
+            contentDescription = apod.alt,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize(),
+        )
+        Box(
+            modifier =
+                Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    Color.Transparent,
+                                    Color.Black,
+                                ),
+                        ),
+                    ),
+        )
+
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = 180.dp,
+                        start = Spacing.s16,
+                        end = Spacing.s16,
+                        bottom = Spacing.s16,
+                    ),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s8),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+            ) {
+                Text(
+                    apod.date.format(DateTimeFormatter.ofPattern("MMMM dd, yyyy")),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.W600,
+                )
+                Image(
+                    painterResource(R.drawable.camera_icon),
+                    contentDescription = null,
+                    modifier = Modifier.size(Spacing.s12),
+                )
+                Text(
+                    "•",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    AnnotatedString.fromHtml(apod.copyright ?: apod.credit),
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            Text(
+                apod.title,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.headlineLarge,
+            )
+
+            Text(
+                AnnotatedString.fromHtml(apod.alt),
+                color = MaterialTheme.colorScheme.onSecondary,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+
+            Spacer(Modifier.height(Spacing.s8))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+            ) {
+                Button(
+                    onClick = { onReadClick(apod) },
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .height(Spacing.s48),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                ) {
+                    Text(
+                        stringResource(R.string.apod_detail_page_button_label),
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(Modifier.width(Spacing.s8))
+                    Icon(
+                        painterResource(R.drawable.forward_icon),
+                        contentDescription = stringResource(R.string.apod_detail_page_button_description),
+                        modifier = Modifier.size(Spacing.s12),
+                    )
+                }
+
+                CircleIconButton(
+                    icon =
+                        if (bookmarkState) {
+                            R.drawable.bookmark_filled_icon
+                        } else {
+                            R.drawable.bookmark_icon
+                        },
+                    description = stringResource(R.string.bookmark_description),
+                    onClick = onBookmarkClick,
+                )
+                CircleIconButton(
+                    icon = R.drawable.share_icon,
+                    description = stringResource(R.string.share_description),
+                    onClick = onShareClick,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PreviousApodDay(
+    modifier: Modifier = Modifier,
+    apod: Apod,
+    onClick: () -> Unit = {},
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.width(160.dp),
+        shape = RoundedCornerShape(RadiusSize.r16),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+            ),
+        border = BorderStroke(Spacing.border, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+    ) {
+        Column(
+            modifier = Modifier.padding(Spacing.s12),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s12),
+        ) {
+            Box {
+                AsyncImage(
+                    model = apod.hdUrl ?: apod.url,
+                    contentDescription = apod.alt,
+                    contentScale = ContentScale.Crop,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(138f / 96f)
+                            .clip(RoundedCornerShape(RadiusSize.r12)),
+                )
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
+                    modifier = Modifier.padding(Spacing.s6),
+                ) {
+                    Text(
+                        text = apod.date.format(DateTimeFormatter.ofPattern("MMM dd")),
+                        style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontWeight = FontWeight.W600,
+                        modifier = Modifier.padding(horizontal = Spacing.s8, vertical = Spacing.s8),
+                    )
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                Text(
+                    getDayTextSince(apod.date),
+                    style = MaterialTheme.typography.bodySmall.copy(lineHeight = 26.sp),
+                    color = MaterialTheme.colorScheme.onSecondary,
+                )
+                Text(
+                    apod.title,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W500),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TodayInSpace(modifier: Modifier = Modifier, date: String) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s8),
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .size(Spacing.s8)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.onPrimaryContainer),
+        )
+        Text(
+            text = stringResource(R.string.toady_in_space_header, date),
+            color = MaterialTheme.colorScheme.onSecondary,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+    }
+}

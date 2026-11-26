@@ -1,0 +1,86 @@
+package com.example.cosmicwindow.core.di
+
+import android.util.Log
+import com.example.cosmicwindow.data.remote.api.ApodApi
+import com.example.cosmicwindow.data.remote.api.EarthApi
+import com.example.cosmicwindow.data.remote.api.ExploreApi
+import com.example.cosmicwindow.data.remote.api.ImageApi
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import jakarta.inject.Singleton
+import kotlinx.serialization.json.Json
+import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
+
+@Module
+@InstallIn(SingletonComponent::class)
+object NetworkModule {
+    private val json = Json { ignoreUnknownKeys = true }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
+//        val logging = HttpLoggingInterceptor().apply {
+//            level = HttpLoggingInterceptor.Level.BODY
+//        }
+        val requestLogger =
+            Interceptor { chain ->
+                val request = chain.request()
+                Log.d("API_REQUEST", "${request.method} ${request.url}")
+                chain.proceed(request)
+            }
+
+        return OkHttpClient
+            .Builder()
+            .addInterceptor(requestLogger)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideApodApi(client: OkHttpClient): ApodApi =
+        Retrofit
+            .Builder()
+            .baseUrl("https://science.nasa.gov/wp-json/wp/v2/apod-basic/")
+            .client(client)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(ApodApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideEarthApiEnhanced(client: OkHttpClient): EarthApi =
+        Retrofit
+            .Builder()
+            .baseUrl("https://epic.gsfc.nasa.gov/api/enhanced/")
+            .client(client)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(EarthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideExplorerApi(client: OkHttpClient): ExploreApi =
+        Retrofit
+            .Builder()
+            .baseUrl("https://images-api.nasa.gov/")
+            .client(client)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(ExploreApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideImageApi(client: OkHttpClient): ImageApi =
+        Retrofit
+            .Builder()
+            .baseUrl("https://google.com")
+            .client(client)
+            .build()
+            .create(ImageApi::class.java)
+}
